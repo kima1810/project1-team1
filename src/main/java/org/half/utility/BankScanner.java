@@ -2,6 +2,7 @@ package org.half.utility;
 
 import java.util.Scanner;
 
+// Utility class for a scanner to be shared
 public class BankScanner {
     // Store the only instance of the scanner
     private static final Scanner instance = new Scanner(System.in);
