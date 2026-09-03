@@ -27,6 +27,8 @@ public class Deposit {
             String Confirm = BankScanner.getString();
             if (Confirm.equalsIgnoreCase("Yes")) {
                 Balance += AmountDeposit;
+                //Now the transaction will be added
+                TransactionHistory.addTransaction("deposit", AmountDeposit, 50.00, "N/A");
                 System.out.printf("Your new balance is $%.2f\n", Balance);
             } else {
                 System.out.println("Transaction Cancelled.");

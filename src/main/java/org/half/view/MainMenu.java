@@ -24,7 +24,7 @@ public class MainMenu {
                     Withdraw.Withdraw_Request();
                     break;
                 case 1:
-                    Balance.showBalance();
+                    CheckBalance.showBalance();
                     break;
                 case 0:
                     running = false;

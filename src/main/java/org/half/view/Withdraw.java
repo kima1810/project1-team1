@@ -26,6 +26,8 @@ public class Withdraw {
             String Confirm = BankScanner.getString();
             if (Confirm.equalsIgnoreCase("Yes")) {
                 Balance -= AmountWithDrawn;
+                //will be added to the transactions
+                TransactionHistory.addTransaction("withdraw", AmountWithDrawn, 50.00, "N/A");
                 System.out.printf("Your remaining balance is $%.2f\n", Balance);
             } else {
                 System.out.println("Transaction Cancelled.");
