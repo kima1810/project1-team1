@@ -3,6 +3,7 @@ package org.half.view;
 import org.half.utility.BankScanner;
 
 public class MainMenu {
+
     public static void mainMenu() {
         boolean running = true;
 
@@ -11,6 +12,7 @@ public class MainMenu {
             System.out.println("1. View balance");
             System.out.println("2. Withdraw");
             System.out.println("3. Deposit");
+            System.out.println("4. Transaction history");
 
             int userInput = BankScanner.getInt();
 
@@ -27,6 +29,9 @@ public class MainMenu {
                 case 0:
                     running = false;
                     BankScanner.closeScanner();
+                    break;
+                case 4:
+                    TransactionHistory.printTransactions();
                     break;
             }
         }
