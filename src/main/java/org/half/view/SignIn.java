@@ -10,7 +10,7 @@ public class SignIn {
         String input = BankScanner.getString().toLowerCase();
 
         if (input.charAt(0) == 'n' ){
-            //Call the Registration Page
+            Register.register();
         }
         else {
             System.out.println("Please enter your Account ID.");
