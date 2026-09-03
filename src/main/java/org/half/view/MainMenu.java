@@ -15,11 +15,18 @@ public class MainMenu {
             int userInput = BankScanner.getInt();
 
             switch (userInput) {
+                case 3:
+                    Deposit.Deposit_Request();
+                    break;
+                case 2:
+                    Withdraw.Withdraw_Request();
+                    break;
                 case 1:
                     CheckBalance.showBalance();
                     break;
                 case 0:
                     running = false;
+                    BankScanner.closeScanner();
                     break;
             }
         }
