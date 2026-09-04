@@ -13,6 +13,7 @@ public class MainMenu {
             System.out.println("2. Withdraw");
             System.out.println("3. Deposit");
             System.out.println("4. Transaction history");
+            System.out.println("5. Transfer money");
 
             int userInput = BankScanner.getInt();
 
@@ -32,6 +33,9 @@ public class MainMenu {
                     break;
                 case 4:
                     TransactionHistory.printTransactions();
+                    break;
+                case 5:
+                    Transfer.transfer();
                     break;
             }
         }
