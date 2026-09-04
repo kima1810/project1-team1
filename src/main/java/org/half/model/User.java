@@ -3,12 +3,12 @@ package org.half.model;
 public class User {
     // possible things to add: Real Name, address, phone number, email, routing number? But not necessary right now.
     // also consider giving each user a UUID
-    
+
     // REMINDER: change public variables to private later
     public String firstName;
     public String lastName;
     public String email;
-    public int phoneNumber;
+    public long phoneNumber;
     public String username;
     public String password;
     public double balance;
@@ -17,7 +17,7 @@ public class User {
         // fill in later
     }
 
-    public User(String firstName, String lastName, String email, int phoneNumber, String username, String password, double balance) {
+    public User(String firstName, String lastName, String email, long phoneNumber, String username, String password, double balance) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
