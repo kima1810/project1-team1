@@ -9,6 +9,11 @@ public class SignIn {
 
         String input = BankScanner.getString().toLowerCase();
 
+        while(!(input.charAt(0).inc)){
+            System.out.println("Invalid Response: Please enter Yes or No");
+            input = BankScanner.getString().toLowerCase();
+        }
+
         if (input.charAt(0) == 'n' ){
             Register.register();
         }
