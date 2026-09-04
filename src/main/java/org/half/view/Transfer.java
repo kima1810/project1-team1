@@ -3,7 +3,6 @@ package org.half.view;
 import org.half.utility.BankScanner;
 
 public class Transfer {
-    // Prompt for the details of a transfer between two accounts
     public static void transfer() {
         System.out.print("account to transfer from: ");
         String fromAccount = BankScanner.getString();
