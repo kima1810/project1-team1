@@ -3,35 +3,45 @@ package org.half.model;
 public class User {
     // possible things to add: Real Name, address, phone number, email, routing number? But not necessary right now.
     // also consider giving each user a UUID
-    private int id;
-    private String pin;
-    private double balance;
+    
+    // REMINDER: change public variables to private later
+    public String firstName;
+    public String lastName;
+    public String email;
+    public int phoneNumber;
+    public String username;
+    public String password;
+    public double balance;
 
     public User() {
         // fill in later
     }
 
-    public User(int id, String pin, double balance) {
-        this.id = id;
-        this.pin = pin;
+    public User(String firstName, String lastName, String email, int phoneNumber, String username, String password, double balance) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.username = username;
+        this.password = password;
         this.balance = balance;
     }
 
-    public int getId() {
-        return id;
+    public String getUsername() {
+        return username;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getPin() {
-        return pin;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPin(String pin) {
-        // validate pin?
-        this.pin = pin;
+    public void setPassword(String password) {
+        // validate password?
+        this.password = password;
     }
 
     public double getBalance() {

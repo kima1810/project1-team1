@@ -15,12 +15,14 @@ public class Register {
             - User must Confirm Password
     */
     public static void register() {
+        // Name
         System.out.print("First name: ");
         String firstName = BankScanner.getString();
 
         System.out.print("Last name: ");
         String lastName = BankScanner.getString();
 
+        // Email
         System.out.print("Email: ");
         String email = BankScanner.getString();
 
@@ -33,6 +35,7 @@ public class Register {
             }
         } while (!emailConfirmation.equals(email));
 
+        // Phone Number
         String phoneNumberTry;
         do {
             System.out.print("Phone Number: ");
@@ -40,9 +43,11 @@ public class Register {
         } while (isValidPhoneNumber(phoneNumberTry));
         int phoneNumber = Integer.parseInt(phoneNumberTry);
 
+        // Username
         System.out.print("Username: ");
         String username = BankScanner.getString();
 
+        // Password
         String password;
         do {
             System.out.print("Password (min. 8 character): ");
@@ -65,6 +70,7 @@ public class Register {
         SignIn.signIn();
     }
 
+    // Helper Methods
     private static boolean isValidPhoneNumber(String phoneNumber) {
         try {
             Integer.parseInt(phoneNumber);
