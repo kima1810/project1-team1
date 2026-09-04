@@ -33,4 +33,6 @@ public class UserRepository {
     public static User getUser(String username) {
         return userDatabase.get(username);
     }
+
+    public static boolean checkUser(String username) {return userDatabase.containsKey(username);}
 }
