@@ -1,6 +1,8 @@
 package org.half.view;
 
 import org.half.utility.BankScanner;
+import org.half.repository.UserRepository;
+import org.half.model.User;
 
 public class Register {
     /*
@@ -65,7 +67,9 @@ public class Register {
                 System.out.println("Passwords do not match. Please try again.");
             }
         } while (!passwordConfirmation.equals(password));
-
+        
+        // Add user to repository, confirmation, and redirect to SignIn
+        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, password, 0.0));
         System.out.println("Registration successful. Welcome to Bank 50 " + firstName + "!");
         SignIn.signIn();
     }
