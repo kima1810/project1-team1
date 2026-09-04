@@ -1,10 +1,11 @@
 package org.half.view;
+import org.half.model.User;
 
 import org.half.utility.BankScanner;
 
 public class MainMenu {
 
-    public static void mainMenu() {
+    public static void mainMenu(User activeUser) {
         boolean running = true;
 
         while (running) {
