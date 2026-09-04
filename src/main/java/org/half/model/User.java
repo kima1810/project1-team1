@@ -2,6 +2,7 @@ package org.half.model;
 
 public class User {
     // possible things to add: Real Name, address, phone number, email, routing number? But not necessary right now.
+    // also consider giving each user a UUID
     private int id;
     private String pin;
     private double balance;
