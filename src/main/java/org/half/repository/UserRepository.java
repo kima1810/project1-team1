@@ -2,6 +2,8 @@ package org.half.repository;
 
 import org.half.model.User;
 import org.half.security.PasswordService;
+import org.half.model.enums.AccountType;
+import org.half.model.Account;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,18 +18,18 @@ public class UserRepository {
             User newUser = new User();
             newUser.setUsername("test" + i);
             newUser.setPassword(PasswordService.hashPassword("testPassword" + i));
-            newUser.setBalance(500.00 * i);
+            newUser.addAccount(AccountType.CHECKING, 1234);
 
             addUser(newUser);
         }
     }
 
     public static void addUser(User user) {
-        userDatabase.put(user.username, user);
+        userDatabase.put(user.getUsername(), user);
     }
 
     public static void updateUser(User user) {
-        userDatabase.replace(user.username, user);
+        userDatabase.replace(user.getUsername(), user);
     }
 
     public static User getUser(String username) {
