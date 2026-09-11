@@ -10,10 +10,10 @@ import java.sql.SQLException;
 
 public class UserRepository {
     public static void addUser(User user) {
-        String query = "INSERT INTO User (fName, lName, email, phone, username, passwordHash) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO User (firstName, lastName, email, phoneNumber, username, passwordHash) VALUES (?, ?, ?, ?, ?, ?)";
         try (
             Connection connection = ConnectionFactory.getAutoCommitConnection();
-            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement = connection.prepareStatement(query)
         ) {
             statement.setString(1, user.getFirstName());
             statement.setString(2, user.getLastName());
@@ -31,7 +31,7 @@ public class UserRepository {
         String query = "SELECT passwordHash FROM User WHERE username=?";
         try (
                 Connection connection = ConnectionFactory.getAutoCommitConnection();
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = connection.prepareStatement(query)
 
         ) {
             statement.setString(1, userName);
@@ -50,17 +50,17 @@ public class UserRepository {
         String query = "SELECT * FROM User WHERE username=?";
         try (
                 Connection connection = ConnectionFactory.getAutoCommitConnection();
-                PreparedStatement statement = connection.prepareStatement(query);
+                PreparedStatement statement = connection.prepareStatement(query)
 
         ) {
             statement.setString(1, userName);
             ResultSet resultSet = statement.executeQuery();
             if(resultSet.next()){
-                User user = new User(
-                        resultSet.getString("fName"),
-                        resultSet.getString("lName"),
+                return new User(
+                        resultSet.getString("firstName"),
+                        resultSet.getString("lastName"),
                         resultSet.getString("email"),
-                        resultSet.getString("phone"),
+                        resultSet.getString("phoneNumber"),
                         resultSet.getString("username"),
                         resultSet.getString("passwordHash")
                 );

@@ -8,14 +8,14 @@ CREATE TABLE User(
         COLLATE BINARY,
     passwordHash TEXT NOT NULL
         CHECK(length(passwordHash) <= 255),
-    fName TEXT NOT NULL
-        CHECK(length(fName) <= 20),
-    lName TEXT NOT NULL
-        CHECK(length(lName) <= 20),
+    firstName TEXT NOT NULL
+        CHECK(length(firstName) <= 20),
+    lastName TEXT NOT NULL
+        CHECK(length(lastName) <= 20),
     email TEXT UNIQUE NOT NULL
         CHECK(email LIKE '%@%.%'),
-    phone TEXT NOT NULL
-        CHECK (phone NOT GLOB '*[^0-9+() -]*')
+    phoneNumber TEXT NOT NULL
+        CHECK (phoneNumber NOT GLOB '*[^0-9+() -]*')
 );
 
 CREATE TABLE Account(

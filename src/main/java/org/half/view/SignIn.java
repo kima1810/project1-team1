@@ -21,7 +21,7 @@ public class SignIn {
             Register.register();
         }
 
-        while(true){
+        while (true) {
             System.out.println("Please enter your Username.");
             String userName = BankScanner.getString();
 
@@ -29,8 +29,8 @@ public class SignIn {
             String userPassword = BankScanner.getString();
             String dataBasePassword = UserRepository.getPasswordHash(userName);
 
-            if(dataBasePassword != null){
-                if(PasswordService.verifyPassword(userPassword, dataBasePassword)){
+            if (dataBasePassword != null) {
+                if (PasswordService.verifyPassword(userPassword, dataBasePassword)) {
                     System.out.println("Successfully Logged In to Your Account");
                     User activeUser = UserRepository.getUser(userName);
                     MainMenu.mainMenu(activeUser);
@@ -38,11 +38,7 @@ public class SignIn {
                 }
             }
 
-
-            System.out.println("You Entered Invalid Credentials.");
-            System.out.println("Please Reenter your Credentials.");
-
-
+            System.out.println("Invalid Credentials. Try again...");
         }
 
 

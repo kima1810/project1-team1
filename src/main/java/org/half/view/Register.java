@@ -93,7 +93,6 @@ public class Register {
         // Add user to repository, confirmation, and redirect to SignIn
         UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password)));
         System.out.println("Registration successful. Welcome to Fifty/50 Bank, " + firstName + "!");
-        SignIn.signIn();
     }
 
     /* --- Helper Methods --- */
