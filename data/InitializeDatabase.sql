@@ -14,8 +14,8 @@ CREATE TABLE User(
         CHECK(length(lName) <= 20),
     email TEXT UNIQUE NOT NULL
         CHECK(email LIKE '%@%.%'),
-    phone INTEGER NOT NULL
-        CHECK(length(phone) = 10)
+    phone TEXT NOT NULL
+        CHECK (phone NOT GLOB '*[^0-9+() -]*')
 );
 
 CREATE TABLE Account(
@@ -23,6 +23,8 @@ CREATE TABLE Account(
         CHECK(length(accountId) = 12),
     pin INTEGER NOT NULL
         CHECK(length(pin) = 4),
+    accountType TEXT NOT NULL
+    	CHECK(accountType IN ('CHECKING', 'SAVINGS')),
     balance REAL DEFAULT(0.00)
         CHECK(balance >= 0.00),
     user TEXT REFERENCES User(username)

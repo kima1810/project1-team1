@@ -1,7 +1,6 @@
 package org.half.model;
 import java.util.ArrayList;
 import org.half.model.enums.AccountType;
-import org.half.model.Account;
 
 public class User {
     // possible things to add: Real Name, address, phone number, email, routing number? But not necessary right now.
@@ -10,17 +9,13 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
-    private long phoneNumber; // TODO: Change to String later
+    private String phoneNumber;
     private String username;
     private String password;
     private ArrayList<Account> accounts;
 
     /* --- Constructors --- */
-    public User() {
-        // TODO
-    }
-
-    public User(String firstName, String lastName, String email, long phoneNumber, String username, String password) {
+    public User(String firstName, String lastName, String email, String phoneNumber, String username, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -60,11 +55,11 @@ public class User {
         this.email = email;
     }
 
-    public long getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(long phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
