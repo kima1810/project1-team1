@@ -69,8 +69,8 @@ public class Register {
         } while (!passwordConfirmation.equals(password));
         
         // Add user to repository, confirmation, and redirect to SignIn
-        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, password, 1000.0));
-        System.out.println("Registration successful. Welcome to Bank 50 " + firstName + "!");
+        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, password));
+        System.out.println("Registration successful. Welcome to Fifty/50 Bank, " + firstName + "!");
         SignIn.signIn();
     }
 
