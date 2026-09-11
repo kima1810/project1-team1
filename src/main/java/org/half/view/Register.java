@@ -1,6 +1,8 @@
 package org.half.view;
 
 import org.half.utility.BankScanner;
+import org.half.repository.UserRepository;
+import org.half.model.User;
 
 public class Register {
     /*
@@ -28,7 +30,7 @@ public class Register {
 
         String emailConfirmation = "";
         do {
-            System.out.print("Confirm email");
+            System.out.print("Confirm email: ");
             emailConfirmation = BankScanner.getString();
             if(!emailConfirmation.equals(email)) {
                 System.out.println("Emails do not match. Please try again.");
@@ -40,8 +42,8 @@ public class Register {
         do {
             System.out.print("Phone Number: ");
             phoneNumberTry = BankScanner.getString();
-        } while (isValidPhoneNumber(phoneNumberTry));
-        int phoneNumber = Integer.parseInt(phoneNumberTry);
+        } while (!isValidPhoneNumber(phoneNumberTry));
+        long phoneNumber = Long.parseLong(phoneNumberTry);
 
         // Username
         System.out.print("Username: ");
@@ -65,7 +67,9 @@ public class Register {
                 System.out.println("Passwords do not match. Please try again.");
             }
         } while (!passwordConfirmation.equals(password));
-
+        
+        // Add user to repository, confirmation, and redirect to SignIn
+        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, password, 1000.0));
         System.out.println("Registration successful. Welcome to Bank 50 " + firstName + "!");
         SignIn.signIn();
     }
@@ -73,7 +77,7 @@ public class Register {
     // Helper Methods
     private static boolean isValidPhoneNumber(String phoneNumber) {
         try {
-            Integer.parseInt(phoneNumber);
+            Long.parseLong(phoneNumber);
             if(phoneNumber.length() < 10) {
                 System.out.println("Please enter a VALID phone number.");
                 return false;
