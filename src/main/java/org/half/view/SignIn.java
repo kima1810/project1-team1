@@ -20,20 +20,32 @@ public class SignIn {
         if (input.charAt(0) == 'n' ){
             Register.register();
         }
-        System.out.println("Please enter your Account ID.");
-        String userName = BankScanner.getString();
-        while (!UserRepository.checkUser(userName)){
-            System.out.println("Invalid Username: Please Reenter your Username");
-            userName = BankScanner.getString();
+
+        while(true){
+            System.out.println("Please enter your Username.");
+            String userName = BankScanner.getString();
+
+            System.out.println("Please enter your Password.");
+            String userPassword = BankScanner.getString();
+            String dataBasePassword = UserRepository.getPasswordHash(userName);
+
+            if(dataBasePassword != null){
+                if(PasswordService.verifyPassword(userPassword, dataBasePassword)){
+                    System.out.println("Successfully Logged In to Your Account");
+                    User activeUser = UserRepository.getUser(userName);
+                    MainMenu.mainMenu(activeUser);
+                    break;
+                }
+            }
+
+
+            System.out.println("You Entered Invalid Credentials.");
+            System.out.println("Please Reenter your Credentials.");
+
+
         }
-        User activeUser = UserRepository.getUser(userName);
-        System.out.println("Please enter your Password.");
-        String userPassword = BankScanner.getString();
-        while(!PasswordService.verifyPassword(userPassword, activeUser.getPassword())){
-            System.out.println("Entered Wrong Password For Your Account: Reenter Your Password");
-            userPassword = BankScanner.getString();
-        }
-        MainMenu.mainMenu(activeUser);
+
+
 
 
         //BankScanner.closeScanner();
