@@ -59,7 +59,9 @@ public class Register {
         // Username
         System.out.print("Username: ");
         String username = BankScanner.getString();
-        while (username.length() < 5 || username.length() > 50 || UserRepository.getUser(username) != null) {
+        while (username.length() < 5 || username.length() > 50 
+        /*|| UserRepository.getUser(username) != null*/
+        ) {
             if (username.length() < 5 || username.length() > 50) {
                 System.out.println("Username must be between 5 and 50 characters.");
             } else {
