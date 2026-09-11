@@ -3,14 +3,19 @@ package org.half.view;
 import org.half.utility.BankScanner;
 import org.half.repository.UserRepository;
 import org.half.model.User;
+import org.half.security.PasswordService;
 
 public class Register {
     /*
         - First Name
+            - Must be 20 characters or fewer
         - Last Name
+            - Must be 20 characters or fewer
         - Email
             - Confirm email
+            - Must follow valid format
         - Phone Number
+            - Must follow valid format
         - Username
         - Password
             - 8 characters minimum
@@ -20,22 +25,28 @@ public class Register {
         // Name
         System.out.print("First name: ");
         String firstName = BankScanner.getString();
+        while (firstName.length() > 20) {
+            System.out.println("First name must be 20 characters or fewer.");
+            System.out.print("First name: ");
+            firstName = BankScanner.getString();
+        }
 
         System.out.print("Last name: ");
         String lastName = BankScanner.getString();
+        while (lastName.length() > 20) {
+            System.out.println("Last name must be 20 characters or fewer.");
+            System.out.print("Last name: ");
+            lastName = BankScanner.getString();
+        }
 
         // Email
         System.out.print("Email: ");
         String email = BankScanner.getString();
-
-        String emailConfirmation = "";
-        do {
-            System.out.print("Confirm email: ");
-            emailConfirmation = BankScanner.getString();
-            if(!emailConfirmation.equals(email)) {
-                System.out.println("Emails do not match. Please try again.");
-            }
-        } while (!emailConfirmation.equals(email));
+        while (!isValidEmail(email)) {
+            System.out.println("Please enter a valid email address.");
+            System.out.print("Email: ");
+            email = BankScanner.getString();
+        }
 
         // Phone Number
         String phoneNumberTry;
@@ -43,11 +54,20 @@ public class Register {
             System.out.print("Phone Number: ");
             phoneNumberTry = BankScanner.getString();
         } while (!isValidPhoneNumber(phoneNumberTry));
-        long phoneNumber = Long.parseLong(phoneNumberTry);
+        String phoneNumber = phoneNumberTry;
 
         // Username
         System.out.print("Username: ");
         String username = BankScanner.getString();
+        while (username.length() < 5 || username.length() > 50 || UserRepository.getUser(username) != null) {
+            if (username.length() < 5 || username.length() > 50) {
+                System.out.println("Username must be between 5 and 50 characters.");
+            } else {
+                System.out.println("That username is already taken.");
+            }
+            System.out.print("Username: ");
+            username = BankScanner.getString();
+        }
 
         // Password
         String password;
@@ -69,23 +89,21 @@ public class Register {
         } while (!passwordConfirmation.equals(password));
         
         // Add user to repository, confirmation, and redirect to SignIn
-        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, password));
+        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password)));
         System.out.println("Registration successful. Welcome to Fifty/50 Bank, " + firstName + "!");
         SignIn.signIn();
     }
 
-    // Helper Methods
+    /* --- Helper Methods --- */
+    private static boolean isValidEmail(String email) {
+        return email.matches(".*@.*\\..*");
+    }
+
     private static boolean isValidPhoneNumber(String phoneNumber) {
-        try {
-            Long.parseLong(phoneNumber);
-            if(phoneNumber.length() < 10) {
-                System.out.println("Please enter a VALID phone number.");
-                return false;
-            }
-            return true;
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid phone number. Please enter DIGITS ONLY.");
+        if (!phoneNumber.matches("[0-9+()\\- ]+")) {
+            System.out.println("Please enter a VALID phone number (digits, +, (), -, spaces only).");
             return false;
         }
+        return true;
     }
 }
