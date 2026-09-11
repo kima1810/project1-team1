@@ -6,23 +6,19 @@ public class Account {
     private int accountId;
     private int PIN;
     private double balance;
-    private AccountType type;
+    private AccountType accountType;
 
     /* --- Constructors --- */
-    public Account() {
-        // TODO
-    }
-
-    public Account(User user, AccountType type, int pin) {
+    public Account(User user, AccountType accountType, int pin) {
         this.user = user;
-        this.type = type;
+        this.accountType = accountType;
         this.PIN = pin;
         this.balance = 0.00;
     }
 
-    public Account(User user, AccountType type, int pin, double balance) {
+    public Account(User user, AccountType accountType, int pin, double balance) {
         this.user = user;
-        this.type = type;
+        this.accountType = accountType;
         this.PIN = pin;
         this.balance = balance;
     }
@@ -62,11 +58,11 @@ public class Account {
         }
         this.balance = balance;
     }
-    public AccountType getType() {
-        return type;
+    public AccountType getAccountType() {
+        return accountType;
     }
 
-    public void setType(AccountType type) {
-        this.type = type;
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 }
