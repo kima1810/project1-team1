@@ -1,68 +1,33 @@
 package org.half.model;
 import org.half.model.enums.AccountType;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class Account {
     private User user;
-    private int accountId;
-    private int PIN;
-    private double balance;
+    private long accountNumber;
+    private int pin;
     private AccountType accountType;
+    private double balance;
 
-    /* --- Constructors --- */
-    public Account(User user, AccountType accountType, int pin) {
-        this.user = user;
-        this.accountType = accountType;
-        this.PIN = pin;
-        this.balance = 0.00;
-    }
+//    public Account(User user, int pin, AccountType accountType) {
+//        this.user = user;
+//
+//        // Generate a 12-digit account number
+//        do {
+//            long accountNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
+//        } while (isAccountNumberUnique);
+//
+//        this.pin = pin;
+//        this.accountType = accountType;
+//        this.balance = 0.00;
+//    }
 
-    public Account(User user, AccountType accountType, int pin, double balance) {
+    public Account(User user, long accountNumber, int pin, AccountType accountType, double balance) {
         this.user = user;
+        this.accountNumber = accountNumber;
+        this.pin = pin;
         this.accountType = accountType;
-        this.PIN = pin;
         this.balance = balance;
-    }
-    
-    /* --- Getters and Setters --- */
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public int getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(int accountId) {
-        this.accountId = accountId;
-    }
-
-    public int getPIN() {
-        return PIN;
-    }
-
-    public void setPIN(int PIN) {
-        this.PIN = PIN;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        if (balance < 0) {
-            throw new IllegalArgumentException("Balance cannot be negative.");
-        }
-        this.balance = balance;
-    }
-    public AccountType getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(AccountType accountType) {
-        this.accountType = accountType;
     }
 }

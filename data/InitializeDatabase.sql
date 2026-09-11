@@ -19,8 +19,8 @@ CREATE TABLE User(
 );
 
 CREATE TABLE Account(
-    accountId INTEGER PRIMARY KEY NOT NULL
-        CHECK(length(accountId) = 12),
+    accountNumber INTEGER PRIMARY KEY NOT NULL
+        CHECK(length(accountNumber) = 12),
     pin INTEGER NOT NULL
         CHECK(length(pin) = 4),
     accountType TEXT NOT NULL
