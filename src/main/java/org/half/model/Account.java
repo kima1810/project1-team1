@@ -3,66 +3,36 @@ import org.half.model.enums.AccountType;
 
 public class Account {
     private User user;
-    private int accountId;
-    private int PIN;
-    private double balance;
+    private long accountNumber;
+    private String pinHash;
     private AccountType accountType;
+    private double balance;
 
-    /* --- Constructors --- */
-    public Account(User user, AccountType accountType, int pin) {
+    public Account(User user, long accountNumber, String pinHash, AccountType accountType, double balance) {
         this.user = user;
+        this.accountNumber = accountNumber;
+        this.pinHash = pinHash;
         this.accountType = accountType;
-        this.PIN = pin;
-        this.balance = 0.00;
-    }
-
-    public Account(User user, AccountType accountType, int pin, double balance) {
-        this.user = user;
-        this.accountType = accountType;
-        this.PIN = pin;
         this.balance = balance;
-    }
-    
-    /* --- Getters and Setters --- */
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public int getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(int accountId) {
-        this.accountId = accountId;
-    }
-
-    public int getPIN() {
-        return PIN;
-    }
-
-    public void setPIN(int PIN) {
-        this.PIN = PIN;
     }
 
     public double getBalance() {
         return balance;
     }
 
-    public void setBalance(double balance) {
-        if (balance < 0) {
-            throw new IllegalArgumentException("Balance cannot be negative.");
-        }
-        this.balance = balance;
-    }
     public AccountType getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(AccountType accountType) {
-        this.accountType = accountType;
+    public String getPinHash() {
+        return pinHash;
+    }
+
+    public long getAccountNumber() {
+        return accountNumber;
+    }
+
+    public User getUser() {
+        return user;
     }
 }

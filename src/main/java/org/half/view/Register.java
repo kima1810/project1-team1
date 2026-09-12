@@ -91,9 +91,12 @@ public class Register {
         } while (!passwordConfirmation.equals(password));
         
         // Add user to repository, confirmation, and redirect to SignIn
-        UserRepository.addUser(new User(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password)));
+        User user = new User(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
+        UserRepository.addUser(user);
+
+        AccountCreation.createAccount(user);
+
         System.out.println("Registration successful. Welcome to Fifty/50 Bank, " + firstName + "!");
-        SignIn.signIn();
     }
 
     /* --- Helper Methods --- */
