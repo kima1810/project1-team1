@@ -34,16 +34,16 @@ public class ANSI {
     public static final String	BACKGROUND_WHITE	= "\u001B[47m";
 
     // Private constructor, utility design pattern
-    private ANSI() {};
+    private ANSI() {}
 
     public static String rgb(int red, int green, int blue) {
         validateRgb(red, green, blue);
-        return "\"\\u001B[\"38;2;" + red + ";" + green + ";" + blue + "m";
+        return "\u001B[38;2;" + red + ";" + green + ";" + blue + "m";
     }
 
     public static String bgRgb(int red, int green, int blue) {
         validateRgb(red, green, blue);
-        return "\"\\u001B[\"48;2;" + red + ";" + green + ";" + blue + "m";
+        return "\u001B[48;2;" + red + ";" + green + ";" + blue + "m";
     }
 
     private static void validateRgb(int red, int green, int blue) {
