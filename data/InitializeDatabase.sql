@@ -21,13 +21,13 @@ CREATE TABLE User(
 CREATE TABLE Account(
     accountNumber INTEGER PRIMARY KEY NOT NULL
         CHECK(length(accountNumber) = 12),
-    pin INTEGER NOT NULL
-        CHECK(length(pin) = 4),
+    pinHash TEXT NOT NULL
+        CHECK(length(pinHash) <= 255),
     accountType TEXT NOT NULL
     	CHECK(accountType IN ('CHECKING', 'SAVINGS')),
     balance REAL DEFAULT(0.00)
         CHECK(balance >= 0.00),
-    user TEXT REFERENCES User(username)
+    username TEXT REFERENCES User(username)
         COLLATE BINARY
 );
 
@@ -38,6 +38,6 @@ CREATE TABLE TransactionHistory(
         CHECK(type IN ('Deposit', 'Withdraw', 'Transfer')),
     amount REAL NOT NULL
         CHECK(amount >= 0.00),
-    originAccountId INTEGER REFERENCES Account(accountId),
-    destinationAccountId INTEGER REFERENCES Account(accountId)
+    originAccountNumber INTEGER REFERENCES Account(accountNumber),
+    destinationAccountNumber INTEGER REFERENCES Account(accountNumber)
 );

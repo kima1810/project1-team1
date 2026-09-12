@@ -1,14 +1,13 @@
 package org.half.view;
-import org.half.model.User;
+import org.half.model.Account;
 
 import org.half.utility.BankScanner;
 
 public class MainMenu {
 
-    public static void mainMenu(User activeUser) {
-        boolean running = true;
-
-        while (running) {
+    public static void mainMenu(Account activeAccount) {
+        mainMenu:
+        while (true) {
             System.out.println("Welcome, John Doe!");
             System.out.println("1. View balance");
             System.out.println("2. Withdraw");
@@ -29,9 +28,7 @@ public class MainMenu {
                     CheckBalance.showBalance();
                     break;
                 case 0:
-                    running = false;
-                    BankScanner.closeScanner();
-                    break;
+                    break mainMenu;
                 case 4:
                     TransactionHistory.printTransactions();
                     break;

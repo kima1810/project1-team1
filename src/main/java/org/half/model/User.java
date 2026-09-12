@@ -1,6 +1,5 @@
 package org.half.model;
 import java.util.ArrayList;
-import org.half.model.enums.AccountType;
 
 public class User {
     // possible things to add: Real Name, address, phone number, email, routing number? But not necessary right now.
@@ -26,8 +25,8 @@ public class User {
     }
 
     /* --- Methods --- */
-    public void addAccount(AccountType type, int pin) {
-        this.accounts.add(new Account(this, type, pin));
+    public void addAccount(Account account) {
+        //this.accounts.add(new Account(this, type, pin));
     }
 
     /* --- Getters and Setters --- */
