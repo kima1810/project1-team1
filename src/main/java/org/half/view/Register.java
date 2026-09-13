@@ -91,7 +91,7 @@ public class Register {
         } while (!passwordConfirmation.equals(password));
         
         // Add user to repository, confirmation, and redirect to SignIn
-        User user = new User(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
+        User user = UserService.createUser(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
         UserRepository.addUser(user);
 
         AccountCreation.createAccount(user);
