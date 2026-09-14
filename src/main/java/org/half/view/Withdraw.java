@@ -21,6 +21,7 @@ public class Withdraw {
             //Withdrawn valid input checker
             if (AmountWithDrawn < 0 || AmountWithDrawn > currentAccount.getBalance()) {
                 System.out.println("Error: Invalid Amount!");
+                continue;
             }
 
             //Withdrawn confirmation
@@ -31,7 +32,6 @@ public class Withdraw {
                 System.out.printf("Congrats! Your withdrawal was successful. Your new Balance is: $%.2f\n", currentAccount.getBalance());
             } else {
                 System.out.println("Transaction Cancelled.");
-                continue;
             }
         }
     }
