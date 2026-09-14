@@ -42,7 +42,12 @@ public class AccountService {
     }
 
     public static List<Account> getAccounts(User user) {
-        return AccountRepository.getAllAccounts(user);
+        try {
+            return AccountRepository.getAllAccounts(user);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 
     public static boolean accountExists(long accountNumber) {

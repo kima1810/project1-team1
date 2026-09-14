@@ -30,7 +30,19 @@ public class AccountSelection {
             System.out.println("Or input 0 to logout.");
 
             System.out.println("Please select your account:");
-            int accountSelected = BankScanner.getInt();
+            int accountSelected;
+            while (true) {
+                try {
+                    accountSelected = Integer.parseInt(BankScanner.getString().trim());
+                    if (accountSelected > accounts.size()) {
+                        System.out.println("Please enter a number between 1 and " + accounts.size());
+                        continue;
+                    }
+                    break;
+                } catch (NumberFormatException e) {
+                    System.out.println("Please input a valid number corresponding to the options...");
+                }
+            }
 
             if (accountSelected == 0) break;
             else if (accountSelected == -1) {

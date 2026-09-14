@@ -27,7 +27,7 @@ public class AccountRepository {
         }
     }
 
-    public static List<Account> getAllAccounts(User user) {
+    public static List<Account> getAllAccounts(User user) throws SQLException {
         String query = "SELECT * FROM Account WHERE username=?;";
 
         try(Connection connection = ConnectionFactory.getAutoCommitConnection();
@@ -48,11 +48,7 @@ public class AccountRepository {
             }
 
             return accounts;
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-
-        return null;
     }
 
     public static boolean accountExists(long accountNumber) {
