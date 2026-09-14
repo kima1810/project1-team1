@@ -1,5 +1,6 @@
 package org.half.service;
 
+import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
@@ -24,26 +25,38 @@ public class AccountService {
         return AccountRepository.getAllAccounts(user);
     }
 
-    public static void Deposit_Request(Account account, double amount) {
-        //Create new Balance
-        double NewBalance = account.getBalance() + amount;
-        //Update Balance column in DataBase
-        AccountRepository.Update_Balance(account, NewBalance);
-        //Update current instance of Balance (balance stay updated throughout instance)
-        account.setBalance(NewBalance);
-        //Now the transaction will be added
-        TransactionHistory.addTransaction("Deposit", amount, account.getBalance(), "N/A");
+    public static void Deposit_Request(Account account, double amount) throws IllegalArgumentException {
+        if (account == null) {
+            throw new IllegalArgumentException("Error: No account found.");
+        }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Error: Deposit amount must be greater than zero.");
+        }
 
+        double NewBalance = account.getBalance() + amount;
+
+        //Update Database,local variable, and Transaction History balance value
+        AccountRepository.Update_Balance(account, NewBalance);
+        account.setBalance(NewBalance);
+        TransactionHistory.addTransaction("Deposit", amount, account.getBalance(), "N/A");
     }
 
-    public static void Withdraw_Request(Account account, double amount) {
-        //Create new Balance
+    public static void Withdraw_Request(Account account, double amount) throws IllegalArgumentException, InsufficientFundsException {
+        if (account == null) {
+            throw new IllegalArgumentException("Error: No account found.");
+        }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Error: Withdrawal amount must be greater than zero.");
+        }
+        if (amount > account.getBalance()) {
+            throw new InsufficientFundsException("Error: Insufficient funds. Your current balance is $%.2f\n" + account.getBalance());
+        }
+
         double NewBalance = account.getBalance() - amount;
-        //Update Balance column in DataBase
+
+        //Update Database,local variable, and Transaction History balance value
         AccountRepository.Update_Balance(account, NewBalance);
-        //Update current instance of Balance (balance stay updated throughout instance)
         account.setBalance(NewBalance);
-        //Now the transaction will be added
         TransactionHistory.addTransaction("Withdraw", amount, account.getBalance(), "N/A");
     }
 }
