@@ -8,33 +8,66 @@ import org.half.utility.BankScanner;
 public class AccountCreation {
     public static void createAccount(User user) {
         System.out.println("Let's create your account...");
-        System.out.println("Choose account type: CHECKING or SAVINGS");
-        String accountTypeInput = BankScanner.getString();
+        while (true) {
+            System.out.println("Choose account type: CHECKING or SAVINGS");
 
-        AccountType accountType = AccountType.valueOf(accountTypeInput.toUpperCase());
+            AccountType accountType;
+            while (true) {
+                String accountTypeInput = BankScanner.getString();
 
-        System.out.println("Create a 4-digit PIN for your account:");
-        int pinInput = BankScanner.getInt();
-        // TODO: Fix 4-digit pin bug. Right now 0001 to 0999 is invalid for a PIN.
-        while (pinInput < 1000 || pinInput > 9999) {
-            System.out.println("Invalid PIN number. Must be exactly 4 digits long.");
-            System.out.println("Please enter a valid PIN:");
-            pinInput = BankScanner.getInt();
-        }
-
-        System.out.println("Re-enter your PIN:");
-        int pinInputConfirmation = BankScanner.getInt();
-        while ((pinInputConfirmation < 1000 || pinInputConfirmation > 9999) || pinInput != pinInputConfirmation) {
-            if (pinInputConfirmation < 1000 || pinInputConfirmation > 9999) {
-                System.out.println("Invalid PIN. Must be exactly 4 digits long.");
-            } else {
-                System.out.println("PIN numbers do not match. Please try again.");
+                try {
+                    accountType = AccountType.valueOf(accountTypeInput.toUpperCase());
+                    break;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Invalid account type. Acceptable values: CHECKING, SAVINGS");
+                }
             }
 
+            System.out.println("Create a 4-digit PIN for your account:");
+            int pin = promptUserForPIN();
+
             System.out.println("Re-enter your PIN:");
-            pinInputConfirmation = BankScanner.getInt();
+            int pinConfirmation = promptUserForPIN();
+            while (pin != pinConfirmation) {
+                System.out.println("PINs do not match. Try again:");
+                pinConfirmation = promptUserForPIN();
+            }
+
+            try {
+                if (!AccountService.createAccount(user, 99999, accountType)) {
+                    System.out.println("Account creation failed. Please try again...");
+                    continue;
+                }
+            } catch (IllegalArgumentException e) {
+                System.out.println("Something went wrong. Please try again...");
+                continue;
+            }
+
+            break;
+        }
+    }
+
+    private static int promptUserForPIN() {
+        int pin;
+
+        while (true) {
+            String pinInput = BankScanner.getString();
+
+            try {
+                pin = Integer.parseInt(pinInput.trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid PIN number. Must be an integer.");
+                continue;
+            }
+
+            if (pinInput.trim().length() != 4) {
+                System.out.println("Invalid PIN. Must be exactly 4 digits long.");
+                continue;
+            }
+
+            break;
         }
 
-        AccountService.createAccount(user, pinInput, accountType);
+        return pin;
     }
 }
