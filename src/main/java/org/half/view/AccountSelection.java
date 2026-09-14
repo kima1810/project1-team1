@@ -8,6 +8,7 @@ import org.half.utility.BankScanner;
 import java.util.List;
 
 public class AccountSelection {
+
     public static void selectAccount(User user) {
         while (true) {
             List<Account> accounts = AccountService.getAccounts(user);
@@ -39,6 +40,7 @@ public class AccountSelection {
             }
 
             MainMenu.mainMenu(accounts.get(accountSelected - 1));
+
         }
 
     }
