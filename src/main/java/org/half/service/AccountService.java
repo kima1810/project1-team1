@@ -5,14 +5,13 @@ import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
 import org.half.security.PasswordService;
-import org.half.service.TransactionHistoryService;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
-    public static boolean createAccount(User user, int pin, AccountType accountType) {
+    public static long createAccount(User user, int pin, AccountType accountType) {
         if (pin > 9999) {
             throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
         }
@@ -35,10 +34,10 @@ public class AccountService {
                 continue;
             }
 
-            return true;
+            return accountNumber;
         }
 
-        return false;
+        return -1;
     }
 
     public static List<Account> getAccounts(User user) {

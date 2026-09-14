@@ -33,8 +33,10 @@ public class AccountCreation {
                 pinConfirmation = promptUserForPIN();
             }
 
+            long accountNumber;
             try {
-                if (!AccountService.createAccount(user, 99999, accountType)) {
+                accountNumber = AccountService.createAccount(user, pin, accountType);
+                if (accountNumber == -1) {
                     System.out.println("Account creation failed. Please try again...");
                     continue;
                 }
@@ -43,6 +45,12 @@ public class AccountCreation {
                 continue;
             }
 
+            System.out.println("Account successfully created!");
+            System.out.println("Please note the account number for your information:");
+            System.out.println(accountNumber);
+
+            System.out.println("\nPress enter to continue...");
+            BankScanner.freeze();
             break;
         }
     }
