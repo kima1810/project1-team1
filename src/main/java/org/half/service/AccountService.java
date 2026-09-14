@@ -5,7 +5,7 @@ import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
 import org.half.security.PasswordService;
-import org.half.view.TransactionHistory;
+import org.half.service.TransactionHistoryService;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -42,11 +42,12 @@ public class AccountService {
 
         
         sourceAccount.setBalance(sourceAccount.getBalance() - amount);
-        TransactionHistory.addTransaction(
+        //
+        TransactionHistoryService.attemptAddTransfer(
                 "Transfer",
                 amount,
-                sourceAccount.getBalance(),
-                String.valueOf(destinationAccountNumber)
+                sourceAccount.getAccountNumber(),
+                destinationAccountNumber
         );
         return true;
     }
@@ -59,7 +60,7 @@ public class AccountService {
         //Update current instance of Balance (balance stay updated throughout instance)
         account.setBalance(NewBalance);
         //Now the transaction will be added
-        TransactionHistory.addTransaction("Deposit", amount, account.getBalance(), "N/A");
+        TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
 
     }
 
@@ -71,6 +72,6 @@ public class AccountService {
         //Update current instance of Balance (balance stay updated throughout instance)
         account.setBalance(NewBalance);
         //Now the transaction will be added
-        TransactionHistory.addTransaction("Withdraw", amount, account.getBalance(), "N/A");
+        TransactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
     }
 }

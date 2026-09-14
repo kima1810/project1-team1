@@ -87,17 +87,21 @@ public class AccountRepository {
                 SET balance = balance + ?
                 WHERE accountNumber = ?;
                 """;
+        //I just commented out this code here because it actually gets ran twice, once here and once in the service layer
+        //since the service layer only returns true if this repository function runs smoothly, I figured it would make
+        //the most sense to only have the transactionHistory logic go in the service
+        /*
         String historyQuery = """
                 INSERT INTO TransactionHistory
                     (type, amount, originAccountNumber, destinationAccountNumber)
                 VALUES ('Transfer', ?, ?, ?);
                 """;
-
+        */
         try (Connection connection = ConnectionFactory.getManualCommitConnection()) {
             try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery);
                  PreparedStatement creditStatement = connection.prepareStatement(creditQuery);
-                 PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
-
+                 //PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
+            ){
                 debitStatement.setDouble(1, amount);
                 debitStatement.setLong(2, sourceAccount.getAccountNumber());
                 debitStatement.setDouble(3, amount);
@@ -113,10 +117,12 @@ public class AccountRepository {
                     return false;
                 }
 
+                /*
                 historyStatement.setDouble(1, amount);
                 historyStatement.setLong(2, sourceAccount.getAccountNumber());
                 historyStatement.setLong(3, destinationAccountNumber);
                 historyStatement.executeUpdate();
+                */
 
                 connection.commit();
                 return true;
