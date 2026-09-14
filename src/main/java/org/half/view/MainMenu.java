@@ -37,7 +37,7 @@ public class MainMenu {
                     TransactionHistory.printTransactions();
                     break;
                 case 5:
-                    Transfer.transfer();
+                    Transfer.transfer(activeAccount);
                     break;
                 case 0:
                     break mainMenu;
