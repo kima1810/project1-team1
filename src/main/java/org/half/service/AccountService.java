@@ -24,6 +24,33 @@ public class AccountService {
         return AccountRepository.getAllAccounts(user);
     }
 
+    public static boolean accountExists(long accountNumber) {
+        return AccountRepository.accountExists(accountNumber);
+    }
+
+    public static boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
+        if (!Double.isFinite(amount)
+                || amount <= 0
+                || amount > sourceAccount.getBalance()
+                || sourceAccount.getAccountNumber() == destinationAccountNumber) {
+            return false;
+        }
+
+        if (!AccountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+            return false;
+        }
+
+        
+        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
+        TransactionHistory.addTransaction(
+                "Transfer",
+                amount,
+                sourceAccount.getBalance(),
+                String.valueOf(destinationAccountNumber)
+        );
+        return true;
+    }
+
     public static void Deposit_Request(Account account, double amount) {
         //Create new Balance
         double NewBalance = account.getBalance() + amount;
