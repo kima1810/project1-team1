@@ -9,13 +9,13 @@ public class MainMenu {
     public static void mainMenu(Account activeAccount) {
         mainMenu:
         while (true) {
-            System.out.println("\n" +
+            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
                     "┌────────────────────────────────┐\n" +
                     "│  Main Menu                     │\n" +
                     "└────────────────────────────────┘\n" +
                     ANSI.RESET
             );
-            System.out.print(ANSI.GREEN);
+            System.out.print(ANSI.rgb(100, 255, 100));
             System.out.println("[1] View balance");
             System.out.println("[2] Withdraw");
             System.out.println("[3] Deposit");
@@ -55,7 +55,8 @@ public class MainMenu {
         int optionSelected;
         while (true) {
             try {
-                optionSelected = BankScanner.getInt();
+                String userInput = BankScanner.getString().trim();
+                optionSelected = Integer.parseInt(userInput);
                 break;
             } catch (NumberFormatException e) {
                 System.out.println("Not a number. Please try again...");

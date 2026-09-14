@@ -3,13 +3,19 @@ package org.half.view;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.service.AccountService;
+import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 
 public class AccountCreation {
     public static void createAccount(User user) {
-        System.out.println("Let's create your account...");
+        System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
+                "Let's create your account..." +
+                ANSI.RESET);
         while (true) {
-            System.out.println("Choose account type: CHECKING or SAVINGS");
+            System.out.println("Choose account type: " +
+                    ANSI.rgb(100, 255, 100) + "CHECKING" +
+                    ANSI.RESET + " or " +
+                    ANSI.rgb(100, 255, 100) + "SAVINGS" + ANSI.RESET);
 
             AccountType accountType;
             while (true) {
@@ -45,11 +51,13 @@ public class AccountCreation {
                 continue;
             }
 
-            System.out.println("Account successfully created!");
+            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
+                    "Account successfully created!" +
+                    ANSI.RESET);
             System.out.println("Please note the account number for your information:");
-            System.out.println(accountNumber);
+            System.out.println(ANSI.MAGENTA + accountNumber + ANSI.RESET);
 
-            System.out.println("\nPress enter to continue...");
+            System.out.print(ANSI.rgb(100, 255, 100) + "\nPress enter to continue..." + ANSI.RESET);
             BankScanner.freeze();
             break;
         }
