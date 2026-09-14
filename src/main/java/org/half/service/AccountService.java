@@ -7,21 +7,47 @@ import org.half.repository.AccountRepository;
 import org.half.security.PasswordService;
 import org.half.service.TransactionHistoryService;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
-    public static void createAccount(User user, int pin, AccountType accountType) {
-        long accountNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
+    public static boolean createAccount(User user, int pin, AccountType accountType) {
+        if (pin > 9999) {
+            throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
+        }
         String pinHash = PasswordService.hashPassword(String.valueOf(pin));
-        Account account = new Account(user, accountNumber, pinHash, accountType, 0.00);
 
-        AccountRepository.addAccount(account);
+        for (int i = 0; i < 10; i++) {
+            long accountNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
 
+            Account account = new Account(user, accountNumber, pinHash, accountType, 0.00);
+
+            try {
+                AccountRepository.addAccount(account);
+            } catch (SQLException e) {
+                String message = e.getMessage();
+                if (message != null && message.contains("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
+                    System.out.println("[WARN - Custom] Account number already in use. Generating a new one...");
+                } else {
+                    System.out.println(message);
+                }
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public static List<Account> getAccounts(User user) {
-        return AccountRepository.getAllAccounts(user);
+        try {
+            return AccountRepository.getAllAccounts(user);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 
     public static boolean accountExists(long accountNumber) {
