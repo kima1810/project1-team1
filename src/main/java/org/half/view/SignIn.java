@@ -1,12 +1,27 @@
 package org.half.view;
 
 import org.half.repository.UserRepository;
+import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.half.model.User;
 import org.half.security.PasswordService;
 
 public class SignIn {
     public static void signIn(){
+        System.out.println(ANSI.rgb(0, 155, 0) +
+                " /$$$$$$$$ /$$  /$$$$$$   /$$                     /$$ /$$$$$$$   /$$$$$$        /$$$$$$$                      /$$      \n" +
+                "| $$_____/|__/ /$$__  $$ | $$                    /$$/| $$____/  /$$$_  $$      | $$__  $$                    | $$      \n" +
+                "| $$       /$$| $$  \\__//$$$$$$   /$$   /$$     /$$/ | $$      | $$$$\\ $$      | $$  \\ $$  /$$$$$$  /$$$$$$$ | $$   /$$\n" +
+                "| $$$$$   | $$| $$$$   |_  $$_/  | $$  | $$    /$$/  | $$$$$$$ | $$ $$ $$      | $$$$$$$  |____  $$| $$__  $$| $$  /$$/\n" +
+                "| $$__/   | $$| $$_/     | $$    | $$  | $$   /$$/   |_____  $$| $$\\ $$$$      | $$__  $$  /$$$$$$$| $$  \\ $$| $$$$$$/ \n" +
+                "| $$      | $$| $$       | $$ /$$| $$  | $$  /$$/     /$$  \\ $$| $$ \\ $$$      | $$  \\ $$ /$$__  $$| $$  | $$| $$_  $$ \n" +
+                "| $$      | $$| $$       |  $$$$/|  $$$$$$$ /$$/     |  $$$$$$/|  $$$$$$/      | $$$$$$$/|  $$$$$$$| $$  | $$| $$ \\  $$\n" +
+                "|__/      |__/|__/        \\___/   \\____  $$|__/       \\______/  \\______/       |_______/  \\_______/|__/  |__/|__/  \\__/\n" +
+                "                                  /$$  | $$                                                                            \n" +
+                "                                 |  $$$$$$/                                                                            \n" +
+                "                                  \\______/                                                                             " +
+                ANSI.RESET);
+
         while(true){
             System.out.println("Welcome to Bank 50!");
             System.out.println("Are you a member of our Bank? Yes or No");
