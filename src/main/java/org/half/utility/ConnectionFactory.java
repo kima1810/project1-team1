@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class ConnectionFactory {
-    private static final String url = System.getenv("DATABASE_URL");
+    //private static final String url = System.getenv("DATABASE_URL");
+    private static final String url =
+            "jdbc:sqlite:C:/Users/Gavin Garcia/OneDrive/Pictures/Documents/databaseForBank/databaseForBank";
+
 
     public static Connection getAutoCommitConnection() {
         try {

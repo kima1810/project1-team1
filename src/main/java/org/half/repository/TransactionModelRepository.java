@@ -14,7 +14,7 @@ import java.sql.*;
 public class TransactionModelRepository {
     public static List<TransactionModel> printOutTransactions(long id){
         String query = "SELECT transactionId, dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
-                "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?;";
+                "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
 
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)
