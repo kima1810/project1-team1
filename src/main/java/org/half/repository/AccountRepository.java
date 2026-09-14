@@ -59,4 +59,20 @@ public class AccountRepository {
 
         return null;
     }
+
+    public static void Update_Balance(Account account, double new_amount) {
+        String query = "UPDATE Account SET balance=? WHERE accountNumber=?;";
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Set values
+            statement.setDouble(1, new_amount);
+            statement.setLong(2, account.getAccountNumber());
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
