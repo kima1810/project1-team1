@@ -23,7 +23,7 @@ public class AccountSelection {
 
             for (int i = 1; i <= accounts.size(); i++) {
                 Account account = accounts.get(i - 1);
-                System.out.println(i + ". " + account.getAccountType() + " ****" + (account.getAccountNumber() % 10000));
+                System.out.printf(i + ". " + account.getAccountType() + " ****%04d%n",(account.getAccountNumber() % 10000));
             }
 
             System.out.println("Or input -1 to create a new account.");
