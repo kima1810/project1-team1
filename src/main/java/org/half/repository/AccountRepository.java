@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountRepository {
-    public static boolean addAccount(Account account) {
+    public static void addAccount(Account account) throws SQLException {
         String query = "INSERT INTO Account VALUES (?,?,?,?,?);";
 
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
@@ -24,13 +24,7 @@ public class AccountRepository {
             statement.setString(5, account.getUser().getUsername());
 
             statement.executeUpdate();
-            return true;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-
-        return false;
     }
 
     public static List<Account> getAllAccounts(User user) {
