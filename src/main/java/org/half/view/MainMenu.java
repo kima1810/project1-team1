@@ -34,10 +34,10 @@ public class MainMenu {
                     Deposit.Deposit_View(activeAccount);
                     break;
                 case 4:
-                    TransactionHistory.printTransactions();
+                    TransactionHistory.displayTransactions(activeAccount);
                     break;
                 case 5:
-                    Transfer.transfer();
+                    Transfer.transfer(activeAccount);
                     break;
                 case 0:
                     break mainMenu;

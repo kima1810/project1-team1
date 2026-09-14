@@ -8,6 +8,7 @@ import org.half.utility.BankScanner;
 import java.util.List;
 
 public class AccountSelection {
+
     public static void selectAccount(User user) {
         while (true) {
             List<Account> accounts = AccountService.getAccounts(user);
@@ -23,7 +24,7 @@ public class AccountSelection {
 
             for (int i = 1; i <= accounts.size(); i++) {
                 Account account = accounts.get(i - 1);
-                System.out.println(i + ". " + account.getAccountType() + " ****" + (account.getAccountNumber() % 10000));
+                System.out.printf(i + ". " + account.getAccountType() + " ****%04d%n",(account.getAccountNumber() % 10000));
             }
 
             System.out.println("Or input -1 to create a new account.");
@@ -39,6 +40,7 @@ public class AccountSelection {
             }
 
             MainMenu.mainMenu(accounts.get(accountSelected - 1));
+
         }
 
     }

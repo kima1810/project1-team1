@@ -1,12 +1,11 @@
 package org.half.service;
 
-import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
 import org.half.security.PasswordService;
-import org.half.view.TransactionHistory;
+import org.half.service.TransactionHistoryService;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -25,38 +24,54 @@ public class AccountService {
         return AccountRepository.getAllAccounts(user);
     }
 
-    public static void Deposit_Request(Account account, double amount) throws IllegalArgumentException {
-        if (account == null) {
-            throw new IllegalArgumentException("Error: No account found.");
-        }
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Error: Deposit amount must be greater than zero.");
-        }
-
-        double NewBalance = account.getBalance() + amount;
-
-        //Update Database,local variable, and Transaction History balance value
-        AccountRepository.Update_Balance(account, NewBalance);
-        account.setBalance(NewBalance);
-        TransactionHistory.addTransaction("Deposit", amount, account.getBalance(), "N/A");
+    public static boolean accountExists(long accountNumber) {
+        return AccountRepository.accountExists(accountNumber);
     }
 
-    public static void Withdraw_Request(Account account, double amount) throws IllegalArgumentException, InsufficientFundsException {
-        if (account == null) {
-            throw new IllegalArgumentException("Error: No account found.");
-        }
-        if (amount <= 0) {
-            throw new IllegalArgumentException("Error: Withdrawal amount must be greater than zero.");
-        }
-        if (amount > account.getBalance()) {
-            throw new InsufficientFundsException("Error: Insufficient funds. Your current balance is $%.2f\n" + account.getBalance());
+    public static boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
+        if (!Double.isFinite(amount)
+                || amount <= 0
+                || amount > sourceAccount.getBalance()
+                || sourceAccount.getAccountNumber() == destinationAccountNumber) {
+            return false;
         }
 
-        double NewBalance = account.getBalance() - amount;
+        if (!AccountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+            return false;
+        }
 
-        //Update Database,local variable, and Transaction History balance value
+        
+        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
+        //
+        TransactionHistoryService.attemptAddTransfer(
+                "Transfer",
+                amount,
+                sourceAccount.getAccountNumber(),
+                destinationAccountNumber
+        );
+        return true;
+    }
+
+    public static void Deposit_Request(Account account, double amount) {
+        //Create new Balance
+        double NewBalance = account.getBalance() + amount;
+        //Update Balance column in DataBase
         AccountRepository.Update_Balance(account, NewBalance);
+        //Update current instance of Balance (balance stay updated throughout instance)
         account.setBalance(NewBalance);
-        TransactionHistory.addTransaction("Withdraw", amount, account.getBalance(), "N/A");
+        //Now the transaction will be added
+        TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
+
+    }
+
+    public static void Withdraw_Request(Account account, double amount) {
+        //Create new Balance
+        double NewBalance = account.getBalance() - amount;
+        //Update Balance column in DataBase
+        AccountRepository.Update_Balance(account, NewBalance);
+        //Update current instance of Balance (balance stay updated throughout instance)
+        account.setBalance(NewBalance);
+        //Now the transaction will be added
+        TransactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
     }
 }
