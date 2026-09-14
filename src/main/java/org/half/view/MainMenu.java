@@ -25,19 +25,19 @@ public class MainMenu {
 
             switch (userInput) {
                 case 1:
-                    CheckBalance.showBalance();
+                    CheckBalance.showBalance(activeAccount);
                     break;
                 case 2:
-                    Withdraw.Withdraw_Request();
+                    Withdraw.Withdraw_View(activeAccount);
                     break;
                 case 3:
-                    Deposit.Deposit_Request();
+                    Deposit.Deposit_View(activeAccount);
                     break;
                 case 4:
                     TransactionHistory.printTransactions();
                     break;
                 case 5:
-                    Transfer.transfer();
+                    Transfer.transfer(activeAccount);
                     break;
                 case 0:
                     break mainMenu;

@@ -1,19 +1,84 @@
 package org.half.view;
 
+import org.half.model.Account;
+import org.half.service.AccountService;
 import org.half.utility.BankScanner;
 
 public class Transfer {
-    public static void transfer() {
-        System.out.print("account to transfer from: ");
-        String fromAccount = BankScanner.getString();
+    public static void transfer(Account sourceAccount) {
+        System.out.printf("Current balance: $%.2f%n", sourceAccount.getBalance());
+        System.out.print("Destination account number (or 0 to cancel): ");
+        String destinationInput = BankScanner.getString();
 
-        System.out.print("account to transfer to: ");
-        String toAccount = BankScanner.getString();
+        if (destinationInput.equals("0")) {
+            return;
+        }
 
-        System.out.print("amount to transfer: ");
-        String amount = BankScanner.getString();
+        long destinationAccountNumber;
+        try {
+            destinationAccountNumber = Long.parseLong(destinationInput);
+        } catch (NumberFormatException exception) {
+            System.out.println("Account number destination is invalid.");
+            BankScanner.freeze();
+            return;
+        }
 
-        System.out.println("Transfer initiated from " + fromAccount + " to " + toAccount + " for amount " + amount);
+        if (destinationAccountNumber == sourceAccount.getAccountNumber()) {
+            System.out.println("You can't transfer money to the same account.");
+            BankScanner.freeze();
+            return;
+        }
+
+        if (!AccountService.accountExists(destinationAccountNumber)) {
+            System.out.println("Destination account not found.");
+            BankScanner.freeze();
+            return;
+        }
+
+        System.out.print("Amount to transfer: $");
+        double amount;
+        try {
+            amount = Double.parseDouble(BankScanner.getString());
+        } catch (NumberFormatException exception) {
+            System.out.println("Invalid transfer amount.");
+            BankScanner.freeze();
+            return;
+        }
+
+        if (!Double.isFinite(amount) || amount <= 0) {
+            System.out.println("Transfer amount must be greater than zero.");
+            BankScanner.freeze();
+            return;
+        }
+
+        if (amount > sourceAccount.getBalance()) {
+            System.out.println("Insufficient funds.");
+            BankScanner.freeze();
+            return;
+        }
+
+        System.out.printf(
+                "Transfer $%.2f to account ending in %04d? (Yes/No) ",
+                amount,
+                destinationAccountNumber % 10000
+        );
+        String confirmation = BankScanner.getString();
+
+        if (!confirmation.equalsIgnoreCase("yes")) {
+            System.out.println("Transfer cancelled.");
+            BankScanner.freeze();
+            return;
+        }
+
+        if (AccountService.transfer(sourceAccount, destinationAccountNumber, amount)) {
+            System.out.printf(
+                    "Transfer successful. Your new balance is $%.2f%n",
+                    sourceAccount.getBalance()
+            );
+        } else {
+            System.out.println("Transfer failed. Your balance was not changed.");
+        }
+
         BankScanner.freeze();
     }
 }

@@ -11,7 +11,7 @@ public class AccountCreation {
         System.out.println("Choose account type: CHECKING or SAVINGS");
         String accountTypeInput = BankScanner.getString();
 
-        AccountType accountType = AccountType.valueOf(accountTypeInput);
+        AccountType accountType = AccountType.valueOf(accountTypeInput.toUpperCase());
 
         System.out.println("Create a 4-digit PIN for your account:");
         int pinInput = BankScanner.getInt();
