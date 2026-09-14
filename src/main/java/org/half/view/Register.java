@@ -4,6 +4,8 @@ import org.half.utility.BankScanner;
 import org.half.repository.UserRepository;
 import org.half.model.User;
 import org.half.security.PasswordService;
+import org.half.service.UserService;
+import org.half.view.AccountCreation;
 
 public class Register {
     /*
@@ -59,9 +61,7 @@ public class Register {
         // Username
         System.out.print("Username: ");
         String username = BankScanner.getString();
-        while (username.length() < 5 || username.length() > 50 
-        /*|| UserRepository.getUser(username) != null*/
-        ) {
+        while (username.length() < 5 || username.length() > 50 || UserRepository.getUser(username) != null) {
             if (username.length() < 5 || username.length() > 50) {
                 System.out.println("Username must be between 5 and 50 characters.");
             } else {
@@ -92,7 +92,10 @@ public class Register {
         
         // Add user to repository, confirmation, and redirect to SignIn
         User user = UserService.createUser(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
-        UserRepository.addUser(user);
+        if (user == null) {
+            System.out.println("Registration failed. Please try again.");
+            return;
+        }
 
         AccountCreation.createAccount(user);
 

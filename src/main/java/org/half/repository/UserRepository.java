@@ -2,6 +2,7 @@ package org.half.repository;
 
 import org.half.model.User;
 import org.half.utility.ConnectionFactory;
+import org.half.exceptions.UserAlreadyExists;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,7 +10,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserRepository {
-    public static void addUser(User user) {
+    public static void addUser(User user) throws UserAlreadyExists {
+        if (getUser(user.getUsername()) != null) {
+            throw new UserAlreadyExists("Username '" + user.getUsername() + "' is already taken.");
+        }
+        
         String query = "INSERT INTO User (firstName, lastName, email, phoneNumber, username, passwordHash) VALUES (?, ?, ?, ?, ?, ?)";
         try (
             Connection connection = ConnectionFactory.getAutoCommitConnection();

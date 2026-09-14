@@ -24,6 +24,7 @@ public class AccountRepository {
             statement.setString(5, account.getUser().getUsername());
 
             statement.executeUpdate();
+            return true;
 
         } catch (SQLException e) {
             e.printStackTrace();
