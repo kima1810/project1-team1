@@ -12,11 +12,19 @@ import org.half.utility.ANSI;
 public class TransactionHistoryService {
     public static void attemptPrintOutTransactions(Account chosenAccount){
         List<TransactionModel> transactionList = TransactionModelRepository.printOutTransactions(chosenAccount.getAccountNumber());
+
         for(TransactionModel transactions : transactionList){
-            System.out.println(ANSI.MAGENTA + ANSI.HIGH_INTENSITY + transactions.getDateTime() + "  " + ANSI.CYAN + ANSI.HIGH_INTENSITY + transactions.getType()
+            System.out.printf(ANSI.MAGENTA + ANSI.ITALIC + "%-20s" + ANSI.CYAN + ANSI.ITALIC + " %-10s" +
+                    ANSI.YELLOW + ANSI.ITALIC + "$%-14.2f" + ANSI.RED + ANSI.ITALIC + "%-20s"
+                    + ANSI.GREEN + ANSI.ITALIC + "%-20s%n", transactions.getDateTime(), transactions.getType(),
+                    transactions.getAmount(), transactions.getOriginAccountId(), transactions.getDestinationAccountId());
+            /*
+            System.out.println(ANSI.MAGENTA + ANSI.HIGH_INTENSITY +  + "  " + ANSI.CYAN + ANSI.HIGH_INTENSITY + transactions.getType()
                     + "  " + ANSI.YELLOW + ANSI.HIGH_INTENSITY + String.format("$%.2f",transactions.getAmount()) + "  "
                     + ANSI.RED + ANSI.HIGH_INTENSITY + transactions.getOriginAccountId() + "  "
                     + ANSI.GREEN + ANSI.HIGH_INTENSITY + transactions.getDestinationAccountId());
+
+             */
         }
     }
 

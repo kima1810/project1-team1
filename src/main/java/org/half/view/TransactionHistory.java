@@ -8,9 +8,9 @@ import org.half.utility.ANSI;
 public class TransactionHistory {
     public static void displayTransactions(Account chosenAccount){
         System.out.println("Here is your list of all of your past transactions:");
-        System.out.println(ANSI.MAGENTA + ANSI.ITALIC + "Date " + ANSI.CYAN + ANSI.ITALIC + " Type " +
-                ANSI.YELLOW + ANSI.ITALIC + " Amount " + ANSI.RED + ANSI.ITALIC + " Origin account ID "
-                + ANSI.GREEN + ANSI.ITALIC + " Destination account ID");
+        System.out.printf(ANSI.MAGENTA + ANSI.ITALIC + "%-20s" + ANSI.CYAN + ANSI.ITALIC + " %-10s" +
+                ANSI.YELLOW + ANSI.ITALIC + "%-15s" + ANSI.RED + ANSI.ITALIC + "%-20s"
+                + ANSI.GREEN + ANSI.ITALIC + "%-20s%n", "Date", "Type", "Amount", "Origin account ID", "Destination account ID");
         //run the service method to display the transactions
         TransactionHistoryService.attemptPrintOutTransactions(chosenAccount);
         BankScanner.freeze();
