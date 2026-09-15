@@ -9,19 +9,25 @@ public class MainMenu {
     public static void mainMenu(Account activeAccount) {
         mainMenu:
         while (true) {
-            System.out.println(ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "Welcome, " +
-                    ANSI.CYAN + ANSI.ITALIC + activeAccount.getUser().getUsername() + ANSI.RESET +
-                    ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "!" + ANSI.RESET);
-            System.out.print(ANSI.YELLOW);
-            System.out.println("1. View balance");
-            System.out.println("2. Withdraw");
-            System.out.println("3. Deposit");
-            System.out.println("4. Transaction history");
-            System.out.println("5. Transfer money");
-            System.out.println(ANSI.rgb(255,100,100) + "0. Logout");
+            System.out.println("\n" +
+                    "┌────────────────────────────────┐\n" +
+                    "│  Main Menu                     │\n" +
+                    "└────────────────────────────────┘\n" +
+                    ANSI.RESET
+            );
+            System.out.print(ANSI.GREEN);
+            System.out.println("[1] View balance");
+            System.out.println("[2] Withdraw");
+            System.out.println("[3] Deposit");
+            System.out.println("[4] Transaction history");
+            System.out.println("[5] Transfer money");
+            System.out.println(ANSI.rgb(255,100,100) + "[0] Logout");
             System.out.print(ANSI.RESET);
 
-            int userInput = BankScanner.getInt();
+            System.out.println("\n──────────────────────────────────");
+
+            System.out.print("Select an option: ");
+            int userInput = promptUserSelection();
 
             switch (userInput) {
                 case 1:
@@ -43,5 +49,20 @@ public class MainMenu {
                     break mainMenu;
             }
         }
+    }
+
+    private static int promptUserSelection () {
+        int optionSelected;
+        while (true) {
+            try {
+                optionSelected = BankScanner.getInt();
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Not a number. Please try again...");
+            }
+
+        }
+
+        return optionSelected;
     }
 }
