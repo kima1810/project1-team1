@@ -76,4 +76,31 @@ public class UserRepository {
         }
         return null;
     }
+
+    public static User getUserByEmail(String email) {
+        String query = "SELECT * FROM User WHERE email=?";
+        try (
+                Connection connection = ConnectionFactory.getAutoCommitConnection();
+                PreparedStatement statement = connection.prepareStatement(query)
+
+        ) {
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+            if(resultSet.next()){
+                return new User(
+                        resultSet.getString("firstName"),
+                        resultSet.getString("lastName"),
+                        resultSet.getString("email"),
+                        resultSet.getString("phoneNumber"),
+                        resultSet.getString("username"),
+                        resultSet.getString("passwordHash")
+                );
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
