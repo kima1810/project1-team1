@@ -211,6 +211,58 @@ public class RegisterTest {
         }
     }
 
+    // Email is already taken
+    @Test
+    void register_success_EmailAlreadyTaken() {
+        String firstName = "Alex";
+        String lastName = "Kim";
+        String takenEmail = "taken@example.com";
+        String email = "alex.kim@example.com";
+        String phoneNumber = "555-123-4567";
+        String username = "alexkim";
+        String password = "password123";
+        String passwordConfirmation = "password123";
+        String hashedPassword = "hashedPassword123";
+
+        User existingUser = mock(User.class);
+        User createdUser = mock(User.class);
+
+        try (
+                MockedStatic<BankScanner> scannerMock = Mockito.mockStatic(BankScanner.class);
+                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class);
+                MockedStatic<PasswordService> passwordServiceMock = Mockito.mockStatic(PasswordService.class);
+                MockedStatic<UserService> userServiceMock = Mockito.mockStatic(UserService.class);
+                MockedStatic<AccountCreation> accountCreationMock = Mockito.mockStatic(AccountCreation.class)
+        ) {
+            scannerMock.when(BankScanner::getString).thenReturn(
+                    firstName,
+                    lastName,
+                    takenEmail,
+                    email,
+                    phoneNumber,
+                    username,
+                    password,
+                    passwordConfirmation
+            );
+
+            userRepositoryMock.when(() -> UserRepository.getUserByEmail(takenEmail)).thenReturn(existingUser);
+            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+            userRepositoryMock.when(() -> UserRepository.getUser(username)).thenReturn(null);
+            passwordServiceMock.when(() -> PasswordService.hashPassword(password)).thenReturn(hashedPassword);
+            userServiceMock.when(() -> UserService.createUser(
+                    firstName, lastName, email, phoneNumber, username, hashedPassword
+            )).thenReturn(createdUser);
+
+            Register.register();
+
+            userServiceMock.verify(() -> UserService.createUser(
+                    eq(firstName), eq(lastName), eq(email), eq(phoneNumber), eq(username), eq(hashedPassword)
+            ), times(1));
+
+            accountCreationMock.verify(() -> AccountCreation.createAccount(createdUser), times(1));
+        }
+    }
+
     // Phone number contains invalid characters
     @Test
     void register_success_InvalidPhoneNumber() {

@@ -1,13 +1,15 @@
 package org.half.view;
-
 import org.half.utility.BankScanner;
 import org.half.repository.UserRepository;
 import org.half.model.User;
 import org.half.security.PasswordService;
 import org.half.service.UserService;
 import org.half.view.AccountCreation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Register {
+    private static final Logger log = LoggerFactory.getLogger(Register.class);
     /*
         - First Name
             - Must be 20 characters or fewer
@@ -16,9 +18,12 @@ public class Register {
         - Email
             - Confirm email
             - Must follow valid format
+            - Unique
         - Phone Number
             - Must follow valid format
         - Username
+            - Unique
+            - Must be between 5 and 50 characters
         - Password
             - 8 characters minimum
             - User must Confirm Password
@@ -29,26 +34,37 @@ public class Register {
         String firstName = BankScanner.getString();
         while (firstName.length() > 20) {
             System.out.println("First name must be 20 characters or fewer.");
+            log.warn("First name entered is too long: {}", firstName);
             System.out.print("First name: ");
             firstName = BankScanner.getString();
         }
+        log.info("User entered first name: {}", firstName);
 
         System.out.print("Last name: ");
         String lastName = BankScanner.getString();
         while (lastName.length() > 20) {
             System.out.println("Last name must be 20 characters or fewer.");
+            log.warn("Last name entered is too long: {}", lastName);
             System.out.print("Last name: ");
             lastName = BankScanner.getString();
         }
+        log.info("User entered last name: {}", lastName);
 
         // Email
         System.out.print("Email: ");
         String email = BankScanner.getString();
-        while (!isValidEmail(email)) {
-            System.out.println("Please enter a valid email address.");
+        while (!isValidEmail(email) || UserRepository.getUserByEmail(email) != null) {
+            if (!isValidEmail(email)) {
+                System.out.println("Please enter a valid email address.");
+                log.warn("Invalid email entered: {}", email);
+            } else {
+                System.out.println("An account with that email already exists.");
+                log.warn("Email already in use: {}", email);
+            }
             System.out.print("Email: ");
             email = BankScanner.getString();
         }
+        log.info("User entered email: {}", email);
 
         // Phone Number
         String phoneNumberTry;
@@ -56,6 +72,7 @@ public class Register {
             System.out.print("Phone Number: ");
             phoneNumberTry = BankScanner.getString();
         } while (!isValidPhoneNumber(phoneNumberTry));
+        log.info("User entered phone number: {}", phoneNumberTry);
         String phoneNumber = phoneNumberTry;
 
         // Username
@@ -64,12 +81,15 @@ public class Register {
         while (username.length() < 5 || username.length() > 50 || UserRepository.getUser(username) != null) {
             if (username.length() < 5 || username.length() > 50) {
                 System.out.println("Username must be between 5 and 50 characters.");
+                log.warn("Username entered is invalid: {}", username);
             } else {
                 System.out.println("That username is already taken.");
+                log.warn("Username already taken: {}", username);
             }
             System.out.print("Username: ");
             username = BankScanner.getString();
         }
+        log.info("User entered username: {}", username);
 
         // Password
         String password;
@@ -78,6 +98,7 @@ public class Register {
             password = BankScanner.getString();
             if(password.length() < 8) {
                 System.out.println("Password must be at least 8 characters long.");
+                log.warn("Password entered is too short");
             }
         } while (password.length() < 8);
 
@@ -87,19 +108,23 @@ public class Register {
             passwordConfirmation = BankScanner.getString();
             if(!passwordConfirmation.equals(password)) {
                 System.out.println("Passwords do not match. Please try again.");
+                log.warn("Password confirmation does not match the password");
             }
         } while (!passwordConfirmation.equals(password));
+        log.info("User successfully set password");
         
         // Add user to repository, confirmation, and redirect to SignIn
         User user = UserService.createUser(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
         if (user == null) {
             System.out.println("Registration failed. Please try again.");
+            log.error("User registration failed for username: {}", username);
             return;
         }
 
         AccountCreation.createAccount(user);
 
         System.out.println("Registration successful. Welcome to Fifty/50 Bank, " + firstName + "!");
+        log.info("User registration successful for user: {}", username);
     }
 
     /* --- Helper Methods --- */
@@ -110,6 +135,7 @@ public class Register {
     private static boolean isValidPhoneNumber(String phoneNumber) {
         if (!phoneNumber.matches("[0-9+()\\- ]+")) {
             System.out.println("Please enter a VALID phone number (digits, +, (), -, spaces only).");
+            log.warn("Invalid phone number entered: {}", phoneNumber);
             return false;
         }
         return true;
