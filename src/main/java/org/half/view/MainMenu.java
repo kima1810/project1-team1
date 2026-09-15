@@ -3,8 +3,11 @@ import org.half.model.Account;
 
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MainMenu {
+    private static final Logger log = LoggerFactory.getLogger(MainMenu.class);
 
     public static void mainMenu(Account activeAccount) {
         mainMenu:
@@ -60,6 +63,8 @@ public class MainMenu {
                 break;
             } catch (NumberFormatException e) {
                 System.out.println("Not a number. Please try again...");
+                log.warn("Not a number. Please try again...");
+                log.error("This should not be a error.");
             }
 
         }

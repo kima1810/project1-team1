@@ -5,8 +5,12 @@ import org.half.model.enums.AccountType;
 import org.half.service.AccountService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AccountCreation {
+    private static final Logger logger = LoggerFactory.getLogger(AccountCreation.class);
+
     public static void createAccount(User user) {
         System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
                 "Let's create your account..." +
@@ -54,6 +58,10 @@ public class AccountCreation {
             System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
                     "Account successfully created!" +
                     ANSI.RESET);
+
+
+            logger.info("Account created successfully.");
+
             System.out.println("Please note the account number for your information:");
             System.out.println(ANSI.MAGENTA + accountNumber + ANSI.RESET);
 
