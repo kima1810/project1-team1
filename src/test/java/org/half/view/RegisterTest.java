@@ -113,6 +113,55 @@ public class RegisterTest {
         }
     }
 
+    // First name is blank
+    @Test
+    void register_success_FirstNameBlank() {
+        String blankFirstName = "   ";
+        String firstName = "Alex";
+        String lastName = "Kim";
+        String email = "alex.kim@example.com";
+        String phoneNumber = "555-123-4567";
+        String username = "alexkim";
+        String password = "password123";
+        String passwordConfirmation = "password123";
+        String hashedPassword = "hashedPassword123";
+
+        User createdUser = mock(User.class);
+
+        try (
+                MockedStatic<BankScanner> scannerMock = Mockito.mockStatic(BankScanner.class);
+                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class);
+                MockedStatic<PasswordService> passwordServiceMock = Mockito.mockStatic(PasswordService.class);
+                MockedStatic<UserService> userServiceMock = Mockito.mockStatic(UserService.class);
+                MockedStatic<AccountCreation> accountCreationMock = Mockito.mockStatic(AccountCreation.class)
+        ) {
+            scannerMock.when(BankScanner::getString).thenReturn(
+                    blankFirstName,
+                    firstName,
+                    lastName,
+                    email,
+                    phoneNumber,
+                    username,
+                    password,
+                    passwordConfirmation
+            );
+
+            userRepositoryMock.when(() -> UserRepository.getUser(username)).thenReturn(null);
+            passwordServiceMock.when(() -> PasswordService.hashPassword(password)).thenReturn(hashedPassword);
+            userServiceMock.when(() -> UserService.createUser(
+                    firstName, lastName, email, phoneNumber, username, hashedPassword
+            )).thenReturn(createdUser);
+
+            Register.register();
+
+            userServiceMock.verify(() -> UserService.createUser(
+                    eq(firstName), eq(lastName), eq(email), eq(phoneNumber), eq(username), eq(hashedPassword)
+            ), times(1));
+
+            accountCreationMock.verify(() -> AccountCreation.createAccount(createdUser), times(1));
+        }
+    }
+
     // Last name is over 20 characters
     @Test
     void register_success_LastNameTooLong() {
@@ -138,6 +187,55 @@ public class RegisterTest {
             scannerMock.when(BankScanner::getString).thenReturn(
                     firstName,
                     invalidLastName,
+                    lastName,
+                    email,
+                    phoneNumber,
+                    username,
+                    password,
+                    passwordConfirmation
+            );
+
+            userRepositoryMock.when(() -> UserRepository.getUser(username)).thenReturn(null);
+            passwordServiceMock.when(() -> PasswordService.hashPassword(password)).thenReturn(hashedPassword);
+            userServiceMock.when(() -> UserService.createUser(
+                    firstName, lastName, email, phoneNumber, username, hashedPassword
+            )).thenReturn(createdUser);
+
+            Register.register();
+
+            userServiceMock.verify(() -> UserService.createUser(
+                    eq(firstName), eq(lastName), eq(email), eq(phoneNumber), eq(username), eq(hashedPassword)
+            ), times(1));
+
+            accountCreationMock.verify(() -> AccountCreation.createAccount(createdUser), times(1));
+        }
+    }
+
+    // Last name is blank
+    @Test
+    void register_success_LastNameBlank() {
+        String firstName = "Alex";
+        String blankLastName = "   ";
+        String lastName = "Kim";
+        String email = "alex.kim@example.com";
+        String phoneNumber = "555-123-4567";
+        String username = "alexkim";
+        String password = "password123";
+        String passwordConfirmation = "password123";
+        String hashedPassword = "hashedPassword123";
+
+        User createdUser = mock(User.class);
+
+        try (
+                MockedStatic<BankScanner> scannerMock = Mockito.mockStatic(BankScanner.class);
+                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class);
+                MockedStatic<PasswordService> passwordServiceMock = Mockito.mockStatic(PasswordService.class);
+                MockedStatic<UserService> userServiceMock = Mockito.mockStatic(UserService.class);
+                MockedStatic<AccountCreation> accountCreationMock = Mockito.mockStatic(AccountCreation.class)
+        ) {
+            scannerMock.when(BankScanner::getString).thenReturn(
+                    firstName,
+                    blankLastName,
                     lastName,
                     email,
                     phoneNumber,

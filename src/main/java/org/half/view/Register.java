@@ -32,9 +32,14 @@ public class Register {
         // Name
         System.out.print("First name: ");
         String firstName = BankScanner.getString();
-        while (firstName.length() > 20) {
-            System.out.println("First name must be 20 characters or fewer.");
-            log.warn("First name entered is too long: {}", firstName);
+        while (firstName.isBlank() || firstName.length() > 20) {
+            if (firstName.isBlank()) {
+                System.out.println("First name cannot be empty.");
+                log.warn("First name entered is blank");
+            } else {
+                System.out.println("First name must be 20 characters or fewer.");
+                log.warn("First name entered is too long: {}", firstName);
+            }
             System.out.print("First name: ");
             firstName = BankScanner.getString();
         }
@@ -42,9 +47,14 @@ public class Register {
 
         System.out.print("Last name: ");
         String lastName = BankScanner.getString();
-        while (lastName.length() > 20) {
-            System.out.println("Last name must be 20 characters or fewer.");
-            log.warn("Last name entered is too long: {}", lastName);
+        while (lastName.isBlank() || lastName.length() > 20) {
+            if (lastName.isBlank()) {
+                System.out.println("Last name cannot be empty.");
+                log.warn("Last name entered is blank");
+            } else {
+                System.out.println("Last name must be 20 characters or fewer.");
+                log.warn("Last name entered is too long: {}", lastName);
+            }
             System.out.print("Last name: ");
             lastName = BankScanner.getString();
         }
