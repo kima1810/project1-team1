@@ -50,7 +50,7 @@ public class SignIn {
 
                         System.out.println("Please enter your Password.");
                         String userPassword = BankScanner.getString();
-                        if(userName != null && userPassword != null) {
+                        if(!userName.isEmpty() && !userPassword.isEmpty()) {
                             User activeUser = SignInService.verifyUser(userName, userPassword);
                             if (activeUser != null) {
                                 System.out.println("Successfully Logged In to Your Account");
