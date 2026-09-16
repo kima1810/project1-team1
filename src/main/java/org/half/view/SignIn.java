@@ -32,8 +32,8 @@ public class SignIn {
             );
             System.out.print(ANSI.rgb(100, 255, 100));
             System.out.println("Are you a member of our Bank? Yes or No");
-            System.out.println("[1] Yes");
-            System.out.println("[2] No");
+            System.out.println("[1] Yes: Sign In");
+            System.out.println("[2] No: Create a New User Account");
             System.out.println(ANSI.rgb(255,100,100) + "[0] Exit");
             System.out.print(ANSI.RESET);
 
@@ -50,12 +50,13 @@ public class SignIn {
 
                         System.out.println("Please enter your Password.");
                         String userPassword = BankScanner.getString();
-
-                        User activeUser = SignInService.verifyUser(userName, userPassword);
-                        if (activeUser != null) {
-                            System.out.println("Successfully Logged In to Your Account");
-                            AccountSelection.selectAccount(activeUser);
-                            break;
+                        if(!userName.isEmpty() && !userPassword.isEmpty()) {
+                            User activeUser = SignInService.verifyUser(userName, userPassword);
+                            if (activeUser != null) {
+                                System.out.println("Successfully Logged In to Your Account");
+                                AccountSelection.selectAccount(activeUser);
+                                break;
+                            }
                         }
 
                         System.out.println("Invalid Credentials. Try again...");
