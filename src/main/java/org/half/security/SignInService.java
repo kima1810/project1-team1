@@ -1,4 +1,5 @@
 package org.half.security;
+
 import org.half.model.User;
 import org.half.repository.UserRepository;
 
