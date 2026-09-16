@@ -16,6 +16,7 @@ public class TransactionModelRepository {
         String query = "SELECT transactionId, dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
                 "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
 
+        List<TransactionModel> transactionList = new ArrayList<>();
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)
 
@@ -24,7 +25,6 @@ public class TransactionModelRepository {
             statement.setLong(2, id);
             ResultSet resultSet = statement.executeQuery();
 
-            List<TransactionModel> transactionList = new ArrayList<>();
             while(resultSet.next()) {
                 transactionList.add(new TransactionModel(
                     resultSet.getLong("transactionId"),
@@ -36,11 +36,10 @@ public class TransactionModelRepository {
                 ));
             }
 
-            return transactionList;
         }catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return transactionList;
     }
 
     public static boolean addDepositOrWithdrawal(TransactionModel transactionModel){
