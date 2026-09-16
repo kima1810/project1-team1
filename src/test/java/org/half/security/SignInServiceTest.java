@@ -12,6 +12,32 @@ import static org.mockito.Mockito.*;
 public class SignInServiceTest {
 
     @Test
+    void verifyUser_enteredEmptyUsername_shouldThrowException(){
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> SignInService.verifyUser("", "password")
+        );
+
+        assertEquals("Can Not Enter Empty Strings.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void verifyUser_enteredEmptyPassword_shouldThrowException(){
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> SignInService.verifyUser("UserAccount", "")
+        );
+
+        assertEquals("Can Not Enter Empty Strings.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
     void verifyUser_userDoesNotExist_returnsNull(){
         try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class)){
 
