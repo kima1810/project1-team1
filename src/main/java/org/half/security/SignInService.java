@@ -1,9 +1,13 @@
 package org.half.security;
+
 import org.half.model.User;
 import org.half.repository.UserRepository;
 
 public class SignInService {
     public static User verifyUser(String userName, String userPassword){
+        if(userName.isEmpty() || userPassword.isEmpty()) {
+            throw new IllegalArgumentException("Can Not Enter Empty Strings.");
+        }
         String dataBasePassword = UserRepository.getPasswordHash(userName);
 
         if (dataBasePassword != null) {
