@@ -1,7 +1,6 @@
 package org.half;
 
 import org.half.utility.BankScanner;
-import org.half.utility.PromptUserSelection;
 import org.half.view.SignIn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
