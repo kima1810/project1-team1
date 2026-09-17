@@ -5,7 +5,6 @@ import org.half.security.SignInService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.half.model.User;
-import org.half.utility.PromptUserSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,7 @@ public class SignIn {
             System.out.println("\n──────────────────────────────────");
 
             System.out.print("Select an option: ");
-            int userInput = PromptUserSelection.promptUserSelection();
+            int userInput = BankScanner.promptUserSelection();
 
             switch (userInput) {
                 case 1:
