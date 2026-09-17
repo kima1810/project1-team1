@@ -20,25 +20,29 @@ public class TransactionModelRepositoryTest {
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
 
+    //before any tests are ran, insert the test data into the database
     @BeforeAll
     static void initializeData() {
+        //I had to insert values into all three tables since the tables have foreign keys
+        //for inserting into the user table
         String userQuery = """
                 INSERT INTO User
                     (username, passwordHash, firstName, lastName, email, phoneNumber)
                 VALUES (?, ?, ?, ?, ?, ?);
                 """;
-
+        //for inserting into the account table
         String queryForAccount = """
                 INSERT INTO Account
                     (accountNumber, pinHash, accountType, balance, username)
                 VALUES (?, ?, ?, ?, ?);
                 """;
-
+        //for inserting into the transaction table
         String queryForTransactionHistory = """
                 INSERT INTO TransactionHistory
                     (transactionId, type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?,?);
                 """;
 
+        //insert the first user
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement userStatement = connection.prepareStatement(userQuery)) {
 
@@ -53,7 +57,7 @@ public class TransactionModelRepositoryTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //insert the second user
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement userStatement2 = connection.prepareStatement(userQuery)) {
 
@@ -68,7 +72,7 @@ public class TransactionModelRepositoryTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //insert the first account
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement accountStatement = connection.prepareStatement(queryForAccount)) {
 
@@ -82,7 +86,7 @@ public class TransactionModelRepositoryTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //insert the second account
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement accountStatement2 = connection.prepareStatement(queryForAccount)) {
 
@@ -96,7 +100,7 @@ public class TransactionModelRepositoryTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //insert the first transaction
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement transactionStatement = connection.prepareStatement(queryForTransactionHistory)) {
 
@@ -112,7 +116,7 @@ public class TransactionModelRepositoryTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //insert the second transaction
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement transactionStatement2 = connection.prepareStatement(queryForTransactionHistory)) {
 
@@ -130,45 +134,46 @@ public class TransactionModelRepositoryTest {
         }
     }
 
-
+    //check if printOutTransactions received an empty list
     @Test
     void printOutTransactionsWithNonExistentId(){
         assertTrue(TransactionModelRepository.printOutTransactions(nonExistentAccountNumber).isEmpty());
     }
 
+    //check printOutTransactions works with an existing id
     @Test
     void printOutTransactionsWithExistingId(){
         assertFalse(TransactionModelRepository.printOutTransactions(testAccountNumber).isEmpty());
     }
-
+    //check if addDepositOrWithdrawal returns false it a non-existent id
     @Test
     void addDepositOrWithdrawalWithNonExistentId(){
         long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
         TransactionModel transactionModel = new TransactionModel(transactionNumber, "Deposit", 100.00, nonExistentAccountNumber);
         assertFalse(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
-
+    //check if addDepositOrWithdrawal works with valid information
     @Test
     void addDepositOrWithdrawalWithExistentId(){
         long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
         TransactionModel transactionModel = new TransactionModel(transactionNumber, "Deposit", 100.00, testAccountNumber);
         assertTrue(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
-
+    //check if addTransfer returns false with a non-existent origin id
     @Test
     void addTransferWithNonExistentOriginId(){
         long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
         TransactionModel transactionModel = new TransactionModel(transactionNumber, "Transfer", 25.00, nonExistentAccountNumber, testAccountNumber2);
         assertFalse(TransactionModelRepository.addTransfer(transactionModel));
     }
-
+    //check if addTransfer returns false with a non-existent destination id
     @Test
     void addTransferWithNonExistentDestinationId(){
         long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
         TransactionModel transactionModel = new TransactionModel(transactionNumber, "Transfer", 25.00, testAccountNumber, nonExistentAccountNumber);
         assertFalse(TransactionModelRepository.addTransfer(transactionModel));
     }
-
+    //check if addTransfer works with valid information
     @Test
     void addTransferWithBothExistentIDs(){
         long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
@@ -176,7 +181,7 @@ public class TransactionModelRepositoryTest {
         assertTrue(TransactionModelRepository.addTransfer(transactionModel));
     }
 
-
+    //deletes all the test information that was placed into the database after every testcase has run
     @AfterAll
     static void cleanUp() throws SQLException {
 
@@ -195,6 +200,7 @@ public class TransactionModelRepositoryTest {
             WHERE originAccountNumber = ?;
             """;
 
+        //delete the users
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement transactionStatement = connection.prepareStatement(transactionQuery)) {
 
@@ -216,7 +222,7 @@ public class TransactionModelRepositoryTest {
         }catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //delete the accounts
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement accountStatement = connection.prepareStatement(accountQuery)) {
 
@@ -236,7 +242,7 @@ public class TransactionModelRepositoryTest {
         }catch (SQLException e) {
             e.printStackTrace();
         }
-
+        //delete the transactions
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement userStatement = connection.prepareStatement(userQuery)) {
 

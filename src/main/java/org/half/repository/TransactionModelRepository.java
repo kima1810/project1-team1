@@ -2,7 +2,10 @@ package org.half.repository;
 import org.half.model.Account;
 import org.half.model.TransactionModel;
 import org.half.model.enums.AccountType;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,19 +15,26 @@ import java.sql.*;
 
 
 public class TransactionModelRepository {
+    //logger
+    private static final Logger logger = LoggerFactory.getLogger(TransactionModelRepository.class);
+    //if items are found, it will return a list of the transactions
     public static List<TransactionModel> printOutTransactions(long id){
+        //create the query
         String query = "SELECT transactionId, dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
                 "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
 
+        //create the list container
         List<TransactionModel> transactionList = new ArrayList<>();
+        //check the connection
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)
 
         ) {
+            //check if a value's originAccountNumber or destinationAccountNumber match the imputed it
             statement.setLong(1, id);
             statement.setLong(2, id);
             ResultSet resultSet = statement.executeQuery();
-
+            //add it to the list
             while(resultSet.next()) {
                 transactionList.add(new TransactionModel(
                     resultSet.getLong("transactionId"),
@@ -38,47 +48,59 @@ public class TransactionModelRepository {
 
         }catch (SQLException e) {
             e.printStackTrace();
+            logger.error("Error with interacting with the database to check the transaction history");
+
         }
+        logger.info("History successfully retrieved, no issues with the database");
         return transactionList;
     }
-
+    //inserts a deposit or withdrawal into the table
     public static boolean addDepositOrWithdrawal(TransactionModel transactionModel){
+        //the query
         String query = "INSERT INTO TransactionHistory (transactionId, type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?,?);";
 
+        //test the connection
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            //add the attributes
             statement.setLong(1, transactionModel.getTransactionId());
             statement.setString(2, transactionModel.getType());
             statement.setDouble(3, transactionModel.getAmount());
             statement.setLong(4, transactionModel.getOriginAccountId());
             //sets the destination account to null
             statement.setNull(5, Types.INTEGER);
-
+            //run the query and add the transaction to the table
             statement.executeUpdate();
         }catch (SQLException e) {
             e.printStackTrace();
+            logger.error("Error with interacting with the database to add a deposit or withdrawal");
             return false;
         }
+        logger.info("deposit or withdrawal successfully added, no issues with the database");
         return true;
     }
 
     public static boolean addTransfer(TransactionModel transactionModel){
+        //the query
         String query = "INSERT INTO TransactionHistory (transactionId, type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?,?);";
-
+        //test the connection
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            //add the attributes
             statement.setLong(1, transactionModel.getTransactionId());
             statement.setString(2, transactionModel.getType());
             statement.setDouble(3, transactionModel.getAmount());
             statement.setLong(4, transactionModel.getOriginAccountId());
             //since this is a transfer, the value is set
             statement.setLong(5, transactionModel.getDestinationAccountId());
-
+            //run the query and add the transaction to the table
             statement.executeUpdate();
         }catch (SQLException e) {
             e.printStackTrace();
+            logger.error("Error with interacting with the database to run a transfer");
             return false;
         }
+        logger.info("Transfer successfully added, no issues with the database.");
         return true;
     }
 
