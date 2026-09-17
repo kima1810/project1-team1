@@ -40,10 +40,8 @@ public class TransactionHistoryService {
 
     //runs the repository method to create a deposit or withdrawal
     public static boolean attemptAddDepositOrWithdrawal(String type, double amount, long originAccountId){
-        //creates the transaction id
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
         //creates the transaction object
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, type, amount, originAccountId);
+        TransactionModel transactionModel = new TransactionModel(type, amount, originAccountId);
 
         //done to make sure that the transaction information is valid for this method
         if(transactionModel.getType().equals("Transfer")){
@@ -67,10 +65,8 @@ public class TransactionHistoryService {
 
     //runs the repository method to create a transfer
     public static boolean attemptAddTransfer(String type, double amount, long originAccountId, long destinationAccountId){
-        //creates the transaction id
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
         //creates the transaction object
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, type, amount, originAccountId, destinationAccountId);
+        TransactionModel transactionModel = new TransactionModel(type, amount, originAccountId, destinationAccountId);
 
         //done to make sure transaction information is valid
         if(transactionModel.getType().equals("Deposit") || transactionModel.getType().equals("Withdraw")){

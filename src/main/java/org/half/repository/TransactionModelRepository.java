@@ -20,7 +20,7 @@ public class TransactionModelRepository {
     //if items are found, it will return a list of the transactions
     public static List<TransactionModel> printOutTransactions(long id){
         //create the query
-        String query = "SELECT transactionId, dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
+        String query = "SELECT dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
                 "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
 
         //create the list container
@@ -37,7 +37,6 @@ public class TransactionModelRepository {
             //add it to the list
             while(resultSet.next()) {
                 transactionList.add(new TransactionModel(
-                    resultSet.getLong("transactionId"),
                     resultSet.getString("dateTime"),
                     resultSet.getString("type"),
                     resultSet.getDouble("amount"),
@@ -57,18 +56,17 @@ public class TransactionModelRepository {
     //inserts a deposit or withdrawal into the table
     public static boolean addDepositOrWithdrawal(TransactionModel transactionModel){
         //the query
-        String query = "INSERT INTO TransactionHistory (transactionId, type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?,?);";
+        String query = "INSERT INTO TransactionHistory (type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?);";
 
         //test the connection
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             //add the attributes
-            statement.setLong(1, transactionModel.getTransactionId());
-            statement.setString(2, transactionModel.getType());
-            statement.setDouble(3, transactionModel.getAmount());
-            statement.setLong(4, transactionModel.getOriginAccountId());
+            statement.setString(1, transactionModel.getType());
+            statement.setDouble(2, transactionModel.getAmount());
+            statement.setLong(3, transactionModel.getOriginAccountId());
             //sets the destination account to null
-            statement.setNull(5, Types.INTEGER);
+            statement.setNull(4, Types.INTEGER);
             //run the query and add the transaction to the table
             statement.executeUpdate();
         }catch (SQLException e) {
@@ -82,17 +80,16 @@ public class TransactionModelRepository {
 
     public static boolean addTransfer(TransactionModel transactionModel){
         //the query
-        String query = "INSERT INTO TransactionHistory (transactionId, type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?,?);";
+        String query = "INSERT INTO TransactionHistory (type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?);";
         //test the connection
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
             //add the attributes
-            statement.setLong(1, transactionModel.getTransactionId());
-            statement.setString(2, transactionModel.getType());
-            statement.setDouble(3, transactionModel.getAmount());
-            statement.setLong(4, transactionModel.getOriginAccountId());
+            statement.setString(1, transactionModel.getType());
+            statement.setDouble(2, transactionModel.getAmount());
+            statement.setLong(3, transactionModel.getOriginAccountId());
             //since this is a transfer, the value is set
-            statement.setLong(5, transactionModel.getDestinationAccountId());
+            statement.setLong(4, transactionModel.getDestinationAccountId());
             //run the query and add the transaction to the table
             statement.executeUpdate();
         }catch (SQLException e) {
