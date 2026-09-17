@@ -1,6 +1,7 @@
 package org.half.view;
 
 import org.half.service.AccountService;
+import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.half.model.Account;
 import org.half.repository.AccountRepository;
@@ -10,8 +11,8 @@ public class Deposit {
         boolean running = true;
 
         while (running) {
-            System.out.printf("Current Balance: $%.2f\n", currentAccount.getBalance());
-            System.out.print("Please enter the amount you would like to deposit or type 0 to go back to the main menu: ");
+            System.out.printf("Current Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
+            System.out.printf("Please enter the amount you would like to deposit or type %s0%s to go back to the main menu: ", ANSI.rgb(255, 0, 0), "\033[0m");
             double AmountDeposit = BankScanner.getDouble();
 
             // return to main menu
@@ -27,7 +28,7 @@ public class Deposit {
             }
 
             // Deposit Confirmation Check
-            System.out.print("Can you confirm that this is the amount you want to Deposit?: $" + AmountDeposit + " (Yes/No) ");
+            System.out.printf("Can you confirm that this is the amount you want to Deposit?: %s$%.2f%s (Yes/No) ", ANSI.rgb(0, 255, 0), AmountDeposit, "\033[0m");
             String Confirmation = BankScanner.getString();
 
             if (Confirmation.equalsIgnoreCase("Yes")) {

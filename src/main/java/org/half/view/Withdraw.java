@@ -3,6 +3,7 @@ package org.half.view;
 import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.service.AccountService;
+import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 
 public class Withdraw {
@@ -10,7 +11,7 @@ public class Withdraw {
         boolean running = true;
 
         while (running) {
-            System.out.printf("Current Balance: $%.2f\n", currentAccount.getBalance());
+            System.out.printf("Current Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
             System.out.print("Please enter the amount you would like to withdraw or type 0 to go back to the main menu: ");
             double AmountWithDrawn = BankScanner.getDouble();
 
