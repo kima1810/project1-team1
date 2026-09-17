@@ -5,6 +5,7 @@ import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.half.utility.PromptUserSelection;
 
 public class MainMenu {
     private static final Logger log = LoggerFactory.getLogger(MainMenu.class);
@@ -24,13 +25,13 @@ public class MainMenu {
             System.out.println("[3] Deposit");
             System.out.println("[4] Transaction history");
             System.out.println("[5] Transfer money");
-            System.out.println(ANSI.rgb(255,100,100) + "[0] Logout");
+            System.out.println(ANSI.rgb(255,100,100) + "[0] Chose Different Bank Account");
             System.out.print(ANSI.RESET);
 
             System.out.println("\n──────────────────────────────────");
 
             System.out.print("Select an option: ");
-            int userInput = promptUserSelection();
+            int userInput = PromptUserSelection.promptUserSelection();
 
             switch (userInput) {
                 case 1:
@@ -52,23 +53,5 @@ public class MainMenu {
                     break mainMenu;
             }
         }
-    }
-
-    private static int promptUserSelection () {
-        int optionSelected;
-        while (true) {
-            try {
-                String userInput = BankScanner.getString().trim();
-                optionSelected = Integer.parseInt(userInput);
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Not a number. Please try again...");
-                log.warn("Not a number. Please try again...");
-                log.error("This should not be a error.");
-            }
-
-        }
-
-        return optionSelected;
     }
 }

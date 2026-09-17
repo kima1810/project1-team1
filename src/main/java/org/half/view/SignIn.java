@@ -5,7 +5,7 @@ import org.half.security.SignInService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.half.model.User;
-import org.half.security.PasswordService;
+import org.half.utility.PromptUserSelection;
 
 public class SignIn {
     public static void signIn(){
@@ -40,7 +40,7 @@ public class SignIn {
             System.out.println("\n──────────────────────────────────");
 
             System.out.print("Select an option: ");
-            int userInput = promptUserSelection();
+            int userInput = PromptUserSelection.promptUserSelection();
 
             switch (userInput) {
                 case 1:
@@ -70,24 +70,6 @@ public class SignIn {
                 default:
                     System.out.println("Invalid Option");
             }
-
-
         }
-    }
-
-    private static int promptUserSelection () {
-        int optionSelected;
-        while (true) {
-            try {
-                String userInput = BankScanner.getString().trim();
-                optionSelected = Integer.parseInt(userInput);
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Not a number. Please try again...");
-            }
-
-        }
-
-        return optionSelected;
     }
 }
