@@ -157,3 +157,4 @@ buildNumber.properties
 
 /data/*
 !/data/*.sql
+/logs/
