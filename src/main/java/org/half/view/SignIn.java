@@ -1,11 +1,16 @@
 package org.half.view;
 
+import org.half.repository.UserRepository;
 import org.half.security.SignInService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.half.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SignIn {
+    private static final Logger log = LoggerFactory.getLogger(SignIn.class);
+
     public static void signIn(){
         System.out.println(ANSI.rgb(0, 255, 0) +
                 " /$$$$$$$$ /$$  /$$$$$$   /$$                     /$$ /$$$$$$$   /$$$$$$        /$$$$$$$                      /$$      \n" +
@@ -52,12 +57,14 @@ public class SignIn {
                             User activeUser = SignInService.verifyUser(userName, userPassword);
                             if (activeUser != null) {
                                 System.out.println("Successfully Logged In to Your Account");
+                                log.info("User logged in: userId={}", userName);
                                 AccountSelection.selectAccount(activeUser);
                                 break;
                             }
                         }
 
                         System.out.println("Invalid Credentials. Try again...");
+                        log.warn("Login failed: userId={}", userName);
                     }
                     break;
                 case 2:
@@ -67,6 +74,7 @@ public class SignIn {
                     break exitBank;
                 default:
                     System.out.println("Invalid Option");
+                    log.warn("Entered Invalid Sign In Menu Option");
             }
         }
     }
