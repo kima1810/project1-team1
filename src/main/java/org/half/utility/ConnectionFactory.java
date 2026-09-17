@@ -10,7 +10,6 @@ import java.sql.Statement;
 public class ConnectionFactory {
     private static final String url = System.getenv("DATABASE_URL");
 
-
     public static Connection getAutoCommitConnection() {
         try {
             Connection connection = DriverManager.getConnection(url);
