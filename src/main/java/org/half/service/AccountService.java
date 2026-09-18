@@ -15,9 +15,14 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
     private static final Logger log = LoggerFactory.getLogger(AccountService.class);
+    private final AccountRepository accountRepository;
+
+    public AccountService(AccountRepository accountRepository){
+        this.accountRepository =  accountRepository;
+    }
 
     // Create a new bank account and add it to database
-    public static long createAccount(User user, int pin, AccountType accountType) {
+    public long createAccount(User user, int pin, AccountType accountType) {
         // Check if PIN is more than 4 digits long
         if (pin > 9999) {
             // Invalid PIN
@@ -38,7 +43,7 @@ public class AccountService {
 
             try {
                 // Attempt to add new bank account
-                AccountRepository.addAccount(account);
+                accountRepository.addAccount(account);
             } catch (SQLException e) {
                 String message = e.getMessage();
                 if (message != null && message.contains("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
@@ -60,10 +65,10 @@ public class AccountService {
     }
 
     // Get all the bank accounts of a given user
-    public static List<Account> getAccounts(User user) {
+    public List<Account> getAccounts(User user) {
         try {
             // Attempt to get all the accounts of the user
-            return AccountRepository.getAllAccounts(user);
+            return accountRepository.getAllAccounts(user);
         } catch (SQLException e) {
             // Something went wrong
             log.error("Something went wrong: {}", e.getMessage());
@@ -71,11 +76,11 @@ public class AccountService {
         return null;
     }
 
-    public static boolean accountExists(long accountNumber) {
-        return AccountRepository.accountExists(accountNumber);
+    public boolean accountExists(long accountNumber) {
+        return accountRepository.accountExists(accountNumber);
     }
 
-    public static boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
+    public boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
         if (!Double.isFinite(amount)
                 || amount <= 0
                 || amount > sourceAccount.getBalance()
@@ -83,7 +88,7 @@ public class AccountService {
             return false;
         }
 
-        if (!AccountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+        if (!accountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
             return false;
         }
 
@@ -99,7 +104,7 @@ public class AccountService {
         return true;
     }
 
-    public static void Deposit_Request(Account account, double amount) {
+    public void Deposit_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
             log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
@@ -110,7 +115,7 @@ public class AccountService {
             //Create new Balance
             double NewBalance = account.getBalance() + amount;
             //Update Balance column in DataBase
-            AccountRepository.Update_Balance(account, NewBalance);
+            accountRepository.Update_Balance(account, NewBalance);
             //Update current instance of Balance (balance stay updated throughout instance)
             account.setBalance(NewBalance);
             //Now the transaction will be added
@@ -121,7 +126,7 @@ public class AccountService {
         }
     }
 
-    public static void Withdraw_Request(Account account, double amount) {
+    public void Withdraw_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
             log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
@@ -139,7 +144,7 @@ public class AccountService {
             double NewBalance = account.getBalance() - amount;
 
             // Update Balance column in DataBase
-            AccountRepository.Update_Balance(account, NewBalance);
+            accountRepository.Update_Balance(account, NewBalance);
 
             // Update current instance of Balance
             account.setBalance(NewBalance);

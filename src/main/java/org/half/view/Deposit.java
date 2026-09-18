@@ -7,6 +7,10 @@ import org.half.model.Account;
 import org.half.repository.AccountRepository;
 
 public class Deposit {
+    private static final AccountRepository accountRepository = new AccountRepository();
+
+    private static final AccountService accountService = new AccountService(accountRepository);
+
     public static void Deposit_View(Account currentAccount) {
         boolean running = true;
         System.out.printf("Current Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
@@ -27,7 +31,7 @@ public class Deposit {
             if (Confirmation.equalsIgnoreCase("Yes")) {
                 try {
                     // Attempt the transaction
-                    AccountService.Deposit_Request(currentAccount, AmountDeposit);
+                    accountService.Deposit_Request(currentAccount, AmountDeposit);
                     System.out.printf("Congrats! Your deposit was successful. Your new Balance is: %s$%.2f%s\n\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
                 } catch (IllegalArgumentException e) {
                     // Catch validation errors from the service

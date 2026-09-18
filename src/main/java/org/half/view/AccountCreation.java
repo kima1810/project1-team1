@@ -2,6 +2,7 @@ package org.half.view;
 
 import org.half.model.User;
 import org.half.model.enums.AccountType;
+import org.half.repository.AccountRepository;
 import org.half.service.AccountService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
@@ -12,6 +13,10 @@ import org.slf4j.LoggerFactory;
 public class AccountCreation {
     // Class specific Logger for logging
     private static final Logger log = LoggerFactory.getLogger(AccountCreation.class);
+
+    private static final AccountRepository accountRepository = new AccountRepository();
+
+    private static final AccountService accountService = new AccountService(accountRepository);
 
     // View for user to create a new account
     public static void createAccount(User user) {
@@ -69,7 +74,7 @@ public class AccountCreation {
             long accountNumber;
             try {
                 // Attempt new account creation
-                accountNumber = AccountService.createAccount(user, pin, accountType);
+                accountNumber = accountService.createAccount(user, pin, accountType);
 
                 // Account creation failed
                 if (accountNumber == -1) {
