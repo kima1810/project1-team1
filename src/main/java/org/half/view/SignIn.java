@@ -29,7 +29,7 @@ public class SignIn {
             System.out.println("\n" + ANSI.title(
                     """
                             ┌────────────────────────────────┐
-                            │  Welcome to Bank 50!           │
+                            │  Welcome to Fifty/50 Bank!     │
                             └────────────────────────────────┘
                             """));
 

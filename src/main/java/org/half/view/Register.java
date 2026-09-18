@@ -138,10 +138,7 @@ public class Register {
 
         AccountCreation.createAccount(user);
 
-        System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                "Let's create your profile..." +
-                ANSI.RESET);
-        System.out.println(ANSI.rgb(100, 255, 100) + "Registration successful. Welcome to Fifty/50 Bank, " + 
+        System.out.println(ANSI.success("Registration successful. Welcome, ") +
             ANSI.rgb(100, 255, 255) + firstName + ANSI.rgb(100, 255, 100) + "!");
         log.info("User registration successful for user: {}", username);
     }
