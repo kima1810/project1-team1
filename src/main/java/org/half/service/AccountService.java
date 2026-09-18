@@ -14,42 +14,59 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
-    private static final Logger logger = LoggerFactory.getLogger(AccountService.class);
+    private static final Logger log = LoggerFactory.getLogger(AccountService.class);
 
+    // Create a new bank account and add it to database
     public static long createAccount(User user, int pin, AccountType accountType) {
+        // Check if PIN is more than 4 digits long
         if (pin > 9999) {
+            // Invalid PIN
+            log.warn("Invalid pin. Cannot be more than 4 digits.");
             throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
         }
+
+        // Hash the PIN
         String pinHash = PasswordService.hashPassword(String.valueOf(pin));
 
+        // Generate a new bank account number and attempt to create the new account
         for (int i = 0; i < 10; i++) {
+            // Generate a new 12-digit account number
             long accountNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
 
+            // Create new bank account
             Account account = new Account(user, accountNumber, pinHash, accountType, 0.00);
 
             try {
+                // Attempt to add new bank account
                 AccountRepository.addAccount(account);
             } catch (SQLException e) {
                 String message = e.getMessage();
                 if (message != null && message.contains("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
-                    System.out.println("[WARN - Custom] Account number already in use. Generating a new one...");
+                    // Duplicate account number, generate a new one
+                    log.warn("Account number already in use. Generating a new one...");
                 } else {
-                    System.out.println(message);
+                    // Something went wrong
+                    log.error("Something went wrong: {}", message);
                 }
                 continue;
             }
 
+            // Success, return new bank number
             return accountNumber;
         }
 
+        // Failed to create a new account
         return -1;
     }
 
+    // Get all the bank accounts of a given user
     public static List<Account> getAccounts(User user) {
         try {
+            // Attempt to get all the accounts of the user
             return AccountRepository.getAllAccounts(user);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            // Something went wrong
+            log.error("Something went wrong: {}", e.getMessage());
         }
         return null;
     }
@@ -85,7 +102,7 @@ public class AccountService {
     public static void Deposit_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
-            logger.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
@@ -99,7 +116,7 @@ public class AccountService {
             //Now the transaction will be added
             TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
         } catch (Exception e) {
-            logger.error("System error during deposit for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
+            log.error("System error during deposit for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
             throw e;
         }
     }
@@ -107,13 +124,13 @@ public class AccountService {
     public static void Withdraw_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
-            logger.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
         //Overdraft
         if (account.getBalance() < amount) {
-            logger.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", account.getAccountNumber(), account.getBalance(), amount);
+            log.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", account.getAccountNumber(), account.getBalance(), amount);
             throw new InsufficientFundsException("Account balance cannot be less than amount.");
         }
 
@@ -131,10 +148,10 @@ public class AccountService {
             TransactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
 
             // 2. The "Happy Path" (INFO)
-            logger.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), NewBalance);
+            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), NewBalance);
 
         } catch (Exception e) {
-            logger.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
+            log.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
             throw e;
         }
     }

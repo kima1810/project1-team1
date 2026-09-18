@@ -10,34 +10,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountRepository {
+    // Add a new account to the database
     public static void addAccount(Account account) throws SQLException {
+        // Query
         String query = "INSERT INTO Account VALUES (?,?,?,?,?);";
 
+        // Connect to database to create a new account
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            // Set values
+            // Set values for the new account
             statement.setLong(1, account.getAccountNumber());
             statement.setString(2, account.getPinHash());
             statement.setString(3, account.getAccountType().name());
             statement.setDouble(4, account.getBalance());
             statement.setString(5, account.getUser().getUsername());
 
+            // Add a new account to the database
             statement.executeUpdate();
         }
     }
 
+    // Get all the accounts of a user from the database
     public static List<Account> getAllAccounts(User user) throws SQLException {
+        // Query
         String query = "SELECT * FROM Account WHERE username=?;";
 
+        // Connect to database to query
         try(Connection connection = ConnectionFactory.getAutoCommitConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
 
+            // Pass in the username
             statement.setString(1, user.getUsername());
+
+            // Get the result
             ResultSet resultSet = statement.executeQuery();
 
+            // Create a list of accounts
             List<Account> accounts = new ArrayList<>();
             while(resultSet.next()) {
+                // Add an account to the list
                 accounts.add(new Account(
                         user,
                         resultSet.getLong("accountNumber"),
@@ -47,6 +59,7 @@ public class AccountRepository {
                 ));
             }
 
+            // Return the list of accounts
             return accounts;
         }
     }
@@ -89,7 +102,7 @@ public class AccountRepository {
         */
         try (Connection connection = ConnectionFactory.getManualCommitConnection()) {
             try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery);
-                 PreparedStatement creditStatement = connection.prepareStatement(creditQuery);
+                 PreparedStatement creditStatement = connection.prepareStatement(creditQuery)
                  //PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
             ){
                 debitStatement.setDouble(1, amount);
@@ -141,5 +154,4 @@ public class AccountRepository {
             e.printStackTrace();
         }
     }
-
 }

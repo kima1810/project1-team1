@@ -148,36 +148,31 @@ public class TransactionModelRepositoryTest {
     //check if addDepositOrWithdrawal returns false it a non-existent id
     @Test
     void addDepositOrWithdrawalWithNonExistentId(){
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, "Deposit", 100.00, nonExistentAccountNumber);
+        TransactionModel transactionModel = new TransactionModel("Deposit", 100.00, nonExistentAccountNumber);
         assertFalse(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
     //check if addDepositOrWithdrawal works with valid information
     @Test
     void addDepositOrWithdrawalWithExistentId(){
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, "Deposit", 100.00, testAccountNumber);
+        TransactionModel transactionModel = new TransactionModel("Deposit", 100.00, testAccountNumber);
         assertTrue(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
     //check if addTransfer returns false with a non-existent origin id
     @Test
     void addTransferWithNonExistentOriginId(){
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, "Transfer", 25.00, nonExistentAccountNumber, testAccountNumber2);
+        TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, nonExistentAccountNumber, testAccountNumber2);
         assertFalse(TransactionModelRepository.addTransfer(transactionModel));
     }
     //check if addTransfer returns false with a non-existent destination id
     @Test
     void addTransferWithNonExistentDestinationId(){
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, "Transfer", 25.00, testAccountNumber, nonExistentAccountNumber);
+        TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, testAccountNumber, nonExistentAccountNumber);
         assertFalse(TransactionModelRepository.addTransfer(transactionModel));
     }
     //check if addTransfer works with valid information
     @Test
     void addTransferWithBothExistentIDs(){
-        long transactionNumber = ThreadLocalRandom.current().nextLong(100_000_000_000L, 1_000_000_000_000L);
-        TransactionModel transactionModel = new TransactionModel(transactionNumber, "Transfer", 25.00, testAccountNumber, testAccountNumber2);
+        TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, testAccountNumber, testAccountNumber2);
         assertTrue(TransactionModelRepository.addTransfer(transactionModel));
     }
 

@@ -2,15 +2,13 @@ package org.half.model;
 import org.half.view.TransactionHistory;
 
 public class TransactionModel {
-    private long transactionId;
     private String dateTime;
     private String type;
     private double amount;
     private long originAccountId;
     private long destinationAccountId;
 
-    public TransactionModel(long transactionId, String dateTime, String type, double amount, long originAccountId, long destinationAccountId){
-        this.transactionId = transactionId;
+    public TransactionModel(String dateTime, String type, double amount, long originAccountId, long destinationAccountId){
         this.dateTime = dateTime;
         this.type = type;
         this.amount = amount;
@@ -18,8 +16,7 @@ public class TransactionModel {
         this.destinationAccountId = destinationAccountId;
     }
 
-    public TransactionModel(long transactionId, String type, double amount, long originAccountId, long destinationAccountId){
-        this.transactionId = transactionId;
+    public TransactionModel(String type, double amount, long originAccountId, long destinationAccountId){
         this.dateTime = null;
         this.type = type;
         this.amount = amount;
@@ -27,8 +24,7 @@ public class TransactionModel {
         this.destinationAccountId = destinationAccountId;
     }
 
-    public TransactionModel(long transactionId, String type, double amount, long originAccountId){
-        this.transactionId = transactionId;
+    public TransactionModel(String type, double amount, long originAccountId){
         this.dateTime = null;
         this.type = type;
         this.amount = amount;
@@ -37,10 +33,6 @@ public class TransactionModel {
     }
 
     //getters
-    public long getTransactionId() {
-        return transactionId;
-    }
-
     public String getDateTime() {
         return dateTime;
     }
@@ -62,9 +54,6 @@ public class TransactionModel {
     }
 
     //setters
-    public void setTransactionId(long transactionId) {
-        this.transactionId = transactionId;
-    }
 
     public void setDateTime(String dateTime) {
         this.dateTime = dateTime;
