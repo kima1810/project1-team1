@@ -40,6 +40,12 @@ public class MainMenu {
 
             log.info("User selected option: {}", userInput);
 
+            // Check if option is valid
+            while (userInput < 0 || userInput > 5) {
+                System.out.print("Please enter a number between 0 and 5: " );
+                userInput = BankScanner.promptUserSelection();
+            }
+
             // Check which menu option the user selected
             switch (userInput) {
                 case 1:

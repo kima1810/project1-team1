@@ -51,4 +51,8 @@ public class ANSI {
             );
         }
     }
+
+    public static void printUserWarning(String message) {
+        System.out.println(ANSI.rgb(255,100,100) + message + ANSI.RESET);
+    }
 }

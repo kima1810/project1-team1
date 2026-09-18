@@ -70,6 +70,7 @@ public class AccountSelection {
             // Check if a valid option was selected
             while (userInput > accounts.size()) {
                 System.out.print("Please enter a number between -1 and " + accounts.size() +": ");
+                log.warn("User selection is invalid.");
                 userInput = BankScanner.promptUserSelection();
             }
 
@@ -107,7 +108,7 @@ public class AccountSelection {
                     if (AccountVerificationService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
                         break;
                     } else {
-                        System.out.println("Invalid credentials.");
+                        ANSI.printUserWarning("Invalid credentials.");
                         log.warn("Account login failed: {user: {}, account: {}}",
                                 user.getUsername(),
                                 selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
