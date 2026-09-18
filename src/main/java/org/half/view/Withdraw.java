@@ -3,14 +3,19 @@ package org.half.view;
 import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 
 public class Withdraw {
     private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
 
-    private static final AccountService accountService = new AccountService(accountRepository);
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     public static void Withdraw_View(Account currentAccount) {
         boolean running = true;

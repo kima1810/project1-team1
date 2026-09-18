@@ -3,7 +3,9 @@ package org.half.view;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.slf4j.Logger;
@@ -15,8 +17,11 @@ public class AccountCreation {
     private static final Logger log = LoggerFactory.getLogger(AccountCreation.class);
 
     private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
 
-    private static final AccountService accountService = new AccountService(accountRepository);
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     // View for user to create a new account
     public static void createAccount(User user) {

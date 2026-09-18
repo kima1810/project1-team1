@@ -2,13 +2,18 @@ package org.half.view;
 
 import org.half.model.Account;
 import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.BankScanner;
 
 public class Transfer {
     private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
 
-    private static final AccountService accountService = new AccountService(accountRepository);
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     public static void transfer(Account sourceAccount) {
         System.out.printf("\nCurrent balance: $%.2f%n", sourceAccount.getBalance());

@@ -17,8 +17,9 @@ import java.sql.*;
 public class TransactionModelRepository {
     //logger
     private static final Logger logger = LoggerFactory.getLogger(TransactionModelRepository.class);
+
     //if items are found, it will return a list of the transactions
-    public static List<TransactionModel> printOutTransactions(long id){
+    public List<TransactionModel> printOutTransactions(long id){
         //create the query
         String query = "SELECT dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
                 "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
@@ -54,7 +55,7 @@ public class TransactionModelRepository {
         return transactionList;
     }
     //inserts a deposit or withdrawal into the table
-    public static boolean addDepositOrWithdrawal(TransactionModel transactionModel){
+    public boolean addDepositOrWithdrawal(TransactionModel transactionModel){
         //the query
         String query = "INSERT INTO TransactionHistory (type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?);";
 
@@ -78,7 +79,7 @@ public class TransactionModelRepository {
         return true;
     }
 
-    public static boolean addTransfer(TransactionModel transactionModel){
+    public boolean addTransfer(TransactionModel transactionModel){
         //the query
         String query = "INSERT INTO TransactionHistory (type, amount, originAccountNumber, destinationAccountNumber) VALUES (?,?,?,?);";
         //test the connection

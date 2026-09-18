@@ -3,8 +3,10 @@ package org.half.view;
 import org.half.model.Account;
 import org.half.model.User;
 import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.security.AccountVerificationService;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.slf4j.Logger;
@@ -18,8 +20,11 @@ public class AccountSelection {
     private static final Logger log = LoggerFactory.getLogger(AccountSelection.class);
 
     private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
 
-    private static final AccountService accountService = new AccountService(accountRepository);
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     // View for user to select their account
     public static void selectAccount(User user) {
