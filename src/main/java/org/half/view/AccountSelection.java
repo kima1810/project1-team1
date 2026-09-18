@@ -2,6 +2,7 @@ package org.half.view;
 
 import org.half.model.Account;
 import org.half.model.User;
+import org.half.security.AccountVerificationService;
 import org.half.service.AccountService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
@@ -52,12 +53,12 @@ public class AccountSelection {
             System.out.print(ANSI.rgb(100, 255, 100));
             for (int i = 1; i <= accounts.size(); i++) {
                 Account account = accounts.get(i - 1);
-                System.out.printf("[" + i + "] " + account.getAccountType() + " ****%04d%n",(account.getAccountNumber() % 10000));
+                System.out.printf("[" + i + "] " + account.getAccountType() + " ****%04d%n", (account.getAccountNumber() % 10000));
             }
 
             // Print other options
             System.out.println(ANSI.rgb(50, 245, 245) + "[-1] Open a new account.");
-            System.out.println(ANSI.rgb(255,125,100) + "[0] Logout");
+            System.out.println(ANSI.rgb(255, 125, 100) + "[0] Logout");
 
             System.out.print(ANSI.RESET);
             System.out.println("\n──────────────────────────────────");
@@ -96,9 +97,32 @@ public class AccountSelection {
                 continue;
             }
 
-            // Call the main menu view
-            MainMenu.mainMenu(accounts.get(accountSelected - 1));
-        }
+            Account selectedAccount;
+            while (true) {
+                // Prompt the user to enter account PIN
+                System.out.print("Enter your account PIN: ");
+                int accountPinInput = BankScanner.promptUserForPIN();
 
+                try {
+                    // Attempt to log into the account
+                    log.info("Selecting account: {}", accounts.get(accountSelected - 1).getAccountNumber());
+                    selectedAccount = AccountVerificationService.verifyAccount(accounts.get(accountSelected - 1), accountPinInput);
+                } catch (IllegalArgumentException e) {
+                    log.error("Something went wrong: {}", e.getMessage());
+                    System.out.println("Something went wrong. Try again...");
+                    continue;
+                }
+
+                if (selectedAccount == null) {
+                    System.out.println("Invalid credentials. Try again...");
+                } else {
+                    break;
+                }
+            }
+            System.out.println("Success! Logging into your account...");
+
+            // Call the main menu view
+            MainMenu.mainMenu(selectedAccount);
+        }
     }
 }

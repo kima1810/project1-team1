@@ -24,7 +24,7 @@ public class MainMenu {
             System.out.println("[3] Deposit");
             System.out.println("[4] Transaction history");
             System.out.println("[5] Transfer money");
-            System.out.println(ANSI.rgb(255,100,100) + "[0] Choose Different Bank Account");
+            System.out.println(ANSI.rgb(255,100,100) + "[0] Switch Account");
             System.out.print(ANSI.RESET);
 
             System.out.println("\n──────────────────────────────────");

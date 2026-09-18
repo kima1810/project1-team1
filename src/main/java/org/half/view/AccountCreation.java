@@ -49,17 +49,17 @@ public class AccountCreation {
 
             // Prompt user for a new 4-digit PIN
             System.out.println("Create a 4-digit PIN for your account:");
-            int pin = promptUserForPIN();
+            int pin = BankScanner.promptUserForPIN();
 
             // Prompt user to re-enter 4-digit PIN
             System.out.println("Re-enter your PIN:");
-            int pinConfirmation = promptUserForPIN();
+            int pinConfirmation = BankScanner.promptUserForPIN();
 
             // If PINs don't match, keep asking again
             while (pin != pinConfirmation) {
                 System.out.println("PINs do not match. Try again:");
                 log.warn("PINs entered do not match.");
-                pinConfirmation = promptUserForPIN();
+                pinConfirmation = BankScanner.promptUserForPIN();
             }
 
             log.info("PIN accepted.");
@@ -99,40 +99,5 @@ public class AccountCreation {
             BankScanner.freeze();
             break;
         }
-    }
-
-    // Helper method for prompting a PIN
-    private static int promptUserForPIN() {
-        // To store inputted PIN
-        int pin;
-
-        // Prompt user until a valid value is inputted
-        while (true) {
-            // Get a string input from user
-            String pinInput = BankScanner.getString();
-
-            try {
-                // Try casting the string to int
-                pin = Integer.parseInt(pinInput.trim());
-            } catch (NumberFormatException e) {
-                // Failed to cast, warn the user
-                System.out.println("Invalid PIN number. Must be an integer.");
-                log.warn("User inputted invalid PIN. Must be an integer.");
-                continue;
-            }
-
-            // Check if the PIN is 4-digit only
-            if (pinInput.trim().length() != 4) {
-                // PIN is not 4-digit long, warn the user
-                System.out.println("Invalid PIN. Must be exactly 4 digits long.");
-                log.warn("User inputted invalid PIN. Must be exactly 4 digits long.");
-                continue;
-            }
-
-            // Valid PIN inputted
-            break;
-        }
-
-        return pin;
     }
 }

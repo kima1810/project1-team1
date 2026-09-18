@@ -79,4 +79,39 @@ public class BankScanner {
         // Return the selected option
         return optionSelected;
     }
+
+    // Helper method for prompting a PIN
+    public static int promptUserForPIN() {
+        // To store inputted PIN
+        int pin;
+
+        // Prompt user until a valid value is inputted
+        while (true) {
+            // Get a string input from user
+            String pinInput = BankScanner.getString();
+
+            try {
+                // Try casting the string to int
+                pin = Integer.parseInt(pinInput.trim());
+            } catch (NumberFormatException e) {
+                // Failed to cast, warn the user
+                System.out.println("Invalid PIN number. Must be an integer.");
+                log.warn("User inputted invalid PIN. Must be an integer.");
+                continue;
+            }
+
+            // Check if the PIN is 4-digit only
+            if (pinInput.trim().length() != 4) {
+                // PIN is not 4-digit long, warn the user
+                System.out.println("Invalid PIN. Must be exactly 4 digits long.");
+                log.warn("User inputted invalid PIN. Must be exactly 4 digits long.");
+                continue;
+            }
+
+            // Valid PIN inputted
+            break;
+        }
+
+        return pin;
+    }
 }
