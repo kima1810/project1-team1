@@ -70,7 +70,7 @@ public class BankScanner {
                 break;
             } catch (NumberFormatException e) {
                 // Input was not an integer, ask user to input a number
-                System.out.println("Not a number. Please try again...");
+                ANSI.printUserWarning("Not a number. Please try again...");
                 log.warn("User did not input a number. Prompting again...");
             }
 
@@ -95,7 +95,7 @@ public class BankScanner {
                 pin = Integer.parseInt(pinInput.trim());
             } catch (NumberFormatException e) {
                 // Failed to cast, warn the user
-                System.out.println("Invalid PIN number. Must be an integer.");
+                ANSI.printUserWarning("Invalid PIN. Must be an integer.");
                 log.warn("User inputted invalid PIN. Must be an integer.");
 
                 System.out.print("Try again: ");
@@ -105,7 +105,7 @@ public class BankScanner {
             // Check if the PIN is 4-digit only
             if (pinInput.trim().length() != 4) {
                 // PIN is not 4-digit long, warn the user
-                System.out.println("Invalid PIN. Must be exactly 4 digits long.");
+                ANSI.printUserWarning("Invalid PIN. Must be exactly 4 digits long.");
                 log.warn("User inputted invalid PIN. Must be exactly 4 digits long.");
 
                 System.out.print("Try again: ");

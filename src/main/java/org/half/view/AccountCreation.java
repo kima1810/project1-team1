@@ -42,7 +42,7 @@ public class AccountCreation {
                     break;
                 } catch (IllegalArgumentException e) {
                     // Invalid input account type entered, ask user to try again
-                    System.out.println("Invalid account type. Acceptable values: CHECKING, SAVINGS");
+                    ANSI.printUserWarning("Invalid account type. Acceptable values: CHECKING, SAVINGS");
                     log.warn("User inputted invalid account type: {{}}. Acceptable values: {CHECKING, SAVINGS}", accountTypeInput);
                 }
             }
@@ -57,7 +57,8 @@ public class AccountCreation {
 
             // If PINs don't match, keep asking again
             while (pin != pinConfirmation) {
-                System.out.print("PINs do not match. Try again: ");
+                ANSI.printUserWarning("PINs do not match.");
+                System.out.print("Re-enter your PIN: ");
                 log.warn("PINs entered do not match.");
                 pinConfirmation = BankScanner.promptUserForPIN();
             }
