@@ -111,3 +111,13 @@ The database location is configured through the `DATABASE_URL` environment varia
 DATABASE_URL=jdbc:sqlite:<path_to_db>
 ```
 This allows the application to connect to different database files without changing the source code.
+
+## Team Half & Half
+### Contributors
+
+- [@Darsh-KP](https://github.com/Darsh-KP)
+- [@kima1810](https://github.com/kima1810)
+- [@jackhannan](https://github.com/jackhannan)
+- [@gaving747](https://github.com/gaving747)
+- [@TuanDinh1233](https://github.com/TuanDinh1233)
+- [@AbishekSh](https://github.com/AbishekSh)
