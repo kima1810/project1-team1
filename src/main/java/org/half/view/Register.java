@@ -5,7 +5,6 @@ import org.half.repository.UserRepository;
 import org.half.model.User;
 import org.half.security.PasswordService;
 import org.half.service.UserService;
-import org.half.view.AccountCreation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,10 +34,10 @@ public class Register {
         String firstName = BankScanner.getString();
         while (firstName.isBlank() || firstName.length() > 20) {
             if (firstName.isBlank()) {
-                System.out.println("First name cannot be empty.");
+                ANSI.printUserWarning("First name cannot be empty.");
                 log.warn("First name entered is blank");
             } else {
-                System.out.println(ANSI.rgb(255,100,100) + "First name must be 20 characters or fewer.");
+                ANSI.printUserWarning("First name must be 20 characters or fewer.");
                 log.warn("First name entered is too long: {}", firstName);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "First name: " + ANSI.RESET);
@@ -50,10 +49,10 @@ public class Register {
         String lastName = BankScanner.getString();
         while (lastName.isBlank() || lastName.length() > 20) {
             if (lastName.isBlank()) {
-                System.out.println("Last name cannot be empty.");
+                ANSI.printUserWarning("Last name cannot be empty.");
                 log.warn("Last name entered is blank");
             } else {
-                System.out.println(ANSI.rgb(255,100,100) + "Last name must be 20 characters or fewer.");
+                ANSI.printUserWarning("Last name must be 20 characters or fewer.");
                 log.warn("Last name entered is too long: {}", lastName);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "Last name: " + ANSI.RESET);
@@ -66,10 +65,10 @@ public class Register {
         String email = BankScanner.getString();
         while (!isValidEmail(email) || UserRepository.getUserByEmail(email) != null) {
             if (!isValidEmail(email)) {
-                System.out.println(ANSI.rgb(255,100,100) + "Please enter a valid email address.");
+                ANSI.printUserWarning("Please enter a valid email address.");
                 log.warn("Invalid email entered: {}", email);
             } else {
-                System.out.println(ANSI.rgb(255,100,100) + "An account with that email already exists.");
+                ANSI.printUserWarning("An account with that email already exists.");
                 log.warn("Email already in use: {}", email);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "Email: " + ANSI.RESET);
@@ -91,10 +90,10 @@ public class Register {
         String username = BankScanner.getString();
         while (username.length() < 5 || username.length() > 50 || UserRepository.getUser(username) != null) {
             if (username.length() < 5 || username.length() > 50) {
-                System.out.println(ANSI.rgb(255,100,100) + "Username must be between 5 and 50 characters.");
+                ANSI.printUserWarning("Username must be between 5 and 50 characters.");
                 log.warn("Username entered is invalid: {}", username);
             } else {
-                System.out.println(ANSI.rgb(255,100,100) + "That username is already taken.");
+                ANSI.printUserWarning("That username is already taken.");
                 log.warn("Username already taken: {}", username);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "Username: " + ANSI.RESET);
@@ -108,7 +107,7 @@ public class Register {
             System.out.print(ANSI.rgb(100, 255, 255) + "Password (min. 8 character): " + ANSI.RESET);
             password = BankScanner.getString();
             if(password.length() < 8) {
-                System.out.println(ANSI.rgb(255,100,100) + "Password must be at least 8 characters long.");
+                ANSI.printUserWarning("Password must be at least 8 characters long.");
                 log.warn("Password entered is too short");
             }
         } while (password.length() < 8);
@@ -118,7 +117,7 @@ public class Register {
             System.out.print(ANSI.rgb(100, 255, 255) + "Confirm password: " + ANSI.RESET);
             passwordConfirmation = BankScanner.getString();
             if(!passwordConfirmation.equals(password)) {
-                System.out.println(ANSI.rgb(255,100,100) + "Passwords do not match. Please try again.");
+                ANSI.printUserWarning("Passwords do not match. Please try again.");
                 log.warn("Password confirmation does not match the password");
             }
         } while (!passwordConfirmation.equals(password));
@@ -146,7 +145,7 @@ public class Register {
 
     private static boolean isValidPhoneNumber(String phoneNumber) {
         if (!phoneNumber.matches("[0-9+()\\- ]+")) {
-            System.out.println(ANSI.rgb(255,100,100) + "Please enter a VALID phone number (digits, +, (), -, spaces only).");
+            ANSI.printUserWarning("Please enter a VALID phone number (digits, +, (), -, spaces only).");
             log.warn("Invalid phone number entered: {}", phoneNumber);
             return false;
         }

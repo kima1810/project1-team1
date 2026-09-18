@@ -1,6 +1,5 @@
 package org.half.view;
 
-import org.half.repository.UserRepository;
 import org.half.security.SignInService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
@@ -63,7 +62,7 @@ public class SignIn {
                             }
                         }
 
-                        System.out.println("Invalid Credentials. Try again...");
+                        ANSI.printUserWarning("Invalid Credentials. Try again...");
                         log.warn("Login failed: userId={}", userName);
                     }
                     break;
@@ -73,7 +72,7 @@ public class SignIn {
                 case 0:
                     break exitBank;
                 default:
-                    System.out.println("Invalid Option");
+                    ANSI.printUserWarning("Invalid Option");
                     log.warn("Entered Invalid Sign In Menu Option");
             }
         }

@@ -63,22 +63,15 @@ public class AccountSelection {
             System.out.print(ANSI.RESET);
             System.out.println("\n──────────────────────────────────");
 
-            // Ask user to select an option
+            // Prompt user to input an option
             System.out.print("Please select your account: ");
-            int userInput;
-            while (true) {
-                // Prompt user to input an option
+            int userInput = BankScanner.promptUserSelection();
+
+            // Check if a valid option was selected
+            while (userInput > accounts.size()) {
+                System.out.print("Please enter a number between -1 and " + accounts.size() +": ");
+                log.warn("User selection is invalid.");
                 userInput = BankScanner.promptUserSelection();
-
-                // Check if a valid option was selected
-                if (userInput > accounts.size()) {
-                    System.out.println("Please enter a number between 1 and " + accounts.size());
-                    continue;
-                }
-
-                // Correct option inputted
-                break;
-
             }
 
             log.info("User selected option: {}", userInput);
@@ -115,13 +108,13 @@ public class AccountSelection {
                     if (AccountVerificationService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
                         break;
                     } else {
-                        System.out.println("Invalid credentials. Try again...");
+                        ANSI.printUserWarning("Invalid credentials.");
                         log.warn("Account login failed: {user: {}, account: {}}",
                                 user.getUsername(),
                                 selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
                     }
                 } catch (IllegalArgumentException e) {
-                    System.out.println("Something went wrong. Try again...");
+                    System.out.println("Something went wrong.");
                     log.error("Something went wrong: {}", e.getMessage());
                 }
             }
