@@ -65,13 +65,13 @@ public class AccountSelection {
 
             // Ask user to select an option
             System.out.print("Please select your account: ");
-            int accountSelected;
+            int userInput;
             while (true) {
                 // Prompt user to input an option
-                accountSelected = BankScanner.promptUserSelection();
+                userInput = BankScanner.promptUserSelection();
 
                 // Check if a valid option was selected
-                if (accountSelected > accounts.size()) {
+                if (userInput > accounts.size()) {
                     System.out.println("Please enter a number between 1 and " + accounts.size());
                     continue;
                 }
@@ -81,23 +81,30 @@ public class AccountSelection {
 
             }
 
-            log.info("User selected option: {}", accountSelected);
+            log.info("User selected option: {}", userInput);
 
             // Check if user wants to log out
-            if (accountSelected == 0) {
+            if (userInput == 0) {
                 // Log out the user
                 log.info("Logging out user: {}", user.getUsername());
                 break;
             }
 
             // Check if the user wants to create a new account
-            else if (accountSelected == -1) {
+            else if (userInput == -1) {
                 // Call the account creation view
                 AccountCreation.createAccount(user);
                 continue;
             }
 
-            Account selectedAccount;
+            // Find the account user selected
+            Account selectedAccount = accounts.get(userInput - 1);
+
+            log.info("User attempting to log into account: {user: {}, account: {}}",
+                    user.getUsername(),
+                    selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
+
+            // Keep asking for account PIN until a valid PIN is entered
             while (true) {
                 // Prompt the user to enter account PIN
                 System.out.print("Enter your account PIN: ");
@@ -105,21 +112,23 @@ public class AccountSelection {
 
                 try {
                     // Attempt to log into the account
-                    log.info("Selecting account: {}", accounts.get(accountSelected - 1).getAccountNumber());
-                    selectedAccount = AccountVerificationService.verifyAccount(accounts.get(accountSelected - 1), accountPinInput);
+                    if (AccountVerificationService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
+                        break;
+                    } else {
+                        System.out.println("Invalid credentials. Try again...");
+                        log.warn("Account login failed: {user: {}, account: {}}",
+                                user.getUsername(),
+                                selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
+                    }
                 } catch (IllegalArgumentException e) {
-                    log.error("Something went wrong: {}", e.getMessage());
                     System.out.println("Something went wrong. Try again...");
-                    continue;
-                }
-
-                if (selectedAccount == null) {
-                    System.out.println("Invalid credentials. Try again...");
-                } else {
-                    break;
+                    log.error("Something went wrong: {}", e.getMessage());
                 }
             }
             System.out.println("Success! Logging into your account...");
+            log.info("Successfully logged into account: {user: {}, account: {}}",
+                    user.getUsername(),
+                    selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
 
             // Call the main menu view
             MainMenu.mainMenu(selectedAccount);
