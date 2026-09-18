@@ -2,10 +2,10 @@ package org.half.model;
 import org.half.model.enums.AccountType;
 
 public class Account {
-    private User user;
-    private long accountNumber;
-    private String pinHash;
-    private AccountType accountType;
+    private final User user;
+    private final long accountNumber;
+    private final String pinHash;
+    private final AccountType accountType;
     private double balance;
 
     public Account(User user, long accountNumber, String pinHash, AccountType accountType, double balance) {
