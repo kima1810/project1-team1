@@ -9,6 +9,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -179,6 +180,53 @@ class AccountServiceTest {
             repositoryMock.verify(
                     () -> AccountRepository.addAccount(any(Account.class)),
                     times(2)
+            );
+        }
+    }
+
+    @Test
+    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds() {
+        User user = mock(User.class);
+        List<Account> expectedAccounts = List.of(
+                mock(Account.class),
+                mock(Account.class)
+        );
+
+        try (MockedStatic<AccountRepository> repositoryMock =
+                     Mockito.mockStatic(AccountRepository.class)) {
+
+            repositoryMock
+                    .when(() -> AccountRepository.getAllAccounts(user))
+                    .thenReturn(expectedAccounts);
+
+            List<Account> actualAccounts = AccountService.getAccounts(user);
+
+            assertSame(expectedAccounts, actualAccounts);
+
+            repositoryMock.verify(
+                    () -> AccountRepository.getAllAccounts(user)
+            );
+        }
+    }
+
+    @Test
+    void getAccounts_shouldReturnNull_whenRepositoryThrowsSQLException() {
+        User user = mock(User.class);
+        SQLException exception = new SQLException("Database error");
+
+        try (MockedStatic<AccountRepository> repositoryMock =
+                     Mockito.mockStatic(AccountRepository.class)) {
+
+            repositoryMock
+                    .when(() -> AccountRepository.getAllAccounts(user))
+                    .thenThrow(exception);
+
+            List<Account> actualAccounts = AccountService.getAccounts(user);
+
+            assertNull(actualAccounts);
+
+            repositoryMock.verify(
+                    () -> AccountRepository.getAllAccounts(user)
             );
         }
     }
