@@ -52,7 +52,23 @@ public class ANSI {
         }
     }
 
-    public static void printUserWarning(String message) {
-        System.out.println(ANSI.rgb(255,100,100) + message + ANSI.RESET);
+    public static String userWarning(String text) {
+        return ANSI.rgb(255,100,100) + text + ANSI.RESET;
+    }
+
+    public static String title(String text) {
+        return ANSI.rgb(255, 255, 100) + text + ANSI.RESET;
+    }
+
+    public static String optionPositive(String text) {
+        return ANSI.rgb(100, 255, 100) + text + ANSI.RESET;
+    }
+
+    public static String optionNegative(String text) {
+        return ANSI.rgb(255,100,100) + text + ANSI.RESET;
+    }
+
+    public static String success(String text) {
+        return ANSI.rgb(255, 255, 100) + text + ANSI.RESET;
     }
 }

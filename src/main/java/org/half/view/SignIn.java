@@ -30,18 +30,17 @@ public class SignIn {
                 ANSI.RESET);
         exitBank:
         while(true){
-            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                    "┌────────────────────────────────┐\n" +
-                    "│  Welcome to Bank 50!           │\n" +
-                    "└────────────────────────────────┘\n" +
-                    ANSI.RESET
-            );
-            System.out.print(ANSI.rgb(100, 255, 100));
+            System.out.println("\n" + ANSI.title(
+                    """
+                            ┌────────────────────────────────┐
+                            │  Welcome to Fifty/50 Bank!     │
+                            └────────────────────────────────┘
+                            """));
+
             System.out.println("Are you a member of our Bank? Yes or No");
-            System.out.println("[1] Yes: Sign In");
-            System.out.println("[2] No: Create a New User Account");
-            System.out.println(ANSI.rgb(255,100,100) + "[0] Exit");
-            System.out.print(ANSI.RESET);
+            System.out.println(ANSI.optionPositive("[1] Yes: Sign In"));
+            System.out.println(ANSI.optionPositive("[2] No: Create a New User Account"));
+            System.out.println(ANSI.optionNegative("[0] Exit"));
 
             System.out.println("\n──────────────────────────────────");
 
@@ -50,6 +49,11 @@ public class SignIn {
 
             switch (userInput) {
                 case 1:
+                    // Logging in title
+                    System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
+                            "Let's sign in to your profile..." +
+                            ANSI.RESET);
+
                     while (true) {
                         System.out.println("Please enter your Username.");
                         String userName = BankScanner.getString();
@@ -59,14 +63,14 @@ public class SignIn {
                         if(!userName.isEmpty() && !userPassword.isEmpty()) {
                             User activeUser = userService.verifyUser(userName, userPassword);
                             if (activeUser != null) {
-                                System.out.println("Successfully Logged In to Your Account");
+                                System.out.println(ANSI.success("Successfully logged in to your profile..."));
                                 log.info("User logged in: userId={}", userName);
                                 AccountSelection.selectAccount(activeUser);
                                 break;
                             }
                         }
 
-                        ANSI.printUserWarning("Invalid Credentials. Try again...");
+                        System.out.println(ANSI.userWarning("Invalid Credentials. Try again..."));
                         log.warn("Login failed: userId={}", userName);
                     }
                     break;
@@ -76,7 +80,7 @@ public class SignIn {
                 case 0:
                     break exitBank;
                 default:
-                    ANSI.printUserWarning("Invalid Option");
+                    System.out.println(ANSI.userWarning("Invalid Option"));
                     log.warn("Entered Invalid Sign In Menu Option");
             }
         }
