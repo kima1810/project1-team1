@@ -60,7 +60,7 @@ public class BankScanner {
                 // Check if the input is empty
                 if (userInput.isBlank()) {
                     // Re-prompt user
-                    System.out.println("Please select an option:");
+                    System.out.print("Please select an option: ");
                     log.warn("User inputted nothing. Prompting again...");
                     continue;
                 }
@@ -97,6 +97,8 @@ public class BankScanner {
                 // Failed to cast, warn the user
                 System.out.println("Invalid PIN number. Must be an integer.");
                 log.warn("User inputted invalid PIN. Must be an integer.");
+
+                System.out.print("Try again: ");
                 continue;
             }
 
@@ -105,6 +107,8 @@ public class BankScanner {
                 // PIN is not 4-digit long, warn the user
                 System.out.println("Invalid PIN. Must be exactly 4 digits long.");
                 log.warn("User inputted invalid PIN. Must be exactly 4 digits long.");
+
+                System.out.print("Try again: ");
                 continue;
             }
 

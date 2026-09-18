@@ -48,16 +48,16 @@ public class AccountCreation {
             }
 
             // Prompt user for a new 4-digit PIN
-            System.out.println("Create a 4-digit PIN for your account:");
+            System.out.print("Create a 4-digit PIN for your account: ");
             int pin = BankScanner.promptUserForPIN();
 
             // Prompt user to re-enter 4-digit PIN
-            System.out.println("Re-enter your PIN:");
+            System.out.print("Re-enter your PIN: ");
             int pinConfirmation = BankScanner.promptUserForPIN();
 
             // If PINs don't match, keep asking again
             while (pin != pinConfirmation) {
-                System.out.println("PINs do not match. Try again:");
+                System.out.print("PINs do not match. Try again: ");
                 log.warn("PINs entered do not match.");
                 pinConfirmation = BankScanner.promptUserForPIN();
             }

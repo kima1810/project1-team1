@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- Console output -->
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+<!--    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">-->
+<!--        <encoder>-->
+<!--            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
 
     <!-- Rolling file output for INFO logs -->
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -75,7 +75,7 @@
 
     <!-- Set appenders -->
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
+<!--        <appender-ref ref="STDOUT"/>-->
         <appender-ref ref="INFO_FILE"/>
         <appender-ref ref="WARN_FILE"/>
         <appender-ref ref="ERROR_FILE"/>
