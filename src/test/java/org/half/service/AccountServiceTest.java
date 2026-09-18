@@ -1,5 +1,6 @@
 package org.half.service;
 
+import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
@@ -180,6 +181,84 @@ class AccountServiceTest {
                     () -> AccountRepository.addAccount(any(Account.class)),
                     times(2)
             );
+        }
+    }
+
+    @Test
+    void testDepositRequest_UpdatesBalanceAndCallsServices() {
+        Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 100.0);
+
+        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class);
+             MockedStatic<TransactionHistoryService> historyMock = Mockito.mockStatic(TransactionHistoryService.class)) {
+
+            AccountService.Deposit_Request(testAccount, 50.0);
+
+            assertEquals(150.0, testAccount.getBalance(), "Balance should be updated to 150.0");
+
+            repoMock.verify(() -> AccountRepository.Update_Balance(testAccount, 150.0));
+            historyMock.verify(() -> TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", 50.0, 123456789L));
+        }
+    }
+
+    @Test
+    void testDepositRequest_WithZeroAmount_DoesNotChangeBalance() {
+        Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 200.0);
+
+        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class);
+             MockedStatic<TransactionHistoryService> historyMock = Mockito.mockStatic(TransactionHistoryService.class)) {
+
+            AccountService.Deposit_Request(testAccount, 0.0);
+
+            assertEquals(200.0, testAccount.getBalance(), "Balance should remain 200.0");
+            repoMock.verify(() -> AccountRepository.Update_Balance(testAccount, 200.0));
+            historyMock.verify(() -> TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", 0.0, 123456789L));
+        }
+    }
+
+    @Test
+    void testDepositRequest_WithNegativeAmount_ThrowsException() {
+        Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 100.0);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            AccountService.Deposit_Request(testAccount, -50.0);
+        });
+
+        assertEquals("Amount cannot be negative.", exception.getMessage());
+    }
+
+    @Test
+    void testWithdrawRequest_OverdraftAttempt_ThrowsInsufficientFundsException() {
+        Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.0);
+
+        Exception exception = assertThrows(InsufficientFundsException.class, () -> {
+            AccountService.Withdraw_Request(testAccount, 500.0);
+        });
+
+        assertEquals("Account balance cannot be less than amount.", exception.getMessage());
+    }
+
+    @Test
+    void testWithdrawRequest_WithNegativeAmount_ThrowsException() {
+        Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.0);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            AccountService.Withdraw_Request(testAccount, -20.0);
+        });
+
+        assertEquals("Amount cannot be negative.", exception.getMessage());
+    }
+
+    @Test
+    void testWithdrawRequest_FloatingPointPrecision() {
+        // Doubles can cause weird fractional issues (e.g., 100.05 - 100.04 = 0.010000000000005)
+        Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.05);
+
+        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class);
+             MockedStatic<TransactionHistoryService> historyMock = Mockito.mockStatic(TransactionHistoryService.class)) {
+
+            AccountService.Withdraw_Request(testAccount, 100.04);
+
+            assertEquals(0.01, testAccount.getBalance(), 0.001, "Balance should be exactly 0.01 despite double precision artifacts");
         }
     }
 }
