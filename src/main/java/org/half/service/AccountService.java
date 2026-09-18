@@ -68,6 +68,19 @@ public class AccountService {
         return -1;
     }
 
+    // Method to verify if the entered user PIN matches the account PIN hash
+    public boolean verifyAccount(Account account, int userInputPIN) {
+        // Check if user input is valid
+        if (userInputPIN > 9999) {
+            // Input PIN cannot be more than 4 digits
+            log.warn("Invalid pin. Cannot be more than 4 digits.");
+            throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
+        }
+
+        // Return ture if password is correct, else false
+        return PasswordService.verifyPassword(String.valueOf(userInputPIN), account.getPinHash());
+    }
+
     // Get all the bank accounts of a given user
     public List<Account> getAccounts(User user) {
         try {

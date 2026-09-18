@@ -4,7 +4,6 @@ import org.half.model.Account;
 import org.half.model.User;
 import org.half.repository.AccountRepository;
 import org.half.repository.TransactionModelRepository;
-import org.half.security.AccountVerificationService;
 import org.half.service.AccountService;
 import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
@@ -117,7 +116,7 @@ public class AccountSelection {
 
                 try {
                     // Attempt to log into the account
-                    if (AccountVerificationService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
+                    if (accountService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
                         break;
                     } else {
                         System.out.println(ANSI.userWarning("Invalid credentials."));
