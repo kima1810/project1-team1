@@ -124,14 +124,14 @@ public class AccountService {
     public static void Withdraw_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
-            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
         //Overdraft
         if (account.getBalance() < amount) {
             log.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", account.getAccountNumber(), account.getBalance(), amount);
-            throw new InsufficientFundsException("Account balance cannot be less than amount.");
+            throw new InsufficientFundsException(String.format("Amount withdrawn attempted overdraft. Balance: $%.2f", account.getBalance()));
         }
 
         try {
