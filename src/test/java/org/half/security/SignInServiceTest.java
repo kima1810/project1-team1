@@ -16,7 +16,7 @@ public class SignInServiceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> SignInService.verifyUser("", "password")
+                () -> UserService.verifyUser("", "password")
         );
 
         assertEquals("Can Not Enter Empty Strings.",
@@ -29,7 +29,7 @@ public class SignInServiceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> SignInService.verifyUser("UserAccount", "")
+                () -> UserService.verifyUser("UserAccount", "")
         );
 
         assertEquals("Can Not Enter Empty Strings.",
@@ -45,7 +45,7 @@ public class SignInServiceTest {
                     .when(() -> UserRepository.getPasswordHash("1234567"))
                     .thenReturn(null);
 
-            User activeUser = SignInService.verifyUser("1234567", "passwordtest");
+            User activeUser = UserService.verifyUser("1234567", "passwordtest");
 
             assertNull(activeUser);
 
@@ -71,7 +71,7 @@ public class SignInServiceTest {
                             "hashedPassword"))
                     .thenReturn(false);
 
-            User activeUser = SignInService.verifyUser("UserAccount", "wrongPassword");
+            User activeUser = UserService.verifyUser("UserAccount", "wrongPassword");
 
             assertNull(activeUser);
 
@@ -103,7 +103,7 @@ public class SignInServiceTest {
                     .when(() ->UserRepository.getUser("UserAccount"))
                     .thenReturn(expectedUser);
 
-            User activeUser = SignInService.verifyUser("UserAccount", "correctPassword");
+            User activeUser = UserService.verifyUser("UserAccount", "correctPassword");
 
             assertNotNull(activeUser);
             assertSame(expectedUser, activeUser);
