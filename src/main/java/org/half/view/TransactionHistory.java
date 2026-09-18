@@ -8,7 +8,7 @@ import org.half.utility.ANSI;
 public class TransactionHistory {
     public static void displayTransactions(Account chosenAccount){
         //this will print the categories
-        System.out.println("Here is your list of all of your past transactions:");
+        System.out.println("\nHere is your list of all of your past transactions:");
         System.out.printf(ANSI.MAGENTA + ANSI.ITALIC + "%-20s" + ANSI.CYAN + ANSI.ITALIC + " %-10s" +
                 ANSI.YELLOW + ANSI.ITALIC + "%-15s" + ANSI.RED + ANSI.ITALIC + "%-20s"
                 + ANSI.GREEN + ANSI.ITALIC + "%-20s%n", "Date", "Type", "Amount", "Origin account ID", "Destination account ID");

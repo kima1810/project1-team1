@@ -24,9 +24,11 @@ public class AccountSelection {
     // View for user to select their account
     public static void selectAccount(User user) {
         // Welcome the user
-        System.out.println(ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "\nWelcome, " +
-                ANSI.CYAN + ANSI.ITALIC + user.getUsername() + ANSI.RESET +
+        System.out.println("\n**********************************");
+        System.out.println(ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "Welcome, " +
+                ANSI.CYAN + ANSI.ITALIC + user.getFirstName() + ANSI.RESET +
                 ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "!" + ANSI.RESET);
+        System.out.println("**********************************");
 
         // Show the account selection menu
         while (true) {
@@ -34,8 +36,8 @@ public class AccountSelection {
             List<Account> accounts = accountService.getAccounts(user);
 
             // If user has no account, keep prompting them to create a new account
-            while (accounts == null) {
-                System.out.println("No accounts found.");
+            while (accounts == null || accounts.isEmpty()) {
+                System.out.println(ANSI.userWarning("No accounts found."));
 
                 // Call the account creation view
                 AccountCreation.createAccount(user);
@@ -113,7 +115,7 @@ public class AccountSelection {
                     if (AccountVerificationService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
                         break;
                     } else {
-                        ANSI.printUserWarning("Invalid credentials.");
+                        System.out.println(ANSI.userWarning("Invalid credentials."));
                         log.warn("Account login failed: {user: {}, account: {}}",
                                 user.getUsername(),
                                 selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
@@ -123,7 +125,7 @@ public class AccountSelection {
                     log.error("Something went wrong: {}", e.getMessage());
                 }
             }
-            System.out.println("Success! Logging into your account...");
+            System.out.println(ANSI.success("Success! Logging into your account..."));
             log.info("Successfully logged into account: {user: {}, account: {}}",
                     user.getUsername(),
                     selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));

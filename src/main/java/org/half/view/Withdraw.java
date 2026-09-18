@@ -14,7 +14,7 @@ public class Withdraw {
 
     public static void Withdraw_View(Account currentAccount) {
         boolean running = true;
-        System.out.printf("Current Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
+        System.out.printf("\nCurrent Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
         while (running) {
             System.out.printf("Please enter the amount you would like to deposit or type %s0%s to go back to the main menu: ", ANSI.rgb(255, 0, 0), "\033[0m");
             double AmountWithDrawn = BankScanner.getDouble();

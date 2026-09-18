@@ -11,7 +11,7 @@ public class Transfer {
     private static final AccountService accountService = new AccountService(accountRepository);
 
     public static void transfer(Account sourceAccount) {
-        System.out.printf("Current balance: $%.2f%n", sourceAccount.getBalance());
+        System.out.printf("\nCurrent balance: $%.2f%n", sourceAccount.getBalance());
         System.out.print("Destination account number (or 0 to cancel): ");
         String destinationInput = BankScanner.getString();
 
