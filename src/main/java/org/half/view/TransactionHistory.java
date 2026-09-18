@@ -14,7 +14,9 @@ public class TransactionHistory {
                 + ANSI.GREEN + ANSI.ITALIC + "%-20s%n", "Date", "Type", "Amount", "Origin account ID", "Destination account ID");
         //run the service method to display the transactions
         TransactionHistoryService.attemptPrintOutTransactions(chosenAccount);
+
         //freeze the screen
+        System.out.print(ANSI.rgb(100, 255, 100) + "\nPress enter to continue..." + ANSI.RESET);
         BankScanner.freeze();
     }
 

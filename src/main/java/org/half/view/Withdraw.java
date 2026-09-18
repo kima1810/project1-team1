@@ -28,7 +28,7 @@ public class Withdraw {
                 try {
                     // Attempt the transaction
                     AccountService.Withdraw_Request(currentAccount, AmountWithDrawn);
-                    System.out.printf("Congrats! Your withdrawal was successful. Your new Balance is: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
+                    System.out.printf("Congrats! Your withdrawal was successful. Your new Balance is: %s$%.2f%s\n\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
                 } catch (IllegalArgumentException | InsufficientFundsException e) {
                     // Catch business rule errors (e.g., negative numbers or over-drafting)
                     System.out.println(e.getMessage() + "\n");
