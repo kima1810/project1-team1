@@ -3,7 +3,9 @@ package org.half.view;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.slf4j.Logger;
@@ -15,8 +17,11 @@ public class AccountCreation {
     private static final Logger log = LoggerFactory.getLogger(AccountCreation.class);
 
     private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
 
-    private static final AccountService accountService = new AccountService(accountRepository);
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     // View for user to create a new account
     public static void createAccount(User user) {
@@ -47,7 +52,7 @@ public class AccountCreation {
                     break;
                 } catch (IllegalArgumentException e) {
                     // Invalid input account type entered, ask user to try again
-                    ANSI.printUserWarning("Invalid account type. Acceptable values: CHECKING, SAVINGS");
+                    System.out.println(ANSI.userWarning("Invalid account type. Acceptable values: CHECKING, SAVINGS"));
                     log.warn("User inputted invalid account type: {{}}. Acceptable values: {CHECKING, SAVINGS}", accountTypeInput);
                 }
             }
@@ -62,7 +67,7 @@ public class AccountCreation {
 
             // If PINs don't match, keep asking again
             while (pin != pinConfirmation) {
-                ANSI.printUserWarning("PINs do not match.");
+                System.out.println(ANSI.userWarning("PINs do not match."));
                 System.out.print("Re-enter your PIN: ");
                 log.warn("PINs entered do not match.");
                 pinConfirmation = BankScanner.promptUserForPIN();

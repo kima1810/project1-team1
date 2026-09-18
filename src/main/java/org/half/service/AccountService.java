@@ -15,10 +15,14 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
     private static final Logger log = LoggerFactory.getLogger(AccountService.class);
-    private final AccountRepository accountRepository;
 
-    public AccountService(AccountRepository accountRepository){
+    private final AccountRepository accountRepository;
+    private final TransactionHistoryService transactionHistoryService;
+
+
+    public AccountService(AccountRepository accountRepository, TransactionHistoryService transactionHistoryService) {
         this.accountRepository =  accountRepository;
+        this.transactionHistoryService = transactionHistoryService;
     }
 
     // Create a new bank account and add it to database
@@ -64,6 +68,19 @@ public class AccountService {
         return -1;
     }
 
+    // Method to verify if the entered user PIN matches the account PIN hash
+    public boolean verifyAccount(Account account, int userInputPIN) {
+        // Check if user input is valid
+        if (userInputPIN > 9999) {
+            // Input PIN cannot be more than 4 digits
+            log.warn("Invalid pin. Cannot be more than 4 digits.");
+            throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
+        }
+
+        // Return ture if password is correct, else false
+        return PasswordService.verifyPassword(String.valueOf(userInputPIN), account.getPinHash());
+    }
+
     // Get all the bank accounts of a given user
     public List<Account> getAccounts(User user) {
         try {
@@ -95,7 +112,7 @@ public class AccountService {
         
         sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         //
-        TransactionHistoryService.attemptAddTransfer(
+        transactionHistoryService.attemptAddTransfer(
                 "Transfer",
                 amount,
                 sourceAccount.getAccountNumber(),
@@ -119,7 +136,7 @@ public class AccountService {
             //Update current instance of Balance (balance stay updated throughout instance)
             account.setBalance(NewBalance);
             //Now the transaction will be added
-            TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
+            transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
         } catch (Exception e) {
             log.error("System error during deposit for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
             throw e;
@@ -150,7 +167,7 @@ public class AccountService {
             account.setBalance(NewBalance);
 
             // Add transaction history
-            TransactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
+            transactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
 
             // 2. The "Happy Path" (INFO)
             log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), NewBalance);

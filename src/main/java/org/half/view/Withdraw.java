@@ -3,18 +3,23 @@ package org.half.view;
 import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 
 public class Withdraw {
     private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
 
-    private static final AccountService accountService = new AccountService(accountRepository);
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     public static void Withdraw_View(Account currentAccount) {
         boolean running = true;
-        System.out.printf("Current Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
+        System.out.printf("\nCurrent Balance: %s$%.2f%s\n", ANSI.rgb(0, 255, 0), currentAccount.getBalance(), "\033[0m");
         while (running) {
             System.out.printf("Please enter the amount you would like to deposit or type %s0%s to go back to the main menu: ", ANSI.rgb(255, 0, 0), "\033[0m");
             double AmountWithDrawn = BankScanner.getDouble();
