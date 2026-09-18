@@ -2,6 +2,7 @@ package org.half.view;
 
 import org.half.model.Account;
 import org.half.model.User;
+import org.half.repository.AccountRepository;
 import org.half.security.AccountVerificationService;
 import org.half.service.AccountService;
 import org.half.utility.ANSI;
@@ -16,6 +17,10 @@ public class AccountSelection {
     // Class specific Logger for logging
     private static final Logger log = LoggerFactory.getLogger(AccountSelection.class);
 
+    private static final AccountRepository accountRepository = new AccountRepository();
+
+    private static final AccountService accountService = new AccountService(accountRepository);
+
     // View for user to select their account
     public static void selectAccount(User user) {
         // Welcome the user
@@ -26,7 +31,7 @@ public class AccountSelection {
         // Show the account selection menu
         while (true) {
             // Get all the accounts for the logged-in user
-            List<Account> accounts = AccountService.getAccounts(user);
+            List<Account> accounts = accountService.getAccounts(user);
 
             // If user has no account, keep prompting them to create a new account
             while (accounts == null) {
@@ -36,7 +41,7 @@ public class AccountSelection {
                 AccountCreation.createAccount(user);
 
                 // Retry getting accounts
-                accounts = AccountService.getAccounts(user);
+                accounts = accountService.getAccounts(user);
             }
 
             // Selecting accounts title
