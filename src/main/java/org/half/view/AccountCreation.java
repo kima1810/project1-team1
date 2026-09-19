@@ -26,18 +26,15 @@ public class AccountCreation {
     // View for user to create a new account
     public static void createAccount(User user) {
         // Creating new account title
-        System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                "Let's create your account..." +
-                ANSI.RESET);
+        System.out.println(ANSI.title("\nLet's create your account..."));
 
         log.info("Creating a new account for user: {}", user.getUsername());
 
         // Ask user to choose an account type
         while (true) {
             System.out.println("Choose account type: " +
-                    ANSI.rgb(100, 255, 100) + "CHECKING" +
-                    ANSI.RESET + " or " +
-                    ANSI.rgb(100, 255, 100) + "SAVINGS" + ANSI.RESET);
+                    ANSI.optionPositive("CHECKING") + " or " +
+                    ANSI.optionPositive("SAVINGS"));
 
             // Prompt user for account type
             AccountType accountType;
@@ -83,21 +80,19 @@ public class AccountCreation {
 
                 // Account creation failed
                 if (accountNumber == -1) {
-                    System.out.println("Account creation failed. Please try again...");
+                    System.out.println(ANSI.userWarning("Account creation failed. Please try again..."));
                     log.error("Account creation failed for user: {}", user.getUsername());
                     continue;
                 }
             } catch (IllegalArgumentException e) {
                 // Something else went wrong, check logs for more info
-                System.out.println("Something went wrong. Please try again...");
+                System.out.println(ANSI.userWarning("Something went wrong. Please try again..."));
                 log.error("Something went wrong. {}", e.getMessage());
                 continue;
             }
 
             // Account successfully created
-            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                    "Account successfully created!" +
-                    ANSI.RESET);
+            System.out.println("\n" + ANSI.success("Account successfully created!"));
 
             log.info("Account successfully created! {username: {}, account: {}}", user.getUsername(), accountType + String.format(" ****%04d", accountNumber % 10000));
 
@@ -106,7 +101,7 @@ public class AccountCreation {
             System.out.println(ANSI.MAGENTA + accountNumber + ANSI.RESET);
 
             // Freeze the screen
-            System.out.print(ANSI.rgb(100, 255, 100) + "\nPress enter to continue..." + ANSI.RESET);
+            System.out.print(ANSI.optionPositive("\nPress enter to continue..."));
             BankScanner.freeze();
             break;
         }

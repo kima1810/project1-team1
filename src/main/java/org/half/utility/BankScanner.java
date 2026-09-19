@@ -60,7 +60,7 @@ public class BankScanner {
                 // Check if the input is empty
                 if (userInput.isBlank()) {
                     // Re-prompt user
-                    System.out.print("Please select an option: ");
+                    System.out.print(ANSI.userWarning("Please select an option: "));
                     log.warn("User inputted nothing. Prompting again...");
                     continue;
                 }
