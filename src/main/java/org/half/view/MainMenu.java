@@ -29,6 +29,7 @@ public class MainMenu {
             System.out.println("[3] Deposit");
             System.out.println("[4] Transfer");
             System.out.println("[5] Transaction history");
+            System.out.println("[6] Show account number");
             System.out.println(ANSI.rgb(255,100,100) + "[0] Switch Account");
             System.out.print(ANSI.RESET);
 
@@ -41,7 +42,7 @@ public class MainMenu {
             log.info("User selected option: {}", userInput);
 
             // Check if option is valid
-            while (userInput < 0 || userInput > 5) {
+            while (userInput < 0 || userInput > 6) {
                 System.out.print("Please enter a number between 0 and 5: " );
                 userInput = BankScanner.promptUserSelection();
             }
@@ -67,6 +68,10 @@ public class MainMenu {
                 case 5:
                     // Transaction history
                     TransactionHistory.displayTransactions(activeAccount);
+                    break;
+                case 6:
+                    // View account number
+                    CheckAccountNumber.showAccountNumber(activeAccount);
                     break;
                 case 0:
                     // Switch accounts
