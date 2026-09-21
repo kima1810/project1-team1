@@ -20,7 +20,6 @@ import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
 import com.williamcallahan.tui4j.compat.lipgloss.Style;
 import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 public class MainMenu implements Model {
     private static final Logger log = LoggerFactory.getLogger(MainMenu.class);
@@ -52,12 +51,7 @@ public class MainMenu implements Model {
     private long transferDest = 0;
     private boolean animationToggle = false;
 
-    private final static Style ACTIVE_ITEM = Style.newStyle()
-            .foreground(Color.color("0")).background(Color.color("46"))
-            .bold(true).padding(0, 1);
 
-    private final static Style TITLE = Style.newStyle().foreground(Color.color("227")).bold(true);
-    private final static Style TEXT_CURSOR = Style.newStyle().foreground(Color.color("46")).blink(true);
 
     private final static String[] CHOICES = {
             "View balance", "Withdraw", "Deposit", "Transfer", "Transaction history", "Switch Account"
@@ -195,12 +189,12 @@ public class MainMenu implements Model {
 
     private String renderMenu() {
         StringBuilder content = new StringBuilder();
-        content.append(TITLE.render("Main Menu")).append("\n\n");
+        content.append(Theme.TITLE.render("Main Menu")).append("\n\n");
         for (int i = 0; i < CHOICES.length; i++) {
             if (cursor == i) {
-                content.append(ACTIVE_ITEM.render("▶ " + CHOICES[i])).append("\n");
+                content.append(Theme.ACTIVE_ITEM_SELECT.render("▶ " + CHOICES[i])).append("\n");
             } else {
-                if (i == 5) content.append(Style.newStyle().foreground(Color.color("203")).render("  " + CHOICES[i])).append("\n");
+                if (i == 5) content.append(Theme.ERROR_TEXT.render("  " + CHOICES[i])).append("\n");
                 else content.append("  ").append(CHOICES[i]).append("\n");
             }
         }
@@ -208,9 +202,9 @@ public class MainMenu implements Model {
     }
 
     private String renderBalance() {
-        String content = TITLE.render("Account Balance") + "\n\n" +
-                "Available Funds: " + Style.newStyle().foreground(Color.color("46")).bold(true).render(String.format("$%.2f", activeAccount.getBalance())) + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press 'enter' to return");
+        String content = Theme.TITLE.render("Account Balance") + "\n\n" +
+                "Available Funds: " + Theme.LOGO.render(String.format("$%.2f", activeAccount.getBalance())) + "\n\n" +
+                Theme.FOOTER_TEXT.render("Press 'enter' to return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
@@ -223,34 +217,34 @@ public class MainMenu implements Model {
             default -> "";
         };
 
-        String content = TITLE.render("Transaction Input") + "\n\n" +
+        String content = Theme.TITLE.render("Transaction Input") + "\n\n" +
                 prompt + "\n" +
-                Style.newStyle().foreground(Color.color("227")).render(inputBuffer) + TEXT_CURSOR.render("█") + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.TITLE.render(inputBuffer) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
+                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderNotification() {
-        String content = TITLE.render("System Notice") + "\n\n" +
+        String content = Theme.TITLE.render("System Notice") + "\n\n" +
                 notificationMessage + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press 'enter' to continue");
+                Theme.FOOTER_TEXT.render("Press 'enter' to continue");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderHistory() {
         StringBuilder content = new StringBuilder();
-        content.append(TITLE.render("Transaction History")).append("\n\n");
+        content.append(Theme.TITLE.render("Transaction History")).append("\n\n");
 
         String header = String.format("%-22s %-12s %-15s %-15s %-15s",
                 "Date", "Type", "Amount", "Origin ID", "Dest ID");
 
-        content.append(Style.newStyle().foreground(Color.color("51")).italic(true).render(header)).append("\n");
+        content.append(Theme.USERNAME.render(header)).append("\n");
         content.append("──────────────────────────────────────────────────────────────────────────────────\n");
 
         List<TransactionModel> history = transactionModelRepository.printOutTransactions(activeAccount.getAccountNumber());
 
         if (history.isEmpty()) {
-            content.append(Style.newStyle().foreground(Color.color("240")).render("No transactions found.\n"));
+            content.append(Theme.FOOTER_TEXT.render("No transactions found.\n"));
         } else {
             for (TransactionModel t : history) {
                 String origin = (t.getOriginAccountId() == 0) ? "N/A" : String.valueOf(t.getOriginAccountId());
@@ -267,7 +261,7 @@ public class MainMenu implements Model {
         }
 
         content.append("\n\n");
-        content.append(Style.newStyle().foreground(Color.color("240")).render("Press 'enter' to return"));
+        content.append(Theme.FOOTER_TEXT.render("Press 'enter' to return"));
 
         return Theme.CONTENT_PANEL.render(content.toString());
     }

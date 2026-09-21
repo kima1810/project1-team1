@@ -12,13 +12,9 @@ import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
 import com.williamcallahan.tui4j.compat.lipgloss.Style;
 import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 public class WelcomeMenu implements Model {
     private static final Logger log = LoggerFactory.getLogger(WelcomeMenu.class);
-
-    private final static Style TITLE = Style.newStyle().foreground(Color.color("227")).bold(true);
-    private final static Style LOGO = Style.newStyle().foreground(Color.color("46")).bold(true);
 
     private final String[] CHOICES = {
             "Sign In",
@@ -66,7 +62,7 @@ public class WelcomeMenu implements Model {
         StringBuilder buffer = new StringBuilder();
 
         // ASCII Logo
-        buffer.append(LOGO.render(
+        buffer.append(Theme.LOGO.render(
                 " /$$$$$$$$ /$$  /$$$$$$   /$$                     /$$ /$$$$$$$   /$$$$$$        /$$$$$$$                      /$$      \n" +
                         "| $$_____/|__/ /$$__  $$ | $$                    /$$/| $$____/  /$$$_  $$      | $$__  $$                    | $$      \n" +
                         "| $$       /$$| $$  \\__//$$$$$$   /$$   /$$     /$$/ | $$      | $$$$\\ $$      | $$  \\ $$  /$$$$$$  /$$$$$$$ | $$   /$$\n" +
@@ -81,12 +77,12 @@ public class WelcomeMenu implements Model {
         ));
 
         buffer.append("\n");
-        buffer.append(TITLE.render("Welcome to Bank 50"));
+        buffer.append(Theme.TITLE.render("Welcome to Bank 50"));
         buffer.append("\n");
 
         for (int i = 0; i < CHOICES.length; i++) {
             if (cursor == i) {
-                buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ " + CHOICES[i])).append("\n");
+                buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ " + CHOICES[i])).append("\n");
             } else {
                 if (i == 2) {
                     buffer.append(Style.newStyle().foreground(Color.color("203")).render("  " + CHOICES[i])).append("\n");

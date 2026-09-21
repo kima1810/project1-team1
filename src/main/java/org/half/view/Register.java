@@ -13,10 +13,7 @@ import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 public class Register implements Model {
     private static final Logger log = LoggerFactory.getLogger(Register.class);
@@ -25,11 +22,6 @@ public class Register implements Model {
     private static final UserService userService = new UserService(userRepository);
 
     private final long startTime = System.currentTimeMillis();
-
-    private final static Style ACTIVE_ITEM = Style.newStyle().foreground(Color.color("46")).bold(true);
-    private final static Style ERROR_TEXT = Style.newStyle().foreground(Color.color("203")).bold(true);
-    private final static Style TEXT_CURSOR = Style.newStyle().foreground(Color.color("46")).blink(true);
-    private final static Style TITLE = Style.newStyle().foreground(Color.color("227")).bold(true);
 
     private final String[] fieldNames = {
             "First Name", "Last Name", "Email", "Phone Number", "Username", "Password", "Confirm Password"
@@ -129,7 +121,7 @@ public class Register implements Model {
     @Override
     public String view() {
         StringBuilder content = new StringBuilder();
-        content.append(TITLE.render("Create a New Account")).append("\n\n");
+        content.append(Theme.TITLE.render("Create a New Account")).append("\n\n");
 
         for (int i = 0; i < fieldNames.length; i++) {
             String displayString = inputs[i];
@@ -140,10 +132,10 @@ public class Register implements Model {
             }
 
             if (i == activeIndex) {
-                content.append(ACTIVE_ITEM.render("▶ " + String.format("%-18s", fieldNames[i] + ":")))
+                content.append(Theme.ACTIVE_ITEM_INPUT.render("▶ " + String.format("%-18s", fieldNames[i] + ":")))
                         .append(" ")
-                        .append(Style.newStyle().foreground(Color.color("227")).render(displayString))
-                        .append(TEXT_CURSOR.render("█")).append("\n");
+                        .append(Theme.TITLE.render(displayString))
+                        .append(Theme.TEXT_CURSOR.render("█")).append("\n");
             } else {
                 content.append("  ").append(String.format("%-18s", fieldNames[i] + ":"))
                         .append(" ").append(displayString).append("\n");
@@ -152,9 +144,9 @@ public class Register implements Model {
 
         content.append("\n");
         if (!errorMessage.isEmpty()) {
-            content.append(ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
+            content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
-            content.append(Style.newStyle().foreground(Color.color("240")).render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
+            content.append(Theme.FOOTER_TEXT.render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
         }
 
         return Theme.MAIN_PANEL.render(content.toString());
