@@ -15,7 +15,6 @@ import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
 import com.williamcallahan.tui4j.compat.lipgloss.Style;
 import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 public class AccountCreation implements Model {
     private static final Logger log = LoggerFactory.getLogger(AccountCreation.class);

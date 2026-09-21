@@ -6,6 +6,7 @@ import org.half.model.User;
 import org.half.security.AccountVerificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.half.style.Theme;
 
 import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
@@ -14,7 +15,6 @@ import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
 import com.williamcallahan.tui4j.compat.lipgloss.Style;
 import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 import java.util.List;
 
@@ -31,24 +31,6 @@ public class AccountSelection implements Model {
     private int cursor = 0;
     private String pinBuffer = "";
     private Account selectedAccountForPin = null;
-
-    // --- TUI Styling ---
-    private final static Style MENU_PANEL = Style.newStyle()
-            .border(Borders.roundedBorder()).borderTopForeground(Color.color("63"))
-            .padding(1, 4).margin(1, 2);
-
-    private final static Style CONTENT_PANEL = Style.newStyle()
-            .border(Borders.normalBorder()).borderTopForeground(Color.color("46"))
-            .padding(2, 6).margin(1, 2);
-
-    private final static Style ACTIVE_ITEM = Style.newStyle()
-            .foreground(Color.color("0")).background(Color.color("46"))
-            .bold(true).padding(0, 1);
-
-    private final static Style TITLE = Style.newStyle().foreground(Color.color("227")).bold(true);
-    private final static Style USERNAME = Style.newStyle().foreground(Color.color("51")).italic(true);
-    private final static Style TEXT_CURSOR = Style.newStyle().foreground(Color.color("46")).blink(true);
-    private final static Style ERROR_TEXT = Style.newStyle().foreground(Color.color("203")).bold(true);
 
     public AccountSelection(User user, List<Account> accounts) {
         this.user = user;
@@ -151,44 +133,44 @@ public class AccountSelection implements Model {
 
     private String renderSelection() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("\nWelcome, ").append(USERNAME.render(user.getUsername())).append("!\n\n");
-        buffer.append(TITLE.render("Your Accounts:")).append("\n\n");
+        buffer.append("\nWelcome, ").append(Theme.USERNAME.render(user.getUsername())).append("!\n\n");
+        buffer.append(Theme.TITLE.render("Your Accounts:")).append("\n\n");
 
         for (int i = 0; i < accounts.size(); i++) {
             Account account = accounts.get(i);
             String formattedAccount = String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000));
             if (cursor == i) {
-                buffer.append(ACTIVE_ITEM.render("▶ " + formattedAccount));
+                buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ " + formattedAccount));
             } else {
                 buffer.append("  ").append(formattedAccount);
             }
             buffer.append("\n");
         }
 
-        if (cursor == accounts.size()) buffer.append(ACTIVE_ITEM.render("▶ Open a new account")).append("\n");
+        if (cursor == accounts.size()) buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ Open a new account")).append("\n");
         else buffer.append(Style.newStyle().foreground(Color.color("87")).render("  Open a new account")).append("\n");
 
-        if (cursor == accounts.size() + 1) buffer.append(ACTIVE_ITEM.render("▶ Logout")).append("\n");
+        if (cursor == accounts.size() + 1) buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ Logout")).append("\n");
         else buffer.append(Style.newStyle().foreground(Color.color("203")).render("  Logout")).append("\n");
 
-        return MENU_PANEL.render(buffer.toString());
+        return Theme.MAIN_PANEL.render(buffer.toString());
     }
 
     private String renderPinEntry() {
         String formattedAccount = String.format("%s ****%04d", selectedAccountForPin.getAccountType(), (selectedAccountForPin.getAccountNumber() % 10000));
         String maskedPin = "*".repeat(pinBuffer.length());
 
-        String content = TITLE.render("Secure Login") + "\n\n" +
+        String content = Theme.TITLE.render("Secure Login") + "\n\n" +
                 "Enter 4-digit PIN for " + formattedAccount + ":\n" +
-                Style.newStyle().foreground(Color.color("227")).render(maskedPin) + TEXT_CURSOR.render("█") + "\n\n" +
+                Style.newStyle().foreground(Color.color("227")).render(maskedPin) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
                 Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to submit • [Esc] to cancel");
-        return CONTENT_PANEL.render(content);
+        return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderError() {
-        String content = TITLE.render("Authentication Failed") + "\n\n" +
-                ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
+        String content = Theme.TITLE.render("Authentication Failed") + "\n\n" +
+                Theme.ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
                 Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to try again");
-        return CONTENT_PANEL.render(content);
+        return Theme.CONTENT_PANEL.render(content);
     }
 }

@@ -13,6 +13,7 @@ public class Theme {
     private static final String DANGER = "203";          // Soft Red
     private static final String MUTED_GRAY = "240";      // Dark Gray
     private static final String PURE_BLACK = "#000000";
+    private static final String INDIGO = "51";
 
     // --- Global UI Components ---
 
@@ -29,7 +30,7 @@ public class Theme {
     // Inner content panel for nested views (like forms or transaction history)
     public static final Style CONTENT_PANEL = Style.newStyle()
             .border(Borders.normalBorder())
-            .borderForeground(Color.color(BRAND_PRIMARY))
+            .borderForeground(Color.color(BRAND_SECONDARY))
             .padding(2, 6)
             .margin(1, 2);
 
@@ -44,8 +45,7 @@ public class Theme {
             .bold(true);
 
     public static final Style ACTIVE_MENU_ITEM = Style.newStyle()
-            .foreground(Color.color(PURE_BLACK))
-            .background(Color.color(BRAND_PRIMARY))
+            .foreground(Color.color("46"))
             .bold(true)
             .padding(0, 1);
 
@@ -53,7 +53,7 @@ public class Theme {
             .foreground(Color.color("255")); // Standard White
 
     public static final Style TEXT_CURSOR = Style.newStyle()
-            .foreground(Color.color(BRAND_PRIMARY))
+            .foreground(Color.color("46"))
             .blink(true);
 
     public static final Style ERROR_TEXT = Style.newStyle()
@@ -62,4 +62,7 @@ public class Theme {
 
     public static final Style FOOTER_TEXT = Style.newStyle()
             .foreground(Color.color(MUTED_GRAY));
+
+    public static final Style USERNAME = Style.newStyle()
+            .foreground(Color.color(INDIGO));
 }

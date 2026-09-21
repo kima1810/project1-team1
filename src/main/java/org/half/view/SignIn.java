@@ -14,21 +14,11 @@ import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
 import com.williamcallahan.tui4j.compat.lipgloss.Style;
 import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 public class SignIn implements Model {
     private static final Logger log = LoggerFactory.getLogger(SignIn.class);
 
     private final long startTime = System.currentTimeMillis();
-
-    private final static Style FORM_PANEL = Style.newStyle()
-            .border(Borders.roundedBorder()).borderTopForeground(Color.color("63"))
-            .padding(1, 4).margin(1, 2);
-
-    private final static Style ACTIVE_ITEM = Style.newStyle().foreground(Color.color("46")).bold(true);
-    private final static Style ERROR_TEXT = Style.newStyle().foreground(Color.color("203")).bold(true);
-    private final static Style TEXT_CURSOR = Style.newStyle().foreground(Color.color("46")).blink(true);
-    private final static Style TITLE = Style.newStyle().foreground(Color.color("227")).bold(true);
 
     private final String[] inputs = {"", ""};
     private int activeIndex = 0;
@@ -91,11 +81,11 @@ public class SignIn implements Model {
     @Override
     public String view() {
         StringBuilder content = new StringBuilder();
-        content.append(TITLE.render("Account Sign In")).append("\n\n");
+        content.append(Theme.TITLE.render("Account Sign In")).append("\n\n");
 
         // Username Field
         if (activeIndex == 0) {
-            content.append(ACTIVE_ITEM.render("▶ Username: ")).append(Style.newStyle().foreground(Color.color("227")).render(inputs[0])).append(TEXT_CURSOR.render("█")).append("\n");
+            content.append(Theme.ACTIVE_MENU_ITEM.render("▶ Username: ")).append(Style.newStyle().foreground(Color.color("227")).render(inputs[0])).append(Theme.TEXT_CURSOR.render("█")).append("\n");
         } else {
             content.append("  Username: ").append(inputs[0]).append("\n");
         }
@@ -103,18 +93,18 @@ public class SignIn implements Model {
         // Password Field
         String maskedPassword = "*".repeat(inputs[1].length());
         if (activeIndex == 1) {
-            content.append(ACTIVE_ITEM.render("▶ Password: ")).append(Style.newStyle().foreground(Color.color("227")).render(maskedPassword)).append(TEXT_CURSOR.render("█")).append("\n");
+            content.append(Theme.ACTIVE_MENU_ITEM.render("▶ Password: ")).append(Style.newStyle().foreground(Color.color("227")).render(maskedPassword)).append(Theme.TEXT_CURSOR.render("█")).append("\n");
         } else {
             content.append("  Password: ").append(maskedPassword).append("\n");
         }
 
         content.append("\n");
         if (!errorMessage.isEmpty()) {
-            content.append(ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
+            content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
             content.append(Style.newStyle().foreground(Color.color("240")).render("[Tab] switch fields • [Enter] login")).append("\n\n");
         }
 
-        return FORM_PANEL.render(content.toString());
+        return Theme.MAIN_PANEL.render(content.toString());
     }
 }
