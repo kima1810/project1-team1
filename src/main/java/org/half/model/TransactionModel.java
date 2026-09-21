@@ -1,5 +1,5 @@
 package org.half.model;
-import org.half.view.TransactionHistory;
+
 
 public class TransactionModel {
     private String dateTime;
