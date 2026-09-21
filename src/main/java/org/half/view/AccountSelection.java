@@ -7,6 +7,7 @@ import org.half.repository.AccountRepository;
 import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
 import org.half.service.TransactionHistoryService;
+import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,15 +43,6 @@ public class AccountSelection implements Model {
     private int cursor = 0;
     private String pinBuffer = "";
     private Account selectedAccountForPin = null;
-
-    // --- TUI Styling ---
-    private final static Style MENU_PANEL = Style.newStyle()
-            .border(Borders.roundedBorder()).borderTopForeground(Color.color("63"))
-            .padding(1, 4).margin(1, 2);
-
-    private final static Style CONTENT_PANEL = Style.newStyle()
-            .border(Borders.normalBorder()).borderTopForeground(Color.color("46"))
-            .padding(2, 6).margin(1, 2);
 
     private final static Style ACTIVE_ITEM = Style.newStyle()
             .foreground(Color.color("0")).background(Color.color("46"))
@@ -182,7 +174,7 @@ public class AccountSelection implements Model {
         if (cursor == accounts.size() + 1) buffer.append(ACTIVE_ITEM.render("▶ Logout")).append("\n");
         else buffer.append(Style.newStyle().foreground(Color.color("203")).render("  Logout")).append("\n");
 
-        return MENU_PANEL.render(buffer.toString());
+        return Theme.MAIN_PANEL.render(buffer.toString());
     }
 
     private String renderPinEntry() {
@@ -193,13 +185,13 @@ public class AccountSelection implements Model {
                 "Enter 4-digit PIN for " + formattedAccount + ":\n" +
                 Style.newStyle().foreground(Color.color("227")).render(maskedPin) + TEXT_CURSOR.render("█") + "\n\n" +
                 Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to submit • [Esc] to cancel");
-        return CONTENT_PANEL.render(content);
+        return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderError() {
         String content = TITLE.render("Authentication Failed") + "\n\n" +
                 ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
                 Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to try again");
-        return CONTENT_PANEL.render(content);
+        return Theme.CONTENT_PANEL.render(content);
     }
 }

@@ -5,6 +5,7 @@ import org.half.model.User;
 import org.half.repository.UserRepository;
 import org.half.security.PasswordService;
 import org.half.service.UserService;
+import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,10 +25,6 @@ public class Register implements Model {
     private static final UserService userService = new UserService(userRepository);
 
     private final long startTime = System.currentTimeMillis();
-
-    private final static Style FORM_PANEL = Style.newStyle()
-            .border(Borders.roundedBorder()).borderTopForeground(Color.color("63"))
-            .padding(1, 4).margin(1, 2);
 
     private final static Style ACTIVE_ITEM = Style.newStyle().foreground(Color.color("46")).bold(true);
     private final static Style ERROR_TEXT = Style.newStyle().foreground(Color.color("203")).bold(true);
@@ -160,6 +157,6 @@ public class Register implements Model {
             content.append(Style.newStyle().foreground(Color.color("240")).render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
         }
 
-        return FORM_PANEL.render(content.toString());
+        return Theme.MAIN_PANEL.render(content.toString());
     }
 }

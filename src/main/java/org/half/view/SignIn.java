@@ -25,10 +25,6 @@ public class SignIn implements Model {
 
     private final long startTime = System.currentTimeMillis();
 
-    private final static Style FORM_PANEL = Style.newStyle()
-            .border(Borders.roundedBorder()).borderTopForeground(Color.color("63"))
-            .padding(1, 4).margin(1, 2);
-
     private final static Style ACTIVE_ITEM = Style.newStyle().foreground(Color.color("46")).bold(true);
     private final static Style ERROR_TEXT = Style.newStyle().foreground(Color.color("203")).bold(true);
     private final static Style TEXT_CURSOR = Style.newStyle().foreground(Color.color("46")).blink(true);
@@ -119,6 +115,6 @@ public class SignIn implements Model {
             content.append(Style.newStyle().foreground(Color.color("240")).render("[Tab] switch fields • [Enter] login")).append("\n\n");
         }
 
-        return FORM_PANEL.render(content.toString());
+        return Theme.MAIN_PANEL.render(content.toString());
     }
 }
