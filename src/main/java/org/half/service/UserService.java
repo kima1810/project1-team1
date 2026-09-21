@@ -4,6 +4,7 @@ import org.half.exceptions.UserAlreadyExists;
 import org.half.model.User;
 import org.half.repository.UserRepository;
 
+import org.half.security.PasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,5 +36,19 @@ public class UserService {
             log.error("User already exists: {}", e.getMessage());
             return null;
         }
+    }
+
+    public User verifyUser(String userName, String userPassword){
+        if(userName.isEmpty() || userPassword.isEmpty()) {
+            throw new IllegalArgumentException("Can Not Enter Empty Strings.");
+        }
+        String dataBasePassword = userRepository.getPasswordHash(userName);
+
+        if (dataBasePassword != null) {
+            if (PasswordService.verifyPassword(userPassword, dataBasePassword)) {
+                return userRepository.getUser(userName);
+            }
+        }
+        return null;
     }
 }
