@@ -1,88 +1,124 @@
 package org.half.view;
 
+import org.half.model.RouteModel;
+import org.half.model.User;
 import org.half.repository.UserRepository;
 import org.half.service.UserService;
-import org.half.utility.ANSI;
-import org.half.utility.BankScanner;
-import org.half.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.half.style.Theme;
 
-public class SignIn {
+import com.williamcallahan.tui4j.compat.bubbletea.Command;
+import com.williamcallahan.tui4j.compat.bubbletea.Message;
+import com.williamcallahan.tui4j.compat.bubbletea.Model;
+import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
+import com.williamcallahan.tui4j.compat.lipgloss.Style;
+import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
+import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
+import com.williamcallahan.tui4j.compat.lipgloss.Borders;
+
+public class SignIn implements Model {
     private static final Logger log = LoggerFactory.getLogger(SignIn.class);
 
     private static final UserRepository userRepository = new UserRepository();
     private static final UserService userService = new UserService(userRepository);
 
-    public static void signIn(){
-        System.out.println(ANSI.rgb(0, 255, 0) +
-                " /$$$$$$$$ /$$  /$$$$$$   /$$                     /$$ /$$$$$$$   /$$$$$$        /$$$$$$$                      /$$      \n" +
-                "| $$_____/|__/ /$$__  $$ | $$                    /$$/| $$____/  /$$$_  $$      | $$__  $$                    | $$      \n" +
-                "| $$       /$$| $$  \\__//$$$$$$   /$$   /$$     /$$/ | $$      | $$$$\\ $$      | $$  \\ $$  /$$$$$$  /$$$$$$$ | $$   /$$\n" +
-                "| $$$$$   | $$| $$$$   |_  $$_/  | $$  | $$    /$$/  | $$$$$$$ | $$ $$ $$      | $$$$$$$  |____  $$| $$__  $$| $$  /$$/\n" +
-                "| $$__/   | $$| $$_/     | $$    | $$  | $$   /$$/   |_____  $$| $$\\ $$$$      | $$__  $$  /$$$$$$$| $$  \\ $$| $$$$$$/ \n" +
-                "| $$      | $$| $$       | $$ /$$| $$  | $$  /$$/     /$$  \\ $$| $$ \\ $$$      | $$  \\ $$ /$$__  $$| $$  | $$| $$_  $$ \n" +
-                "| $$      | $$| $$       |  $$$$/|  $$$$$$$ /$$/     |  $$$$$$/|  $$$$$$/      | $$$$$$$/|  $$$$$$$| $$  | $$| $$ \\  $$\n" +
-                "|__/      |__/|__/        \\___/   \\____  $$|__/       \\______/  \\______/       |_______/  \\_______/|__/  |__/|__/  \\__/\n" +
-                "                                  /$$  | $$                                                                            \n" +
-                "                                 |  $$$$$$/                                                                            \n" +
-                "                                  \\______/                                                                             " +
-                ANSI.RESET);
-        exitBank:
-        while(true){
-            System.out.println("\n" + ANSI.title(
-                    """
-                            ┌────────────────────────────────┐
-                            │  Welcome to Fifty/50 Bank!     │
-                            └────────────────────────────────┘
-                            """));
+    private final long startTime = System.currentTimeMillis();
 
-            System.out.println("Are you a member of our Bank? Yes or No");
-            System.out.println(ANSI.optionPositive("[1] Yes: Sign In"));
-            System.out.println(ANSI.optionPositive("[2] No: Create a New User Account"));
-            System.out.println(ANSI.optionNegative("[0] Exit"));
+    private final static Style FORM_PANEL = Style.newStyle()
+            .border(Borders.roundedBorder()).borderTopForeground(Color.color("63"))
+            .padding(1, 4).margin(1, 2);
 
-            System.out.println("\n──────────────────────────────────");
+    private final static Style ACTIVE_ITEM = Style.newStyle().foreground(Color.color("46")).bold(true);
+    private final static Style ERROR_TEXT = Style.newStyle().foreground(Color.color("203")).bold(true);
+    private final static Style TEXT_CURSOR = Style.newStyle().foreground(Color.color("46")).blink(true);
+    private final static Style TITLE = Style.newStyle().foreground(Color.color("227")).bold(true);
 
-            System.out.print("Select an option: ");
-            int userInput = BankScanner.promptUserSelection();
+    private final String[] inputs = {"", ""};
+    private int activeIndex = 0;
+    private String errorMessage = "";
 
-            switch (userInput) {
-                case 1:
-                    // Logging in title
-                    System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                            "Let's sign in to your profile..." +
-                            ANSI.RESET);
+    @Override
+    public Command init() { return null; }
 
-                    while (true) {
-                        System.out.println("Please enter your Username.");
-                        String userName = BankScanner.getString();
+    @Override
+    public UpdateResult<? extends Model> update(Message msg) {
 
-                        System.out.println("Please enter your Password.");
-                        String userPassword = BankScanner.getString();
-                        if(!userName.isEmpty() && !userPassword.isEmpty()) {
-                            User activeUser = userService.verifyUser(userName, userPassword);
-                            if (activeUser != null) {
-                                System.out.println(ANSI.success("Successfully logged in to your profile..."));
-                                log.info("User logged in: userId={}", userName);
-                                AccountSelection.selectAccount(activeUser);
-                                break;
-                            }
-                        }
+        if (System.currentTimeMillis() - startTime < 150) {
+            return UpdateResult.from(this);
+        }
 
-                        System.out.println(ANSI.userWarning("Invalid Credentials. Try again..."));
-                        log.warn("Login failed: userId={}", userName);
-                    }
-                    break;
-                case 2:
-                    Register.register();
-                    break;
-                case 0:
-                    break exitBank;
-                default:
-                    System.out.println(ANSI.userWarning("Invalid Option"));
-                    log.warn("Entered Invalid Sign In Menu Option");
+        if (msg instanceof KeyPressMessage keyPressMessage) {
+            String key = keyPressMessage.key();
+
+            if (key.equals("esc")) {
+                // Send RouteModel to MasterControl to swap back to WelcomeMenu
+                return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.WELCOME, null));
+            } else if (key.equals("tab") || key.equals("down") || key.equals("up") || key.equals("shift+tab")) {
+                activeIndex = (activeIndex == 0) ? 1 : 0;
+                errorMessage = "";
+            } else if (key.equals("enter")) {
+                if (activeIndex == 1) {
+                    return attemptLogin();
+                } else {
+                    activeIndex = 1;
+                }
+            } else if (key.equals("backspace") || key.equals("ctrl+h") || key.equals("delete") || key.equals("\b")) {
+                if (!inputs[activeIndex].isEmpty()) {
+                    inputs[activeIndex] = inputs[activeIndex].substring(0, inputs[activeIndex].length() - 1);
+                }
+            } else if (key.length() == 1) {
+                inputs[activeIndex] += key;
             }
         }
+        return UpdateResult.from(this);
+    }
+
+    private UpdateResult<? extends Model> attemptLogin() {
+        if (inputs[0].isEmpty() || inputs[1].isEmpty()) {
+            errorMessage = "Username and password are required.";
+            return UpdateResult.from(this);
+        }
+
+        User activeUser = userService.verifyUser(inputs[0], inputs[1]);
+        if (activeUser != null) {
+            log.info("User logged in: userId={}", activeUser.getUsername());
+            // Success! Send RouteModel to MasterControl to swap to AccountSelection
+            return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_SELECTION, activeUser));
+        } else {
+            errorMessage = "Invalid credentials. Try again.";
+            inputs[1] = ""; // Clear password field on failure
+            return UpdateResult.from(this);
+        }
+    }
+
+    @Override
+    public String view() {
+        StringBuilder content = new StringBuilder();
+        content.append(TITLE.render("Account Sign In")).append("\n\n");
+
+        // Username Field
+        if (activeIndex == 0) {
+            content.append(ACTIVE_ITEM.render("▶ Username: ")).append(Style.newStyle().foreground(Color.color("227")).render(inputs[0])).append(TEXT_CURSOR.render("█")).append("\n");
+        } else {
+            content.append("  Username: ").append(inputs[0]).append("\n");
+        }
+
+        // Password Field
+        String maskedPassword = "*".repeat(inputs[1].length());
+        if (activeIndex == 1) {
+            content.append(ACTIVE_ITEM.render("▶ Password: ")).append(Style.newStyle().foreground(Color.color("227")).render(maskedPassword)).append(TEXT_CURSOR.render("█")).append("\n");
+        } else {
+            content.append("  Password: ").append(maskedPassword).append("\n");
+        }
+
+        content.append("\n");
+        if (!errorMessage.isEmpty()) {
+            content.append(ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
+        } else {
+            content.append(Style.newStyle().foreground(Color.color("240")).render("[Tab] switch fields • [Enter] login")).append("\n\n");
+        }
+
+        return FORM_PANEL.render(content.toString());
     }
 }
