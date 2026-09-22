@@ -52,22 +52,27 @@ public class ANSI {
         }
     }
 
+    // Custom Red
     public static String userWarning(String text) {
         return ANSI.rgb(255,100,100) + text + ANSI.RESET;
     }
 
+    // Custom Yellow
     public static String title(String text) {
         return ANSI.rgb(255, 255, 100) + text + ANSI.RESET;
     }
 
+    // Custom Green
     public static String optionPositive(String text) {
         return ANSI.rgb(100, 255, 100) + text + ANSI.RESET;
     }
 
+    // Custom Red
     public static String optionNegative(String text) {
         return ANSI.rgb(255,100,100) + text + ANSI.RESET;
     }
 
+    // Custom Yellow
     public static String success(String text) {
         return ANSI.rgb(255, 255, 100) + text + ANSI.RESET;
     }

@@ -78,6 +78,7 @@ public class SignIn {
                     Register.register();
                     break;
                 case 0:
+                    System.out.println(ANSI.userWarning("Exiting..."));
                     break exitBank;
                 default:
                     System.out.println(ANSI.userWarning("Invalid Option"));

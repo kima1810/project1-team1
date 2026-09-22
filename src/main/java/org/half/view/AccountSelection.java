@@ -51,12 +51,12 @@ public class AccountSelection {
             }
 
             // Selecting accounts title
-            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                    "┌────────────────────────────────┐\n" +
-                    "│  Your Accounts:                │\n" +
-                    "└────────────────────────────────┘\n" +
-                    ANSI.RESET
-            );
+            System.out.println("\n" + ANSI.title(
+                    """
+                            ┌────────────────────────────────┐
+                            │  Your Accounts:                │
+                            └────────────────────────────────┘
+                            """));
 
             log.info("Printing all the accounts for user: {}", user.getUsername());
 
@@ -64,14 +64,13 @@ public class AccountSelection {
             System.out.print(ANSI.rgb(100, 255, 100));
             for (int i = 1; i <= accounts.size(); i++) {
                 Account account = accounts.get(i - 1);
-                System.out.printf("[" + i + "] " + account.getAccountType() + " ****%04d%n", (account.getAccountNumber() % 10000));
+                System.out.println(ANSI.optionPositive("[" + i + "] " + account.getAccountType() + String.format(" ****%04d", (account.getAccountNumber() % 10000))));
             }
 
             // Print other options
             System.out.println(ANSI.rgb(50, 245, 245) + "[-1] Open a new account.");
-            System.out.println(ANSI.rgb(255, 125, 100) + "[0] Logout");
+            System.out.println(ANSI.optionNegative("[0] Logout"));
 
-            System.out.print(ANSI.RESET);
             System.out.println("\n──────────────────────────────────");
 
             // Prompt user to input an option
@@ -80,7 +79,7 @@ public class AccountSelection {
 
             // Check if a valid option was selected
             while (userInput > accounts.size()) {
-                System.out.print("Please enter a number between -1 and " + accounts.size() +": ");
+                System.out.print(ANSI.userWarning("Please enter a number from -1 to " + accounts.size() +": "));
                 log.warn("User selection is invalid.");
                 userInput = BankScanner.promptUserSelection();
             }
@@ -90,6 +89,7 @@ public class AccountSelection {
             // Check if user wants to log out
             if (userInput == 0) {
                 // Log out the user
+                System.out.println(ANSI.userWarning("Logging out of profile..."));
                 log.info("Logging out user: {}", user.getUsername());
                 break;
             }
@@ -125,7 +125,7 @@ public class AccountSelection {
                                 selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
                     }
                 } catch (IllegalArgumentException e) {
-                    System.out.println("Something went wrong.");
+                    System.out.println(ANSI.userWarning("Something went wrong."));
                     log.error("Something went wrong: {}", e.getMessage());
                 }
             }
