@@ -2,7 +2,8 @@ package org.half.view;
 
 import org.half.model.RouteModel;
 import org.half.model.User;
-import org.half.security.SignInService;
+import org.half.repository.UserRepository;
+import org.half.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.half.style.Theme;
@@ -11,12 +12,13 @@ import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
 
 public class SignIn implements Model {
     private static final Logger log = LoggerFactory.getLogger(SignIn.class);
+
+    private static final UserRepository userRepository = new UserRepository();
+    private static final UserService userService = new UserService(userRepository);
 
     private final long startTime = System.currentTimeMillis();
 
@@ -66,7 +68,7 @@ public class SignIn implements Model {
             return UpdateResult.from(this);
         }
 
-        User activeUser = SignInService.verifyUser(inputs[0], inputs[1]);
+        User activeUser = userService.verifyUser(inputs[0], inputs[1]);
         if (activeUser != null) {
             log.info("User logged in: userId={}", activeUser.getUsername());
             // Success! Send RouteModel to MasterControl to swap to AccountSelection
@@ -85,7 +87,7 @@ public class SignIn implements Model {
 
         // Username Field
         if (activeIndex == 0) {
-            content.append(Theme.ACTIVE_MENU_ITEM.render("▶ Username: ")).append(Style.newStyle().foreground(Color.color("227")).render(inputs[0])).append(Theme.TEXT_CURSOR.render("█")).append("\n");
+            content.append(Theme.ACTIVE_ITEM_INPUT.render("▶ Username: ")).append(Theme.TITLE.render(inputs[0])).append(Theme.TEXT_CURSOR.render("█")).append("\n");
         } else {
             content.append("  Username: ").append(inputs[0]).append("\n");
         }
@@ -93,7 +95,7 @@ public class SignIn implements Model {
         // Password Field
         String maskedPassword = "*".repeat(inputs[1].length());
         if (activeIndex == 1) {
-            content.append(Theme.ACTIVE_MENU_ITEM.render("▶ Password: ")).append(Style.newStyle().foreground(Color.color("227")).render(maskedPassword)).append(Theme.TEXT_CURSOR.render("█")).append("\n");
+            content.append(Theme.ACTIVE_ITEM_INPUT.render("▶ Password: ")).append(Theme.TITLE.render(maskedPassword)).append(Theme.TEXT_CURSOR.render("█")).append("\n");
         } else {
             content.append("  Password: ").append(maskedPassword).append("\n");
         }
@@ -102,7 +104,7 @@ public class SignIn implements Model {
         if (!errorMessage.isEmpty()) {
             content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
-            content.append(Style.newStyle().foreground(Color.color("240")).render("[Tab] switch fields • [Enter] login")).append("\n\n");
+            content.append(Theme.FOOTER_TEXT.render("[Tab] switch fields • [Enter] login")).append("\n\n");
         }
 
         return Theme.MAIN_PANEL.render(content.toString());

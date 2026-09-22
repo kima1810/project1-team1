@@ -3,23 +3,32 @@ package org.half.view;
 import org.half.model.Account;
 import org.half.model.RouteModel;
 import org.half.model.User;
-import org.half.security.AccountVerificationService;
+import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
+import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
+import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.half.style.Theme;
 
 import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
 
 import java.util.List;
 
 public class AccountSelection implements Model {
     private static final Logger log = LoggerFactory.getLogger(AccountSelection.class);
+
+    private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
+
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
+
 
     // --- State Management ---
     private enum AppState { SELECTING, ENTERING_PIN, ERROR }
@@ -96,7 +105,7 @@ public class AccountSelection implements Model {
     private UpdateResult<? extends Model> verifyPin() {
         try {
             int pin = Integer.parseInt(pinBuffer);
-            if (AccountVerificationService.verifyAccount(selectedAccountForPin, pin)) {
+            if (accountService.verifyAccount(selectedAccountForPin, pin)) {
                 // Success! Send the Object[] array payload to the Master Router
                 return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.MAIN_MENU, new Object[]{user, selectedAccountForPin}));
             } else {
@@ -140,18 +149,18 @@ public class AccountSelection implements Model {
             Account account = accounts.get(i);
             String formattedAccount = String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000));
             if (cursor == i) {
-                buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ " + formattedAccount));
+                buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ " + formattedAccount));
             } else {
                 buffer.append("  ").append(formattedAccount);
             }
             buffer.append("\n");
         }
 
-        if (cursor == accounts.size()) buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ Open a new account")).append("\n");
-        else buffer.append(Style.newStyle().foreground(Color.color("87")).render("  Open a new account")).append("\n");
+        if (cursor == accounts.size()) buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ Open a new account")).append("\n");
+        else buffer.append(Theme.NEW_ACCOUNT.render("  Open a new account")).append("\n");
 
-        if (cursor == accounts.size() + 1) buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ Logout")).append("\n");
-        else buffer.append(Style.newStyle().foreground(Color.color("203")).render("  Logout")).append("\n");
+        if (cursor == accounts.size() + 1) buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ Logout")).append("\n");
+        else buffer.append(Theme.ERROR_TEXT.render("  Logout")).append("\n");
 
         return Theme.MAIN_PANEL.render(buffer.toString());
     }
@@ -162,15 +171,15 @@ public class AccountSelection implements Model {
 
         String content = Theme.TITLE.render("Secure Login") + "\n\n" +
                 "Enter 4-digit PIN for " + formattedAccount + ":\n" +
-                Style.newStyle().foreground(Color.color("227")).render(maskedPin) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.TITLE.render(maskedPin) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
+                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderError() {
         String content = Theme.TITLE.render("Authentication Failed") + "\n\n" +
                 Theme.ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to try again");
+                Theme.FOOTER_TEXT.render("Press [Enter] to try again");
         return Theme.CONTENT_PANEL.render(content);
     }
 }

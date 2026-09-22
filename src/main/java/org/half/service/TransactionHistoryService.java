@@ -14,10 +14,17 @@ import org.slf4j.LoggerFactory;
 public class TransactionHistoryService {
     //logger
     private static final Logger logger = LoggerFactory.getLogger(TransactionHistoryService.class);
+
+    private final TransactionModelRepository transactionModelRepository;
+
+    public TransactionHistoryService(TransactionModelRepository transactionModelRepository) {
+        this.transactionModelRepository = transactionModelRepository;
+    }
+
     //prints all the transactions
-    public static boolean attemptPrintOutTransactions(Account chosenAccount){
+    public boolean attemptPrintOutTransactions(Account chosenAccount){
         //runs the repository method
-        List<TransactionModel> transactionList = TransactionModelRepository.printOutTransactions(chosenAccount.getAccountNumber());
+        List<TransactionModel> transactionList = transactionModelRepository.printOutTransactions(chosenAccount.getAccountNumber());
 
         //if there are no transactions found with the associated id then return false
         if(transactionList.isEmpty()){
@@ -39,7 +46,7 @@ public class TransactionHistoryService {
     }
 
     //runs the repository method to create a deposit or withdrawal
-    public static boolean attemptAddDepositOrWithdrawal(String type, double amount, long originAccountId){
+    public boolean attemptAddDepositOrWithdrawal(String type, double amount, long originAccountId){
         //creates the transaction object
         TransactionModel transactionModel = new TransactionModel(type, amount, originAccountId);
 
@@ -60,11 +67,11 @@ public class TransactionHistoryService {
             return false;
         }
         //run the repository method, which will either return true or false
-        return TransactionModelRepository.addDepositOrWithdrawal(transactionModel);
+        return transactionModelRepository.addDepositOrWithdrawal(transactionModel);
     }
 
     //runs the repository method to create a transfer
-    public static boolean attemptAddTransfer(String type, double amount, long originAccountId, long destinationAccountId){
+    public boolean attemptAddTransfer(String type, double amount, long originAccountId, long destinationAccountId){
         //creates the transaction object
         TransactionModel transactionModel = new TransactionModel(type, amount, originAccountId, destinationAccountId);
 
@@ -87,8 +94,6 @@ public class TransactionHistoryService {
             return false;
         }
         //will either return true or false
-        return TransactionModelRepository.addTransfer(transactionModel);
+        return transactionModelRepository.addTransfer(transactionModel);
     }
-
-
 }

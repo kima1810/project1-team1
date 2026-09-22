@@ -109,8 +109,6 @@ public class AccountService {
             return false;
         }
 
-        
-        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         //
         transactionHistoryService.attemptAddTransfer(
                 "Transfer",

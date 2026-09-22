@@ -82,7 +82,7 @@ public class WelcomeMenu implements Model {
 
         for (int i = 0; i < CHOICES.length; i++) {
             if (cursor == i) {
-                buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ " + CHOICES[i])).append("\n");
+                buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ " + CHOICES[i])).append("\n");
             } else {
                 if (i == 2) {
                     buffer.append(Style.newStyle().foreground(Color.color("203")).render("  " + CHOICES[i])).append("\n");

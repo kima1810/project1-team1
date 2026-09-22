@@ -13,12 +13,13 @@ import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
 
 public class Register implements Model {
     private static final Logger log = LoggerFactory.getLogger(Register.class);
+
+    private static final UserRepository userRepository = new UserRepository();
+    private static final UserService userService = new UserService(userRepository);
 
     private final long startTime = System.currentTimeMillis();
 
@@ -82,7 +83,7 @@ public class Register implements Model {
             activeIndex = 1; return UpdateResult.from(this);
         }
         // 3. Email Validation
-        if (!inputs[2].matches(".*@.*\\..*") || UserRepository.getUserByEmail(inputs[2]) != null) {
+        if (!inputs[2].matches(".*@.*\\..*") || userRepository.getUserByEmail(inputs[2]) != null) {
             errorMessage = "Invalid email or already in use.";
             activeIndex = 2; return UpdateResult.from(this);
         }
@@ -92,7 +93,7 @@ public class Register implements Model {
             activeIndex = 3; return UpdateResult.from(this);
         }
         // 5. Username Validation
-        if (inputs[4].length() < 5 || inputs[4].length() > 50 || UserRepository.getUser(inputs[4]) != null) {
+        if (inputs[4].length() < 5 || inputs[4].length() > 50 || userRepository.getUser(inputs[4]) != null) {
             errorMessage = "Username must be 5-50 chars and unique.";
             activeIndex = 4; return UpdateResult.from(this);
         }
@@ -107,7 +108,7 @@ public class Register implements Model {
         }
 
         // All checks passed
-        User registeredUser = UserService.createUser(
+        User registeredUser = userService.createUser(
                 inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], PasswordService.hashPassword(inputs[5])
         );
 
@@ -131,9 +132,9 @@ public class Register implements Model {
             }
 
             if (i == activeIndex) {
-                content.append(Theme.ACTIVE_MENU_ITEM.render("▶ " + String.format("%-18s", fieldNames[i] + ":")))
+                content.append(Theme.ACTIVE_ITEM_INPUT.render("▶ " + String.format("%-18s", fieldNames[i] + ":")))
                         .append(" ")
-                        .append(Style.newStyle().foreground(Color.color("227")).render(displayString))
+                        .append(Theme.TITLE.render(displayString))
                         .append(Theme.TEXT_CURSOR.render("█")).append("\n");
             } else {
                 content.append("  ").append(String.format("%-18s", fieldNames[i] + ":"))
@@ -145,7 +146,7 @@ public class Register implements Model {
         if (!errorMessage.isEmpty()) {
             content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
-            content.append(Style.newStyle().foreground(Color.color("240")).render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
+            content.append(Theme.FOOTER_TEXT.render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
         }
 
         return Theme.MAIN_PANEL.render(content.toString());

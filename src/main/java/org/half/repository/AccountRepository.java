@@ -31,6 +31,22 @@ public class AccountRepository {
         }
     }
 
+    public static double getBalance(long accountNumber) {
+        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
+
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, accountNumber);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            return resultSet.getDouble(1);
+        } catch (SQLException e) {
+            // This should not happen
+        }
+
+        return 0;
+    }
+
     // Get all the accounts of a user from the database
     public List<Account> getAllAccounts(User user) throws SQLException {
         // Query
