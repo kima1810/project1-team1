@@ -1,12 +1,22 @@
 package org.half.view;
 
 import org.half.model.Account;
+import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.BankScanner;
 
 public class Transfer {
+    private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
+
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
+
     public static void transfer(Account sourceAccount) {
-        System.out.printf("Current balance: $%.2f%n", sourceAccount.getBalance());
+        System.out.printf("\nCurrent balance: $%.2f%n", sourceAccount.getBalance());
         System.out.print("Destination account number (or 0 to cancel): ");
         String destinationInput = BankScanner.getString();
 
@@ -29,7 +39,7 @@ public class Transfer {
             return;
         }
 
-        if (!AccountService.accountExists(destinationAccountNumber)) {
+        if (!accountService.accountExists(destinationAccountNumber)) {
             System.out.println("Destination account not found.");
             BankScanner.freeze();
             return;
@@ -70,7 +80,7 @@ public class Transfer {
             return;
         }
 
-        if (AccountService.transfer(sourceAccount, destinationAccountNumber, amount)) {
+        if (accountService.transfer(sourceAccount, destinationAccountNumber, amount)) {
             System.out.printf(
                     "Transfer successful. Your new balance is $%.2f%n",
                     sourceAccount.getBalance()

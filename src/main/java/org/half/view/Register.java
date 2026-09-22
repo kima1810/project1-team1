@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 
 public class Register {
     private static final Logger log = LoggerFactory.getLogger(Register.class);
+
+    private static final UserRepository userRepository = new UserRepository();
+    private static final UserService userService = new UserService(userRepository);
+
     /*
         - First Name
             - Must be 20 characters or fewer
@@ -29,15 +33,20 @@ public class Register {
             - User must Confirm Password
     */
     public static void register() {
+        // Creating new user account title
+        System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
+                "Let's create your profile..." +
+                ANSI.RESET);
+
         // Name
         System.out.print(ANSI.rgb(100, 255, 255) + "First name: " + ANSI.RESET);
         String firstName = BankScanner.getString();
         while (firstName.isBlank() || firstName.length() > 20) {
             if (firstName.isBlank()) {
-                ANSI.printUserWarning("First name cannot be empty.");
+                System.out.println(ANSI.userWarning("First name cannot be empty."));
                 log.warn("First name entered is blank");
             } else {
-                ANSI.printUserWarning("First name must be 20 characters or fewer.");
+                System.out.println(ANSI.userWarning("First name must be 20 characters or fewer."));
                 log.warn("First name entered is too long: {}", firstName);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "First name: " + ANSI.RESET);
@@ -49,10 +58,10 @@ public class Register {
         String lastName = BankScanner.getString();
         while (lastName.isBlank() || lastName.length() > 20) {
             if (lastName.isBlank()) {
-                ANSI.printUserWarning("Last name cannot be empty.");
+                System.out.println(ANSI.userWarning("Last name cannot be empty."));
                 log.warn("Last name entered is blank");
             } else {
-                ANSI.printUserWarning("Last name must be 20 characters or fewer.");
+                System.out.println(ANSI.userWarning("Last name must be 20 characters or fewer."));
                 log.warn("Last name entered is too long: {}", lastName);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "Last name: " + ANSI.RESET);
@@ -63,12 +72,12 @@ public class Register {
         // Email
         System.out.print(ANSI.rgb(100, 255, 255) + "Email: " + ANSI.RESET);
         String email = BankScanner.getString();
-        while (!isValidEmail(email) || UserRepository.getUserByEmail(email) != null) {
+        while (!isValidEmail(email) || userRepository.getUserByEmail(email) != null) {
             if (!isValidEmail(email)) {
-                ANSI.printUserWarning("Please enter a valid email address.");
+                System.out.println(ANSI.userWarning("Please enter a valid email address."));
                 log.warn("Invalid email entered: {}", email);
             } else {
-                ANSI.printUserWarning("An account with that email already exists.");
+                System.out.println(ANSI.userWarning("An account with that email already exists."));
                 log.warn("Email already in use: {}", email);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "Email: " + ANSI.RESET);
@@ -88,12 +97,12 @@ public class Register {
         // Username
         System.out.print(ANSI.rgb(100, 255, 255) + "Username: " + ANSI.RESET);
         String username = BankScanner.getString();
-        while (username.length() < 5 || username.length() > 50 || UserRepository.getUser(username) != null) {
+        while (username.length() < 5 || username.length() > 50 || userRepository.getUser(username) != null) {
             if (username.length() < 5 || username.length() > 50) {
-                ANSI.printUserWarning("Username must be between 5 and 50 characters.");
+                System.out.println(ANSI.userWarning("Username must be between 5 and 50 characters."));
                 log.warn("Username entered is invalid: {}", username);
             } else {
-                ANSI.printUserWarning("That username is already taken.");
+                System.out.println(ANSI.userWarning("That username is already taken."));
                 log.warn("Username already taken: {}", username);
             }
             System.out.print(ANSI.rgb(100, 255, 255) + "Username: " + ANSI.RESET);
@@ -107,7 +116,7 @@ public class Register {
             System.out.print(ANSI.rgb(100, 255, 255) + "Password (min. 8 character): " + ANSI.RESET);
             password = BankScanner.getString();
             if(password.length() < 8) {
-                ANSI.printUserWarning("Password must be at least 8 characters long.");
+                System.out.println(ANSI.userWarning("Password must be at least 8 characters long."));
                 log.warn("Password entered is too short");
             }
         } while (password.length() < 8);
@@ -117,14 +126,14 @@ public class Register {
             System.out.print(ANSI.rgb(100, 255, 255) + "Confirm password: " + ANSI.RESET);
             passwordConfirmation = BankScanner.getString();
             if(!passwordConfirmation.equals(password)) {
-                ANSI.printUserWarning("Passwords do not match. Please try again.");
+                System.out.println(ANSI.userWarning("Passwords do not match. Please try again."));
                 log.warn("Password confirmation does not match the password");
             }
         } while (!passwordConfirmation.equals(password));
         log.info("User successfully set password");
         
         // Add user to repository, confirmation, and redirect to SignIn
-        User user = UserService.createUser(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
+        User user = userService.createUser(firstName, lastName, email, phoneNumber, username, PasswordService.hashPassword(password));
         if (user == null) {
             System.out.println("Registration failed. Please try again.");
             log.error("User registration failed for username: {}", username);
@@ -133,7 +142,7 @@ public class Register {
 
         AccountCreation.createAccount(user);
 
-        System.out.println(ANSI.rgb(100, 255, 100) + "Registration successful. Welcome to Fifty/50 Bank, " + 
+        System.out.println(ANSI.success("Registration successful. Welcome, ") +
             ANSI.rgb(100, 255, 255) + firstName + ANSI.rgb(100, 255, 100) + "!");
         log.info("User registration successful for user: {}", username);
     }
@@ -145,7 +154,7 @@ public class Register {
 
     private static boolean isValidPhoneNumber(String phoneNumber) {
         if (!phoneNumber.matches("[0-9+()\\- ]+")) {
-            ANSI.printUserWarning("Please enter a VALID phone number (digits, +, (), -, spaces only).");
+            System.out.println(ANSI.userWarning("Please enter a VALID phone number (digits, +, (), -, spaces only)."));
             log.warn("Invalid phone number entered: {}", phoneNumber);
             return false;
         }
