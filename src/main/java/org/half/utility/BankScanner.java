@@ -47,7 +47,7 @@ public class BankScanner {
     }
 
     // Function to ask user to select an option by inputting a number
-    public static int promptUserSelection () {
+    public static int promptUserSelection() {
         // Store the selected option
         int optionSelected;
 
@@ -73,7 +73,6 @@ public class BankScanner {
                 System.out.println(ANSI.userWarning("Not a number. Please try again..."));
                 log.warn("User did not input a number. Prompting again...");
             }
-
         }
 
         // Return the selected option
@@ -117,5 +116,36 @@ public class BankScanner {
         }
 
         return pin;
+    }
+
+    // Function to ask user to enter an amount
+    public static double promptUserToEnterAmount(String amountType) {
+        // Store the amount
+        double amount;
+
+        // Keep prompting the user until a valid amount is inputted
+        while (true) {
+            try {
+                // Get a string input from user
+                String userInput = BankScanner.getString().trim();
+
+                // Check if the input is empty
+                if (userInput.isBlank()) {
+                    // Re-prompt user
+                    System.out.println(ANSI.userWarning("Please enter an amount for the transaction: "));
+                }
+
+                // TODO: Check if the amount is positive
+
+                // TODO: Check for max 2 decimal places
+
+                // TODO: Parse the selected option to a double
+
+            } catch (NumberFormatException e) {
+                // Input was not a number, ask user again
+                System.out.println(ANSI.userWarning("Not a number. Please try again..."));
+                log.warn("User did not input a number. Prompting again...");
+            }
+        }
     }
 }
