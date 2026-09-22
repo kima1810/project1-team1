@@ -47,7 +47,7 @@ public class BankScanner {
     }
 
     // Function to ask user to select an option by inputting a number
-    public static int promptUserSelection () {
+    public static int promptUserSelection() {
         // Store the selected option
         int optionSelected;
 
@@ -60,7 +60,7 @@ public class BankScanner {
                 // Check if the input is empty
                 if (userInput.isBlank()) {
                     // Re-prompt user
-                    System.out.print("Please select an option: ");
+                    System.out.print(ANSI.userWarning("Please select an option: "));
                     log.warn("User inputted nothing. Prompting again...");
                     continue;
                 }
@@ -70,10 +70,9 @@ public class BankScanner {
                 break;
             } catch (NumberFormatException e) {
                 // Input was not an integer, ask user to input a number
-                ANSI.printUserWarning("Not a number. Please try again...");
+                System.out.println(ANSI.userWarning("Not a number. Please try again..."));
                 log.warn("User did not input a number. Prompting again...");
             }
-
         }
 
         // Return the selected option
@@ -95,7 +94,7 @@ public class BankScanner {
                 pin = Integer.parseInt(pinInput.trim());
             } catch (NumberFormatException e) {
                 // Failed to cast, warn the user
-                ANSI.printUserWarning("Invalid PIN. Must be an integer.");
+                System.out.println(ANSI.userWarning("Invalid PIN. Must be an integer."));
                 log.warn("User inputted invalid PIN. Must be an integer.");
 
                 System.out.print("Try again: ");
@@ -105,7 +104,7 @@ public class BankScanner {
             // Check if the PIN is 4-digit only
             if (pinInput.trim().length() != 4) {
                 // PIN is not 4-digit long, warn the user
-                ANSI.printUserWarning("Invalid PIN. Must be exactly 4 digits long.");
+                System.out.println(ANSI.userWarning("Invalid PIN. Must be exactly 4 digits long."));
                 log.warn("User inputted invalid PIN. Must be exactly 4 digits long.");
 
                 System.out.print("Try again: ");
@@ -117,5 +116,36 @@ public class BankScanner {
         }
 
         return pin;
+    }
+
+    // Function to ask user to enter an amount
+    public static double promptUserToEnterAmount(String amountType) {
+        // Store the amount
+        double amount;
+
+        // Keep prompting the user until a valid amount is inputted
+        while (true) {
+            try {
+                // Get a string input from user
+                String userInput = BankScanner.getString().trim();
+
+                // Check if the input is empty
+                if (userInput.isBlank()) {
+                    // Re-prompt user
+                    System.out.println(ANSI.userWarning("Please enter an amount for the transaction: "));
+                }
+
+                // TODO: Check if the amount is positive
+
+                // TODO: Check for max 2 decimal places
+
+                // TODO: Parse the selected option to a double
+
+            } catch (NumberFormatException e) {
+                // Input was not a number, ask user again
+                System.out.println(ANSI.userWarning("Not a number. Please try again..."));
+                log.warn("User did not input a number. Prompting again...");
+            }
+        }
     }
 }

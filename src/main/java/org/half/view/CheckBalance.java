@@ -6,7 +6,7 @@ import org.half.model.Account;
 
 public class CheckBalance {
     public static void showBalance(Account account) {
-        System.out.printf("Your balance is %s$%.2f%s\n", ANSI.rgb(0, 255, 0), account.getBalance(), ANSI.RESET);
+        System.out.println("\nCurrent balance: " + ANSI.success(String.format("$%.2f", account.getBalance())));
 
         // Freeze the screen
         System.out.print(ANSI.rgb(100, 255, 100) + "\nPress enter to continue..." + ANSI.RESET);

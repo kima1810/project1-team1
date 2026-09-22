@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserRepository {
-    public static void addUser(User user) throws UserAlreadyExists {
+    public void addUser(User user) throws UserAlreadyExists {
         if (getUser(user.getUsername()) != null) {
             throw new UserAlreadyExists("Username '" + user.getUsername() + "' is already taken.");
         }
@@ -32,7 +32,7 @@ public class UserRepository {
         }
     }
 
-    public static String getPasswordHash(String userName){
+    public String getPasswordHash(String userName){
         String query = "SELECT passwordHash FROM User WHERE username=?";
         try (
                 Connection connection = ConnectionFactory.getAutoCommitConnection();
@@ -51,7 +51,7 @@ public class UserRepository {
         return null;
     }
 
-    public static User getUser(String userName) {
+    public User getUser(String userName) {
         String query = "SELECT * FROM User WHERE username=?";
         try (
                 Connection connection = ConnectionFactory.getAutoCommitConnection();
@@ -77,7 +77,7 @@ public class UserRepository {
         return null;
     }
 
-    public static User getUserByEmail(String email) {
+    public User getUserByEmail(String email) {
         String query = "SELECT * FROM User WHERE email=?";
         try (
                 Connection connection = ConnectionFactory.getAutoCommitConnection();
