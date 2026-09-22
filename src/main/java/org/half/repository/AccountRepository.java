@@ -11,7 +11,7 @@ import java.util.List;
 
 public class AccountRepository {
     // Add a new account to the database
-    public static void addAccount(Account account) throws SQLException {
+    public void addAccount(Account account) throws SQLException {
         // Query
         String query = "INSERT INTO Account VALUES (?,?,?,?,?);";
 
@@ -32,7 +32,7 @@ public class AccountRepository {
     }
 
     // Get all the accounts of a user from the database
-    public static List<Account> getAllAccounts(User user) throws SQLException {
+    public List<Account> getAllAccounts(User user) throws SQLException {
         // Query
         String query = "SELECT * FROM Account WHERE username=?;";
 
@@ -64,7 +64,7 @@ public class AccountRepository {
         }
     }
 
-    public static boolean accountExists(long accountNumber) {
+    public boolean accountExists(long accountNumber) {
         String query = "SELECT 1 FROM Account WHERE accountNumber=?;";
 
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
@@ -79,7 +79,7 @@ public class AccountRepository {
         }
     }
 
-    public static boolean transferFunds(Account sourceAccount, long destinationAccountNumber, double amount) {
+    public boolean transferFunds(Account sourceAccount, long destinationAccountNumber, double amount) {
         String debitQuery = """
                 UPDATE Account
                 SET balance = balance - ?
@@ -140,13 +140,28 @@ public class AccountRepository {
         }
     }
 
-    public static void Update_Balance(Account account, double new_amount) {
-        String query = "UPDATE Account SET balance=? WHERE accountNumber=?;";
+    public void Deposit_Balance(Account account, double amount) {
+        String query = "UPDATE Account SET balance=balance+? WHERE accountNumber=?;";
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
             // Set values
-            statement.setDouble(1, new_amount);
+            statement.setDouble(1, amount);
+            statement.setLong(2, account.getAccountNumber());
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void Withdraw_Balance(Account account, double amount) {
+        String query = "UPDATE Account SET balance=balance-? WHERE accountNumber=?;";
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Set values
+            statement.setDouble(1, amount);
             statement.setLong(2, account.getAccountNumber());
             statement.executeUpdate();
 

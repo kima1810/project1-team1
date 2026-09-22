@@ -16,8 +16,17 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AccountService {
     private static final Logger log = LoggerFactory.getLogger(AccountService.class);
 
+    private final AccountRepository accountRepository;
+    private final TransactionHistoryService transactionHistoryService;
+
+
+    public AccountService(AccountRepository accountRepository, TransactionHistoryService transactionHistoryService) {
+        this.accountRepository =  accountRepository;
+        this.transactionHistoryService = transactionHistoryService;
+    }
+
     // Create a new bank account and add it to database
-    public static long createAccount(User user, int pin, AccountType accountType) {
+    public long createAccount(User user, int pin, AccountType accountType) {
         // Check if PIN is more than 4 digits long
         if (pin > 9999) {
             // Invalid PIN
@@ -38,7 +47,7 @@ public class AccountService {
 
             try {
                 // Attempt to add new bank account
-                AccountRepository.addAccount(account);
+                accountRepository.addAccount(account);
             } catch (SQLException e) {
                 String message = e.getMessage();
                 if (message != null && message.contains("[SQLITE_CONSTRAINT_PRIMARYKEY]")) {
@@ -59,11 +68,24 @@ public class AccountService {
         return -1;
     }
 
+    // Method to verify if the entered user PIN matches the account PIN hash
+    public boolean verifyAccount(Account account, int userInputPIN) {
+        // Check if user input is valid
+        if (userInputPIN > 9999) {
+            // Input PIN cannot be more than 4 digits
+            log.warn("Invalid pin. Cannot be more than 4 digits.");
+            throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
+        }
+
+        // Return ture if password is correct, else false
+        return PasswordService.verifyPassword(String.valueOf(userInputPIN), account.getPinHash());
+    }
+
     // Get all the bank accounts of a given user
-    public static List<Account> getAccounts(User user) {
+    public List<Account> getAccounts(User user) {
         try {
             // Attempt to get all the accounts of the user
-            return AccountRepository.getAllAccounts(user);
+            return accountRepository.getAllAccounts(user);
         } catch (SQLException e) {
             // Something went wrong
             log.error("Something went wrong: {}", e.getMessage());
@@ -71,11 +93,11 @@ public class AccountService {
         return null;
     }
 
-    public static boolean accountExists(long accountNumber) {
-        return AccountRepository.accountExists(accountNumber);
+    public boolean accountExists(long accountNumber) {
+        return accountRepository.accountExists(accountNumber);
     }
 
-    public static boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
+    public boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
         if (!Double.isFinite(amount)
                 || amount <= 0
                 || amount > sourceAccount.getBalance()
@@ -83,14 +105,14 @@ public class AccountService {
             return false;
         }
 
-        if (!AccountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+        if (!accountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
             return false;
         }
 
         
         sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         //
-        TransactionHistoryService.attemptAddTransfer(
+        transactionHistoryService.attemptAddTransfer(
                 "Transfer",
                 amount,
                 sourceAccount.getAccountNumber(),
@@ -99,7 +121,7 @@ public class AccountService {
         return true;
     }
 
-    public static void Deposit_Request(Account account, double amount) {
+    public void Deposit_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
             log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
@@ -107,21 +129,17 @@ public class AccountService {
         }
 
         try {
-            //Create new Balance
-            double NewBalance = account.getBalance() + amount;
             //Update Balance column in DataBase
-            AccountRepository.Update_Balance(account, NewBalance);
-            //Update current instance of Balance (balance stay updated throughout instance)
-            account.setBalance(NewBalance);
+            accountRepository.Deposit_Balance(account, amount);
             //Now the transaction will be added
-            TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
+            transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
         } catch (Exception e) {
             log.error("System error during deposit for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
             throw e;
         }
     }
 
-    public static void Withdraw_Request(Account account, double amount) {
+    public void Withdraw_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
             log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
@@ -135,20 +153,14 @@ public class AccountService {
         }
 
         try {
-            // Create new Balance
-            double NewBalance = account.getBalance() - amount;
-
             // Update Balance column in DataBase
-            AccountRepository.Update_Balance(account, NewBalance);
-
-            // Update current instance of Balance
-            account.setBalance(NewBalance);
+            accountRepository.Withdraw_Balance(account, amount);
 
             // Add transaction history
-            TransactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
+            transactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
 
             // 2. The "Happy Path" (INFO)
-            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), NewBalance);
+            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), account.getBalance());
 
         } catch (Exception e) {
             log.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
