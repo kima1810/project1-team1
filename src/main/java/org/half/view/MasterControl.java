@@ -3,6 +3,8 @@ package org.half.view;
 import org.half.model.Account;
 import org.half.model.RouteModel;
 import org.half.model.User;
+import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
 import java.util.List;
 
@@ -11,9 +13,17 @@ import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
 import com.williamcallahan.tui4j.compat.bubbletea.QuitMessage;
+import org.half.service.TransactionHistoryService;
 
 public class MasterControl implements Model {
     private Model currentView;
+
+    private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
+
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     public MasterControl() {
         this.currentView = new WelcomeMenu();
@@ -42,7 +52,7 @@ public class MasterControl implements Model {
             case REGISTER -> this.currentView = new Register();
             case ACCOUNT_SELECTION -> {
                 User user = (User) msg.payload();
-                List<Account> accounts = AccountService.getAccounts(user);
+                List<Account> accounts = accountService.getAccounts(user);
                 if (accounts == null || accounts.isEmpty()) {
                     this.currentView = new AccountCreation(user);
                 } else {

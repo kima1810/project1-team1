@@ -3,7 +3,10 @@ package org.half.view;
 import org.half.model.RouteModel;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
+import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.half.style.Theme;
@@ -12,13 +15,17 @@ import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
-import com.williamcallahan.tui4j.compat.lipgloss.Borders;
 
 public class AccountCreation implements Model {
     private static final Logger log = LoggerFactory.getLogger(AccountCreation.class);
+
+    private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
+
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
     private enum Step {
         CHOOSE_TYPE,
@@ -126,7 +133,7 @@ public class AccountCreation implements Model {
     private void createAccountRecord() {
         try {
             int pin = Integer.parseInt(pinBuffer);
-            long accNum = AccountService.createAccount(user, pin, selectedType);
+            long accNum = accountService.createAccount(user, pin, selectedType);
             if (accNum != -1) {
                 createdAccountNumber = accNum;
                 currentStep = Step.SUCCESS;
@@ -181,10 +188,10 @@ public class AccountCreation implements Model {
 
         for (int i = 0; i < CHOICES.length; i++) {
             if (cursor == i) {
-                buffer.append(Theme.ACTIVE_MENU_ITEM.render("▶ " + CHOICES[i])).append("\n");
+                buffer.append(Theme.ACTIVE_ITEM_INPUT.render("▶ " + CHOICES[i])).append("\n");
             } else {
                 if (i == 2) {
-                    buffer.append(Style.newStyle().foreground(Color.color("203")).render("  " + CHOICES[i])).append("\n");
+                    buffer.append(Theme.ERROR_TEXT.render("  " + CHOICES[i])).append("\n");
                 } else {
                     buffer.append("  ").append(CHOICES[i]).append("\n");
                 }
@@ -197,23 +204,23 @@ public class AccountCreation implements Model {
         String masked = "*".repeat(buffer.length());
         String content = Theme.TITLE.render("Account Setup (" + selectedType + ")") + "\n\n" +
                 heading + "\n" +
-                Style.newStyle().foreground(Color.color("227")).render(masked) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Type 4 digits • [Enter] continue • [Esc] back");
+                Theme.TITLE.render(masked) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
+                Theme.FOOTER_TEXT.render("Type 4 digits • [Enter] continue • [Esc] back");
         return Theme.MAIN_PANEL.render(content);
     }
 
     private String renderSuccess() {
         String content = Theme.TITLE.render("Account Successfully Created!") + "\n\n" +
-                "Type: " + Style.newStyle().foreground(Color.color("46")).render(selectedType.toString()) + "\n" +
-                "Account Number: " + Style.newStyle().foreground(Color.color("227")).render(String.valueOf(createdAccountNumber)) + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to return to Account Selection");
+                "Type: " + Theme.LOGO.render(selectedType.toString()) + "\n" +
+                "Account Number: " + Theme.TITLE.render(String.valueOf(createdAccountNumber)) + "\n\n" +
+                Theme.FOOTER_TEXT.render("Press [Enter] to return to Account Selection");
         return Theme.MAIN_PANEL.render(content);
     }
 
     private String renderError() {
         String content = Theme.TITLE.render("Account Creation Failed") + "\n\n" +
                 Theme.ERROR_TEXT.render("⚠ " + errorMessage) + "\n\n" +
-                Style.newStyle().foreground(Color.color("240")).render("Press [Enter] to try again");
+                Theme.FOOTER_TEXT.render("Press [Enter] to try again");
         return Theme.MAIN_PANEL.render(content);
     }
 }

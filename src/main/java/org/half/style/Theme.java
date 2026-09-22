@@ -13,6 +13,8 @@ public class Theme {
     private static final String DANGER = "203";          // Soft Red
     private static final String MUTED_GRAY = "240";      // Dark Gray
     private static final String PURE_BLACK = "#000000";
+    private static final String CYAN = "51";
+    private static final String LIGHT_CYAN = "87";
 
     // --- Global UI Components ---
 
@@ -43,9 +45,13 @@ public class Theme {
             .foreground(Color.color(BRAND_PRIMARY))
             .bold(true);
 
-    public static final Style ACTIVE_MENU_ITEM = Style.newStyle()
-            .foreground(Color.color(PURE_BLACK))
+   public static final Style ACTIVE_ITEM_SELECT = Style.newStyle()
+            .foreground(Color.color("0"))
             .background(Color.color(BRAND_PRIMARY))
+            .bold(true).padding(0, 1);
+
+    public static final Style ACTIVE_ITEM_INPUT = Style.newStyle()
+            .foreground(Color.color(BRAND_PRIMARY))
             .bold(true)
             .padding(0, 1);
 
@@ -62,4 +68,10 @@ public class Theme {
 
     public static final Style FOOTER_TEXT = Style.newStyle()
             .foreground(Color.color(MUTED_GRAY));
+
+    public static final Style USERNAME = Style.newStyle()
+            .foreground(Color.color(CYAN));
+
+    public static final Style NEW_ACCOUNT = Style.newStyle()
+            .foreground(Color.color(LIGHT_CYAN));
 }
