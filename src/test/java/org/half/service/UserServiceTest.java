@@ -3,9 +3,9 @@ package org.half.service;
 import org.half.exceptions.UserAlreadyExists;
 import org.half.model.User;
 import org.half.repository.UserRepository;
+import org.half.security.PasswordService;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -17,7 +17,7 @@ public class UserServiceTest {
 
     // User is created successfully
     @Test
-    void createUser_success_allValid() {
+    void createUser_success_allValid() throws UserAlreadyExists {
         String firstName = "Alex";
         String lastName = "Kim";
         String email = "alex.kim@example.com";
@@ -25,23 +25,21 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNotNull(createdUser);
-            assertEquals(firstName, createdUser.getFirstName());
-            assertEquals(lastName, createdUser.getLastName());
-            assertEquals(email, createdUser.getEmail());
-            assertEquals(phoneNumber, createdUser.getPhoneNumber());
-            assertEquals(username, createdUser.getUsername());
-            assertEquals(hashedPassword, createdUser.getPassword());
+        assertNotNull(createdUser);
+        assertEquals(firstName, createdUser.getFirstName());
+        assertEquals(lastName, createdUser.getLastName());
+        assertEquals(email, createdUser.getEmail());
+        assertEquals(phoneNumber, createdUser.getPhoneNumber());
+        assertEquals(username, createdUser.getUsername());
+        assertEquals(hashedPassword, createdUser.getPassword());
 
-            userRepositoryMock.verify(() -> UserRepository.addUser(any(User.class)), times(1));
-        }
+        verify(userRepository, times(1)).addUser(any(User.class));
     }
 
     /* --- Failed Test Cases --- */
@@ -57,7 +55,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -71,7 +70,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -86,7 +86,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -101,7 +102,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -115,7 +117,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -130,7 +133,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -145,7 +149,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -160,7 +165,8 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        UserService userService = new UserService(mock(UserRepository.class));
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
         assertNull(createdUser);
     }
@@ -178,15 +184,13 @@ public class UserServiceTest {
 
         User existingUser = mock(User.class);
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(existingUser);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(existingUser);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Phone number is null
@@ -200,15 +204,13 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Phone number contains characters outside the allowed set
@@ -221,15 +223,13 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Username is null
@@ -242,15 +242,13 @@ public class UserServiceTest {
         String username = null;
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Username is too short
@@ -263,15 +261,13 @@ public class UserServiceTest {
         String username = "al";
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Username is too long
@@ -284,20 +280,18 @@ public class UserServiceTest {
         String username = "a".repeat(51);
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Username is already taken
     @Test
-    void createUser_failure_usernameAlreadyExist() {
+    void createUser_failure_usernameAlreadyExist() throws UserAlreadyExists {
         String firstName = "Alex";
         String lastName = "Kim";
         String email = "alex.kim@example.com";
@@ -305,17 +299,15 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
-            userRepositoryMock.when(() -> UserRepository.addUser(any(User.class)))
-                    .thenThrow(new UserAlreadyExists("Username '" + username + "' is already taken."));
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        doThrow(new UserAlreadyExists("Username '" + username + "' is already taken."))
+                .when(userRepository).addUser(any(User.class));
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Password is null
@@ -328,15 +320,13 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = null;
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Password is longer than 255 characters
@@ -349,20 +339,18 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "a".repeat(256);
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
-        }
+        assertNull(createdUser);
     }
 
     // Repository failure
     @Test
-    void createUser_failure_repositoryLevelFailure() {
+    void createUser_failure_repositoryLevelFailure() throws UserAlreadyExists {
         String firstName = "Alex";
         String lastName = "Kim";
         String email = "alex.kim@example.com";
@@ -370,16 +358,128 @@ public class UserServiceTest {
         String username = "alexkim";
         String hashedPassword = "hashedPassword123";
 
-        try (
-                MockedStatic<UserRepository> userRepositoryMock = Mockito.mockStatic(UserRepository.class)
-        ) {
-            userRepositoryMock.when(() -> UserRepository.getUserByEmail(email)).thenReturn(null);
-            userRepositoryMock.when(() -> UserRepository.addUser(any(User.class)))
-                    .thenThrow(new UserAlreadyExists("Unable to create user."));
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getUserByEmail(email)).thenReturn(null);
+        doThrow(new UserAlreadyExists("Unable to create user."))
+                .when(userRepository).addUser(any(User.class));
+        UserService userService = new UserService(userRepository);
 
-            User createdUser = UserService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
+        User createdUser = userService.createUser(firstName, lastName, email, phoneNumber, username, hashedPassword);
 
-            assertNull(createdUser);
+        assertNull(createdUser);
+    }
+
+    @Test
+    void verifyUser_enteredEmptyUsername_shouldThrowException(){
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> UserService.verifyUser("", "password")
+        );
+
+        assertEquals("Can Not Enter Empty Strings.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void verifyUser_enteredEmptyPassword_shouldThrowException(){
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> UserService.verifyUser("UserAccount", "")
+        );
+
+        assertEquals("Can Not Enter Empty Strings.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void verifyUser_userDoesNotExist_returnsNull(){
+        try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class)){
+
+            userRepositoryMocked
+                    .when(() -> UserRepository.getPasswordHash("1234567"))
+                    .thenReturn(null);
+
+            User activeUser = UserService.verifyUser("1234567", "passwordtest");
+
+            assertNull(activeUser);
+
+            userRepositoryMocked.verify(
+                    () -> UserRepository.getUser("1234567"), never()
+            );
+        }
+    }
+
+    @Test
+    void verifyUser_userExistAndPasswordIsIncorrect_returnsNull(){
+
+        try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class);
+            MockedStatic<PasswordService> passwordServiceMocked = mockStatic(PasswordService.class)){
+
+            userRepositoryMocked
+                    .when(() -> UserRepository.getPasswordHash("UserAccount"))
+                    .thenReturn("hashedPassword");
+
+            passwordServiceMocked
+                    .when(() -> PasswordService.verifyPassword(
+                            "wrongPassword",
+                            "hashedPassword"))
+                    .thenReturn(false);
+
+            User activeUser = UserService.verifyUser("UserAccount", "wrongPassword");
+
+            assertNull(activeUser);
+
+            userRepositoryMocked.verify(
+                    () -> UserRepository.getUser("UserAccount"), never()
+            );
+        }
+    }
+
+    @Test
+    void verifyUser_userExistsAndPasswordIsCorrect_returnsUser(){
+
+        User expectedUser = mock(User.class);
+
+        try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class);
+            MockedStatic<PasswordService> passwordServiceMocked = mockStatic(PasswordService.class)){
+
+            userRepositoryMocked
+                    .when(() -> UserRepository.getPasswordHash("UserAccount"))
+                    .thenReturn("hashedPassword");
+
+            passwordServiceMocked
+                    .when(() -> PasswordService.verifyPassword(
+                            "correctPassword",
+                            "hashedPassword"))
+                    .thenReturn(true);
+
+            userRepositoryMocked
+                    .when(() ->UserRepository.getUser("UserAccount"))
+                    .thenReturn(expectedUser);
+
+            User activeUser = UserService.verifyUser("UserAccount", "correctPassword");
+
+            assertNotNull(activeUser);
+            assertSame(expectedUser, activeUser);
+
+            userRepositoryMocked.verify(
+                    () ->UserRepository.getPasswordHash("UserAccount")
+            );
+
+            passwordServiceMocked.verify(
+                    () -> PasswordService.verifyPassword(
+                            "correctPassword",
+                            "hashedPassword"
+                    )
+            );
+
+            userRepositoryMocked.verify(
+                    () -> UserRepository.getUser("UserAccount")
+            );
         }
     }
 }

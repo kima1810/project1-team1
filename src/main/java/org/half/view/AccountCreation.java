@@ -2,7 +2,10 @@ package org.half.view;
 
 import org.half.model.User;
 import org.half.model.enums.AccountType;
+import org.half.repository.AccountRepository;
+import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.slf4j.Logger;
@@ -13,21 +16,25 @@ public class AccountCreation {
     // Class specific Logger for logging
     private static final Logger log = LoggerFactory.getLogger(AccountCreation.class);
 
+    private static final AccountRepository accountRepository = new AccountRepository();
+    private static final TransactionModelRepository transactionModelRepository = new TransactionModelRepository();
+
+    private static final TransactionHistoryService transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
+
+    private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
+
     // View for user to create a new account
     public static void createAccount(User user) {
         // Creating new account title
-        System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                "Let's create your account..." +
-                ANSI.RESET);
+        System.out.println(ANSI.title("\nLet's create your account..."));
 
         log.info("Creating a new account for user: {}", user.getUsername());
 
         // Ask user to choose an account type
         while (true) {
             System.out.println("Choose account type: " +
-                    ANSI.rgb(100, 255, 100) + "CHECKING" +
-                    ANSI.RESET + " or " +
-                    ANSI.rgb(100, 255, 100) + "SAVINGS" + ANSI.RESET);
+                    ANSI.optionPositive("CHECKING") + " or " +
+                    ANSI.optionPositive("SAVINGS"));
 
             // Prompt user for account type
             AccountType accountType;
@@ -42,7 +49,7 @@ public class AccountCreation {
                     break;
                 } catch (IllegalArgumentException e) {
                     // Invalid input account type entered, ask user to try again
-                    ANSI.printUserWarning("Invalid account type. Acceptable values: CHECKING, SAVINGS");
+                    System.out.println(ANSI.userWarning("Invalid account type. Acceptable values: CHECKING, SAVINGS"));
                     log.warn("User inputted invalid account type: {{}}. Acceptable values: {CHECKING, SAVINGS}", accountTypeInput);
                 }
             }
@@ -57,7 +64,7 @@ public class AccountCreation {
 
             // If PINs don't match, keep asking again
             while (pin != pinConfirmation) {
-                ANSI.printUserWarning("PINs do not match.");
+                System.out.println(ANSI.userWarning("PINs do not match."));
                 System.out.print("Re-enter your PIN: ");
                 log.warn("PINs entered do not match.");
                 pinConfirmation = BankScanner.promptUserForPIN();
@@ -69,25 +76,23 @@ public class AccountCreation {
             long accountNumber;
             try {
                 // Attempt new account creation
-                accountNumber = AccountService.createAccount(user, pin, accountType);
+                accountNumber = accountService.createAccount(user, pin, accountType);
 
                 // Account creation failed
                 if (accountNumber == -1) {
-                    System.out.println("Account creation failed. Please try again...");
+                    System.out.println(ANSI.userWarning("Account creation failed. Please try again..."));
                     log.error("Account creation failed for user: {}", user.getUsername());
                     continue;
                 }
             } catch (IllegalArgumentException e) {
                 // Something else went wrong, check logs for more info
-                System.out.println("Something went wrong. Please try again...");
+                System.out.println(ANSI.userWarning("Something went wrong. Please try again..."));
                 log.error("Something went wrong. {}", e.getMessage());
                 continue;
             }
 
             // Account successfully created
-            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                    "Account successfully created!" +
-                    ANSI.RESET);
+            System.out.println("\n" + ANSI.success("Account successfully created!"));
 
             log.info("Account successfully created! {username: {}, account: {}}", user.getUsername(), accountType + String.format(" ****%04d", accountNumber % 10000));
 
@@ -96,7 +101,7 @@ public class AccountCreation {
             System.out.println(ANSI.MAGENTA + accountNumber + ANSI.RESET);
 
             // Freeze the screen
-            System.out.print(ANSI.rgb(100, 255, 100) + "\nPress enter to continue..." + ANSI.RESET);
+            System.out.print(ANSI.optionPositive("\nPress enter to continue..."));
             BankScanner.freeze();
             break;
         }

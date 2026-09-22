@@ -5,8 +5,8 @@ import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.sql.SQLException;
@@ -14,10 +14,24 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 class AccountServiceTest {
+
+    private AccountRepository accountRepository;
+    private TransactionHistoryService transactionHistoryService;
+    private AccountService accountService;
+
+    @BeforeEach
+    void setUp() {
+        accountRepository = mock(AccountRepository.class);
+        transactionHistoryService = mock(TransactionHistoryService.class);
+
+        accountService = new AccountService(
+                accountRepository,
+                transactionHistoryService
+        );
+    }
 
     @Test
     void createAccount_shouldThrowException_whenPinHasMoreThanFourDigits() {
@@ -25,7 +39,7 @@ class AccountServiceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> AccountService.createAccount(
+                () -> accountService.createAccount(
                         user,
                         10_000,
                         AccountType.CHECKING
@@ -36,200 +50,172 @@ class AccountServiceTest {
                 "Invalid pin. Cannot be more than 4 digits.",
                 exception.getMessage()
         );
+
+        verifyNoInteractions(accountRepository);
     }
 
     @Test
-    void createAccount_shouldCreateAccountSuccessfully() {
+    void createAccount_shouldCreateAccountSuccessfully() throws SQLException {
         User user = mock(User.class);
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        doNothing()
+                .when(accountRepository)
+                .addAccount(any(Account.class));
 
-            repositoryMock
-                    .when(() -> AccountRepository.addAccount(any(Account.class)))
-                    .thenAnswer(invocation -> null);
+        long accountNumber = accountService.createAccount(
+                user,
+                1234,
+                AccountType.CHECKING
+        );
 
-            long accountNumber = AccountService.createAccount(
-                    user,
-                    1234,
-                    AccountType.CHECKING
-            );
+        assertTrue(accountNumber >= 100_000_000_000L);
+        assertTrue(accountNumber < 1_000_000_000_000L);
 
-            assertTrue(accountNumber >= 100_000_000_000L);
-            assertTrue(accountNumber < 1_000_000_000_000L);
-
-            repositoryMock.verify(
-                    () -> AccountRepository.addAccount(any(Account.class)),
-                    times(1)
-            );
-        }
+        verify(accountRepository, times(1))
+                .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldAcceptFourDigitPin() {
+    void createAccount_shouldAcceptFourDigitPin() throws SQLException {
         User user = mock(User.class);
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        doNothing()
+                .when(accountRepository)
+                .addAccount(any(Account.class));
 
-            repositoryMock
-                    .when(() -> AccountRepository.addAccount(any(Account.class)))
-                    .thenAnswer(invocation -> null);
+        assertDoesNotThrow(() ->
+                accountService.createAccount(
+                        user,
+                        9999,
+                        AccountType.CHECKING
+                )
+        );
 
-            assertDoesNotThrow(() ->
-                    AccountService.createAccount(
-                            user,
-                            9999,
-                            AccountType.CHECKING
-                    )
-            );
-
-            repositoryMock.verify(
-                    () -> AccountRepository.addAccount(any(Account.class)),
-                    times(1)
-            );
-        }
+        verify(accountRepository, times(1))
+                .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldRetry_whenAccountNumberAlreadyExists() {
+    void createAccount_shouldRetry_whenAccountNumberAlreadyExists()
+            throws SQLException {
 
         User user = mock(User.class);
 
         SQLException duplicateKeyException =
                 new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        doThrow(duplicateKeyException)
+                .doNothing()
+                .when(accountRepository)
+                .addAccount(any(Account.class));
 
-            repositoryMock
-                    .when(() -> AccountRepository.addAccount(any(Account.class)))
-                    .thenThrow(duplicateKeyException)
-                    .thenAnswer(invocation -> null);
+        long accountNumber = accountService.createAccount(
+                user,
+                1234,
+                AccountType.CHECKING
+        );
 
-            long accountNumber = AccountService.createAccount(
-                    user,
-                    1234,
-                    AccountType.CHECKING
-            );
+        assertTrue(accountNumber >= 100_000_000_000L);
+        assertTrue(accountNumber < 1_000_000_000_000L);
 
-            assertTrue(accountNumber >= 100_000_000_000L);
-            assertTrue(accountNumber < 1_000_000_000_000L);
-
-            repositoryMock.verify(
-                    () -> AccountRepository.addAccount(any(Account.class)),
-                    times(2)
-            );
-        }
+        verify(accountRepository, times(2))
+                .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldReturnMinusOne_afterTenFailures() {
+    void createAccount_shouldReturnMinusOne_afterTenFailures()
+            throws SQLException {
 
         User user = mock(User.class);
 
         SQLException duplicateKeyException =
                 new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        doThrow(duplicateKeyException)
+                .when(accountRepository)
+                .addAccount(any(Account.class));
 
-            repositoryMock
-                    .when(() -> AccountRepository.addAccount(any(Account.class)))
-                    .thenThrow(duplicateKeyException);
+        long result = accountService.createAccount(
+                user,
+                1234,
+                AccountType.CHECKING
+        );
 
-            long result = AccountService.createAccount(
-                    user,
-                    1234,
-                    AccountType.CHECKING
-            );
+        assertEquals(-1, result);
 
-            assertEquals(-1, result);
-
-            repositoryMock.verify(
-                    () -> AccountRepository.addAccount(any(Account.class)),
-                    times(10)
-            );
-        }
+        verify(accountRepository, times(10))
+                .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldRetry_whenNonPrimaryKeySqlExceptionOccurs() {
+    void createAccount_shouldRetry_whenNonPrimaryKeySqlExceptionOccurs()
+            throws SQLException {
 
         User user = mock(User.class);
 
         SQLException sqlException =
                 new SQLException("Database connection failed");
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        doThrow(sqlException)
+                .doNothing()
+                .when(accountRepository)
+                .addAccount(any(Account.class));
 
-            repositoryMock
-                    .when(() -> AccountRepository.addAccount(any(Account.class)))
-                    .thenThrow(sqlException)
-                    .thenAnswer(invocation -> null);
+        long accountNumber = accountService.createAccount(
+                user,
+                1234,
+                AccountType.CHECKING
+        );
 
-            long accountNumber = AccountService.createAccount(
-                    user,
-                    1234,
-                    AccountType.CHECKING
-            );
+        assertTrue(accountNumber >= 100_000_000_000L);
+        assertTrue(accountNumber < 1_000_000_000_000L);
 
-            assertTrue(accountNumber >= 100_000_000_000L);
-            assertTrue(accountNumber < 1_000_000_000_000L);
-
-            repositoryMock.verify(
-                    () -> AccountRepository.addAccount(any(Account.class)),
-                    times(2)
-            );
-        }
+        verify(accountRepository, times(2))
+                .addAccount(any(Account.class));
     }
 
     @Test
-    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds() {
+    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds()
+            throws SQLException {
+
         User user = mock(User.class);
+
         List<Account> expectedAccounts = List.of(
                 mock(Account.class),
                 mock(Account.class)
         );
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        when(accountRepository.getAllAccounts(user))
+                .thenReturn(expectedAccounts);
 
-            repositoryMock
-                    .when(() -> AccountRepository.getAllAccounts(user))
-                    .thenReturn(expectedAccounts);
+        List<Account> actualAccounts =
+                accountService.getAccounts(user);
 
-            List<Account> actualAccounts = AccountService.getAccounts(user);
+        assertSame(expectedAccounts, actualAccounts);
 
-            assertSame(expectedAccounts, actualAccounts);
-
-            repositoryMock.verify(
-                    () -> AccountRepository.getAllAccounts(user)
-            );
-        }
+        verify(accountRepository, times(1))
+                .getAllAccounts(user);
     }
 
     @Test
-    void getAccounts_shouldReturnNull_whenRepositoryThrowsSQLException() {
+    void getAccounts_shouldReturnNull_whenRepositoryThrowsSQLException()
+            throws SQLException {
+
         User user = mock(User.class);
-        SQLException exception = new SQLException("Database error");
 
-        try (MockedStatic<AccountRepository> repositoryMock =
-                     Mockito.mockStatic(AccountRepository.class)) {
+        SQLException exception =
+                new SQLException("Database error");
 
-            repositoryMock
-                    .when(() -> AccountRepository.getAllAccounts(user))
-                    .thenThrow(exception);
+        when(accountRepository.getAllAccounts(user))
+                .thenThrow(exception);
 
-            List<Account> actualAccounts = AccountService.getAccounts(user);
+        List<Account> actualAccounts =
+                accountService.getAccounts(user);
 
-            assertNull(actualAccounts);
+        assertNull(actualAccounts);
 
-            repositoryMock.verify(
-                    () -> AccountRepository.getAllAccounts(user)
-            );
-        }
+        verify(accountRepository, times(1))
+                .getAllAccounts(user);
     }
 
     @Test

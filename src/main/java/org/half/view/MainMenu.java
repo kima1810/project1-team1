@@ -15,22 +15,21 @@ public class MainMenu {
             log.info("Displaying main menu...");
 
             // Main menu title
-            System.out.println(ANSI.RESET + "\n" + ANSI.rgb(255, 255, 100) +
-                    "┌────────────────────────────────┐\n" +
-                    "│  Main Menu                     │\n" +
-                    "└────────────────────────────────┘\n" +
-                    ANSI.RESET
-            );
+            System.out.println("\n" + ANSI.title(
+                    """
+                            ┌────────────────────────────────┐
+                            │  Main Menu                     │
+                            └────────────────────────────────┘
+                            """));
 
             // Print main menu options
-            System.out.print(ANSI.rgb(100, 255, 100));
-            System.out.println("[1] View balance");
-            System.out.println("[2] Withdraw");
-            System.out.println("[3] Deposit");
-            System.out.println("[4] Transfer");
-            System.out.println("[5] Transaction history");
-            System.out.println(ANSI.rgb(255,100,100) + "[0] Switch Account");
-            System.out.print(ANSI.RESET);
+            System.out.println(ANSI.optionPositive("[1] View balance"));
+            System.out.println(ANSI.optionPositive("[2] Withdraw"));
+            System.out.println(ANSI.optionPositive("[3] Deposit"));
+            System.out.println(ANSI.optionPositive("[4] Transfer"));
+            System.out.println(ANSI.optionPositive("[5] Transaction history"));
+            System.out.println(ANSI.optionPositive("[6] Show account number"));
+            System.out.println(ANSI.optionNegative("[0] Switch Account"));
 
             System.out.println("\n──────────────────────────────────");
 
@@ -41,8 +40,8 @@ public class MainMenu {
             log.info("User selected option: {}", userInput);
 
             // Check if option is valid
-            while (userInput < 0 || userInput > 5) {
-                System.out.print("Please enter a number between 0 and 5: " );
+            while (userInput < 0 || userInput > 6) {
+                System.out.print(ANSI.userWarning("Please enter a number between 0 and 6: " ));
                 userInput = BankScanner.promptUserSelection();
             }
 
@@ -68,8 +67,13 @@ public class MainMenu {
                     // Transaction history
                     TransactionHistory.displayTransactions(activeAccount);
                     break;
+                case 6:
+                    // View account number
+                    CheckAccountNumber.showAccountNumber(activeAccount);
+                    break;
                 case 0:
                     // Switch accounts
+                    System.out.println(ANSI.userWarning("Switching accounts..."));
                     break mainMenu;
             }
         }
