@@ -1,6 +1,7 @@
 package org.half.view;
 
-import org.half.security.SignInService;
+import org.half.repository.UserRepository;
+import org.half.service.UserService;
 import org.half.utility.ANSI;
 import org.half.utility.BankScanner;
 import org.half.model.User;
@@ -9,6 +10,9 @@ import org.slf4j.LoggerFactory;
 
 public class SignIn {
     private static final Logger log = LoggerFactory.getLogger(SignIn.class);
+
+    private static final UserRepository userRepository = new UserRepository();
+    private static final UserService userService = new UserService(userRepository);
 
     public static void signIn(){
         System.out.println(ANSI.rgb(0, 255, 0) +
@@ -57,7 +61,7 @@ public class SignIn {
                         System.out.println("Please enter your Password.");
                         String userPassword = BankScanner.getString();
                         if(!userName.isEmpty() && !userPassword.isEmpty()) {
-                            User activeUser = SignInService.verifyUser(userName, userPassword);
+                            User activeUser = userService.verifyUser(userName, userPassword);
                             if (activeUser != null) {
                                 System.out.println(ANSI.success("Successfully logged in to your profile..."));
                                 log.info("User logged in: userId={}", userName);
