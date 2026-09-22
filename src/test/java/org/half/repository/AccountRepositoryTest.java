@@ -27,6 +27,8 @@ import org.mockito.MockedStatic;
 
 class AccountRepositoryTest {
 
+    private AccountRepository accountRepository;
+
     @Test
     void addAccount_shouldInsertAccountSuccessfully() throws SQLException {
         User user = mock(User.class);
@@ -53,7 +55,7 @@ class AccountRepositoryTest {
                     .when(ConnectionFactory::getAutoCommitConnection)
                     .thenReturn(connection);
 
-            AccountRepository.addAccount(account);
+            accountRepository.addAccount(account);
 
             verify(connection).prepareStatement(
                     "INSERT INTO Account VALUES (?,?,?,?,?);"
@@ -82,7 +84,7 @@ class AccountRepositoryTest {
 
             DatabaseConnectionFailure thrown = assertThrows(
                     DatabaseConnectionFailure.class,
-                    () -> AccountRepository.addAccount(account)
+                    () -> accountRepository.addAccount(account)
             );
 
             assertEquals(
@@ -128,7 +130,7 @@ class AccountRepositoryTest {
 
             SQLException thrown = assertThrows(
                     SQLException.class,
-                    () -> AccountRepository.addAccount(account)
+                    () -> accountRepository.addAccount(account)
             );
 
             assertSame(exception, thrown);
@@ -181,7 +183,7 @@ class AccountRepositoryTest {
                     .thenReturn(connection);
 
             List<Account> accounts =
-                    AccountRepository.getAllAccounts(user);
+                    accountRepository.getAllAccounts(user);
 
             assertNotNull(accounts);
             assertEquals(2, accounts.size());
@@ -233,7 +235,7 @@ class AccountRepositoryTest {
                     .thenReturn(connection);
 
             List<Account> accounts =
-                    AccountRepository.getAllAccounts(user);
+                    accountRepository.getAllAccounts(user);
 
             assertNotNull(accounts);
             assertTrue(accounts.isEmpty());
@@ -258,7 +260,7 @@ class AccountRepositoryTest {
 
             DatabaseConnectionFailure thrown = assertThrows(
                     DatabaseConnectionFailure.class,
-                    () -> AccountRepository.getAllAccounts(user)
+                    () -> accountRepository.getAllAccounts(user)
             );
 
             assertEquals(
@@ -295,7 +297,7 @@ class AccountRepositoryTest {
 
             SQLException thrown = assertThrows(
                     SQLException.class,
-                    () -> AccountRepository.getAllAccounts(user)
+                    () -> accountRepository.getAllAccounts(user)
             );
 
             assertSame(exception, thrown);

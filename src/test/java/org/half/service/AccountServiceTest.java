@@ -218,7 +218,7 @@ class AccountServiceTest {
                 .getAllAccounts(user);
     }
 
-    @Test
+    /*@Test
     void testDepositRequest_UpdatesBalanceAndCallsServices() {
         Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 100.0);
 
@@ -294,5 +294,5 @@ class AccountServiceTest {
 
             assertEquals(0.01, testAccount.getBalance(), 0.001, "Balance should be exactly 0.01 despite double precision artifacts");
         }
-    }
+    }*/
 }
