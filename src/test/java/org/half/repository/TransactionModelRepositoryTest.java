@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.concurrent.ThreadLocalRandom;
 
 
 public class TransactionModelRepositoryTest {

@@ -7,7 +7,6 @@ import org.half.repository.AccountRepository;
 import org.half.service.AccountService;
 import org.half.service.TransactionHistoryService;
 import org.half.style.Theme;
-import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
@@ -18,8 +17,6 @@ import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
 
 
@@ -128,7 +125,13 @@ public class MainMenu implements Model {
             }
         } else if (key.equals("enter") && !inputBuffer.isEmpty()) {
             processTransactionInput();
-        } else if (key.length() == 1 && (Character.isDigit(key.charAt(0)) || key.equals("."))) {
+        } else if (key.length() == 1 && Character.isDigit(key.charAt(0))) {
+            int decimalIndex = inputBuffer.indexOf(".");
+            // Allow digits only if there are fewer than 2 digits after the decimal
+            if (decimalIndex == -1 || (inputBuffer.length() - decimalIndex - 1) < 2) {
+                inputBuffer += key;
+            }
+        } else if (key.equals(".") && !inputBuffer.contains(".")) {
             inputBuffer += key;
         }
         return UpdateResult.from(this);
@@ -192,6 +195,7 @@ public class MainMenu implements Model {
     }
 
     private String renderMenu() {
+        log.info("Displaying main menu...");
         StringBuilder content = new StringBuilder();
         content.append(Theme.TITLE.render("Main Menu")).append("\n\n");
         for (int i = 0; i < CHOICES.length; i++) {

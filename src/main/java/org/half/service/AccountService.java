@@ -106,6 +106,11 @@ public class AccountService {
             return false;
         }
 
+        if (amount > 10_000) {
+            log.warn("Failed transfer ammount: Account {} try to transfer an amount exceeding $10,000 to Account {}.", sourceAccount.getAccountNumber(), destinationAccountNumber);
+            throw new IllegalArgumentException("Amount cannot exceed $10,000");
+        }
+
         if (!accountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
             return false;
         }
@@ -125,6 +130,11 @@ public class AccountService {
         if (amount < 0) {
             log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
+        }
+
+        if (amount > 1_000_000) {
+            log.warn("Failed deposit attempt: Account {} entered amount exceeding $1,000,000 (${}).", account.getAccountNumber(), amount);
+            throw new IllegalArgumentException("Amount cannot exceeds $1,000,000.");
         }
 
         try {
