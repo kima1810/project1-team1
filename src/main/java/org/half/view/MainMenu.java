@@ -125,7 +125,13 @@ public class MainMenu implements Model {
             }
         } else if (key.equals("enter") && !inputBuffer.isEmpty()) {
             processTransactionInput();
-        } else if (key.length() == 1 && (Character.isDigit(key.charAt(0)) || key.equals("."))) {
+        } else if (key.length() == 1 && Character.isDigit(key.charAt(0))) {
+            int decimalIndex = inputBuffer.indexOf(".");
+            // Allow digits only if there are fewer than 2 digits after the decimal
+            if (decimalIndex == -1 || (inputBuffer.length() - decimalIndex - 1) < 2) {
+                inputBuffer += key;
+            }
+        } else if (key.equals(".") && !inputBuffer.contains(".")) {
             inputBuffer += key;
         }
         return UpdateResult.from(this);
