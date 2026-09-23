@@ -371,10 +371,11 @@ public class UserServiceTest {
 
     @Test
     void verifyUser_enteredEmptyUsername_shouldThrowException(){
+        UserService userService = new UserService(mock(UserRepository.class));
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> UserService.verifyUser("", "password")
+                () -> userService.verifyUser("", "password")
         );
 
         assertEquals("Can Not Enter Empty Strings.",
@@ -384,10 +385,11 @@ public class UserServiceTest {
 
     @Test
     void verifyUser_enteredEmptyPassword_shouldThrowException(){
+        UserService userService = new UserService(mock(UserRepository.class));
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> UserService.verifyUser("UserAccount", "")
+                () -> userService.verifyUser("UserAccount", "")
         );
 
         assertEquals("Can Not Enter Empty Strings.",
@@ -397,31 +399,24 @@ public class UserServiceTest {
 
     @Test
     void verifyUser_userDoesNotExist_returnsNull(){
-        try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class)){
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getPasswordHash("1234567")).thenReturn(null);
+        UserService userService = new UserService(userRepository);
 
-            userRepositoryMocked
-                    .when(() -> UserRepository.getPasswordHash("1234567"))
-                    .thenReturn(null);
+        User activeUser = userService.verifyUser("1234567", "passwordtest");
 
-            User activeUser = UserService.verifyUser("1234567", "passwordtest");
+        assertNull(activeUser);
 
-            assertNull(activeUser);
-
-            userRepositoryMocked.verify(
-                    () -> UserRepository.getUser("1234567"), never()
-            );
-        }
+        verify(userRepository, never()).getUser("1234567");
     }
 
     @Test
     void verifyUser_userExistAndPasswordIsIncorrect_returnsNull(){
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getPasswordHash("UserAccount")).thenReturn("hashedPassword");
+        UserService userService = new UserService(userRepository);
 
-        try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class);
-            MockedStatic<PasswordService> passwordServiceMocked = mockStatic(PasswordService.class)){
-
-            userRepositoryMocked
-                    .when(() -> UserRepository.getPasswordHash("UserAccount"))
-                    .thenReturn("hashedPassword");
+        try(MockedStatic<PasswordService> passwordServiceMocked = mockStatic(PasswordService.class)){
 
             passwordServiceMocked
                     .when(() -> PasswordService.verifyPassword(
@@ -429,13 +424,11 @@ public class UserServiceTest {
                             "hashedPassword"))
                     .thenReturn(false);
 
-            User activeUser = UserService.verifyUser("UserAccount", "wrongPassword");
+            User activeUser = userService.verifyUser("UserAccount", "wrongPassword");
 
             assertNull(activeUser);
 
-            userRepositoryMocked.verify(
-                    () -> UserRepository.getUser("UserAccount"), never()
-            );
+            verify(userRepository, never()).getUser("UserAccount");
         }
     }
 
@@ -444,12 +437,12 @@ public class UserServiceTest {
 
         User expectedUser = mock(User.class);
 
-        try(MockedStatic<UserRepository> userRepositoryMocked = mockStatic(UserRepository.class);
-            MockedStatic<PasswordService> passwordServiceMocked = mockStatic(PasswordService.class)){
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.getPasswordHash("UserAccount")).thenReturn("hashedPassword");
+        when(userRepository.getUser("UserAccount")).thenReturn(expectedUser);
+        UserService userService = new UserService(userRepository);
 
-            userRepositoryMocked
-                    .when(() -> UserRepository.getPasswordHash("UserAccount"))
-                    .thenReturn("hashedPassword");
+        try(MockedStatic<PasswordService> passwordServiceMocked = mockStatic(PasswordService.class)){
 
             passwordServiceMocked
                     .when(() -> PasswordService.verifyPassword(
@@ -457,18 +450,12 @@ public class UserServiceTest {
                             "hashedPassword"))
                     .thenReturn(true);
 
-            userRepositoryMocked
-                    .when(() ->UserRepository.getUser("UserAccount"))
-                    .thenReturn(expectedUser);
-
-            User activeUser = UserService.verifyUser("UserAccount", "correctPassword");
+            User activeUser = userService.verifyUser("UserAccount", "correctPassword");
 
             assertNotNull(activeUser);
             assertSame(expectedUser, activeUser);
 
-            userRepositoryMocked.verify(
-                    () ->UserRepository.getPasswordHash("UserAccount")
-            );
+            verify(userRepository).getPasswordHash("UserAccount");
 
             passwordServiceMocked.verify(
                     () -> PasswordService.verifyPassword(
@@ -477,9 +464,7 @@ public class UserServiceTest {
                     )
             );
 
-            userRepositoryMocked.verify(
-                    () -> UserRepository.getUser("UserAccount")
-            );
+            verify(userRepository).getUser("UserAccount");
         }
     }
 }
