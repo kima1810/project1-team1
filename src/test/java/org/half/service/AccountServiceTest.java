@@ -36,11 +36,10 @@ class AccountServiceTest {
     }
 
     @Test
-    void createAccount_shouldThrowIllegalPinLength_whenPinHasMoreThanFourDigits() throws SQLException {
+    void createAccount_shouldThrowIllegalPinLength_whenPinHasMoreThanFourDigits() {
         User user = mock(User.class);
 
-        IllegalPinLength exception = assertThrows(
-                IllegalPinLength.class,
+        assertThrows(IllegalPinLength.class,
                 () -> accountService.createAccount(
                         user,
                         10000,
