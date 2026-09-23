@@ -1,14 +1,12 @@
 package org.half.service;
 
 import org.half.model.Account;
-import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.OptionalDouble;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -34,7 +32,7 @@ class AccountServiceTransferTest {
 
     @Test
     void transfer_shouldUseBalanceReturnedByDatabase() {
-        Account sourceAccount = sourceAccountWithBalance(100.00);
+        Account sourceAccount = sourceAccount();
         when(accountRepository.transferFunds(
                 SOURCE_ACCOUNT_NUMBER,
                 DESTINATION_ACCOUNT_NUMBER,
@@ -48,12 +46,12 @@ class AccountServiceTransferTest {
         );
 
         assertTrue(result);
-        assertEquals(75.00, sourceAccount.getBalance(), 0.001);
+        verify(sourceAccount).setBalance(75.00);
     }
 
     @Test
     void transfer_shouldLetDatabaseDecide_whenCachedBalanceIsStale() {
-        Account sourceAccount = sourceAccountWithBalance(10.00);
+        Account sourceAccount = sourceAccount();
         when(accountRepository.transferFunds(
                 SOURCE_ACCOUNT_NUMBER,
                 DESTINATION_ACCOUNT_NUMBER,
@@ -67,7 +65,7 @@ class AccountServiceTransferTest {
         );
 
         assertTrue(result);
-        assertEquals(75.00, sourceAccount.getBalance(), 0.001);
+        verify(sourceAccount).setBalance(75.00);
         verify(accountRepository).transferFunds(
                 SOURCE_ACCOUNT_NUMBER,
                 DESTINATION_ACCOUNT_NUMBER,
@@ -77,7 +75,7 @@ class AccountServiceTransferTest {
 
     @Test
     void transfer_shouldLeaveCachedBalanceUnchanged_whenDatabaseRejectsIt() {
-        Account sourceAccount = sourceAccountWithBalance(100.00);
+        Account sourceAccount = sourceAccount();
         when(accountRepository.transferFunds(
                 SOURCE_ACCOUNT_NUMBER,
                 DESTINATION_ACCOUNT_NUMBER,
@@ -91,12 +89,12 @@ class AccountServiceTransferTest {
         );
 
         assertFalse(result);
-        assertEquals(100.00, sourceAccount.getBalance(), 0.001);
+        verify(sourceAccount, never()).setBalance(org.mockito.ArgumentMatchers.anyDouble());
     }
 
     @Test
     void transfer_shouldRejectInvalidAmount_beforeCallingDatabase() {
-        Account sourceAccount = sourceAccountWithBalance(100.00);
+        Account sourceAccount = sourceAccount();
 
         assertFalse(accountService.transfer(
                 sourceAccount,
@@ -110,13 +108,9 @@ class AccountServiceTransferTest {
         );
     }
 
-    private Account sourceAccountWithBalance(double balance) {
-        return new Account(
-                null,
-                SOURCE_ACCOUNT_NUMBER,
-                "pin-hash",
-                AccountType.CHECKING,
-                balance
-        );
+    private Account sourceAccount() {
+        Account account = mock(Account.class);
+        when(account.getAccountNumber()).thenReturn(SOURCE_ACCOUNT_NUMBER);
+        return account;
     }
 }

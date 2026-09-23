@@ -18,8 +18,7 @@ public class Account {
     }
 
     public double getBalance() {
-        AccountRepository.getBalance(accountNumber)
-                .ifPresent(databaseBalance -> this.balance = databaseBalance);
+        this.balance = AccountRepository.getBalance(this);
         return balance;
     }
 

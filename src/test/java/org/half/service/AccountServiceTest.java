@@ -10,6 +10,7 @@ import org.half.security.PasswordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -224,8 +225,7 @@ class AccountServiceTest {
         accountService.Deposit_Request(testAccount, 50.0);
 
         verify(accountRepository).Deposit_Balance(testAccount, 50.0);
-        verify(transactionHistoryService)
-                .attemptAddDepositOrWithdrawal("Deposit", 50.0, 123456789L);
+        verify(transactionHistoryService).attemptAddDepositOrWithdrawal("Deposit", 50.0, 123456789L);
     }
 
     @Test
@@ -235,8 +235,7 @@ class AccountServiceTest {
         accountService.Deposit_Request(testAccount, 0.0);
 
         verify(accountRepository).Deposit_Balance(testAccount, 0.0);
-        verify(transactionHistoryService)
-                .attemptAddDepositOrWithdrawal("Deposit", 0.0, 123456789L);
+        verify(transactionHistoryService).attemptAddDepositOrWithdrawal("Deposit", 0.0, 123456789L);
     }
 
     @Test
@@ -254,18 +253,14 @@ class AccountServiceTest {
     void testWithdrawRequest_OverdraftAttempt_ThrowsInsufficientFundsException() {
         Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.0);
 
-        try (MockedStatic<AccountRepository> repositoryMock = mockStatic(AccountRepository.class)) {
-            repositoryMock.when(() -> AccountRepository.getBalance(987654321L))
-                    .thenReturn(java.util.OptionalDouble.of(100.0));
+        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class)) {
+            repoMock.when(() -> AccountRepository.getBalance(testAccount)).thenReturn(100.0);
 
-            Exception exception = assertThrows(InsufficientFundsException.class, () ->
-                    accountService.Withdraw_Request(testAccount, 500.0)
-            );
+            Exception exception = assertThrows(InsufficientFundsException.class, () -> {
+                accountService.Withdraw_Request(testAccount, 500.0);
+            });
 
-            assertEquals(
-                    "Amount withdrawn attempted overdraft. Balance: $100.00",
-                    exception.getMessage()
-            );
+            assertEquals("Amount withdrawn attempted overdraft. Balance: $100.00", exception.getMessage());
         }
     }
 
@@ -281,18 +276,17 @@ class AccountServiceTest {
     }
 
     @Test
-    void testWithdrawRequest_CallsRepositoryAndHistory() {
+    void testWithdrawRequest_FloatingPointPrecision() {
+        // Doubles can cause weird fractional issues (e.g., 100.05 - 100.04 = 0.010000000000005)
         Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.05);
 
-        try (MockedStatic<AccountRepository> repositoryMock = mockStatic(AccountRepository.class)) {
-            repositoryMock.when(() -> AccountRepository.getBalance(987654321L))
-                    .thenReturn(java.util.OptionalDouble.of(100.05));
+        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class)) {
+            repoMock.when(() -> AccountRepository.getBalance(testAccount)).thenReturn(100.05);
 
             accountService.Withdraw_Request(testAccount, 100.04);
 
             verify(accountRepository).Withdraw_Balance(testAccount, 100.04);
-            verify(transactionHistoryService)
-                    .attemptAddDepositOrWithdrawal("Withdraw", 100.04, 987654321L);
+            verify(transactionHistoryService).attemptAddDepositOrWithdrawal("Withdraw", 100.04, 987654321L);
         }
     }
 }

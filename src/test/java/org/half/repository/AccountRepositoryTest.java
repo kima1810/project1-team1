@@ -16,7 +16,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.OptionalDouble;
 
 import org.half.exceptions.DatabaseConnectionFailure;
 import org.half.model.Account;
@@ -145,6 +144,10 @@ class AccountRepositoryTest {
 
     @Test
     void getBalance_shouldReturnBalance_whenAccountExists() throws SQLException {
+        Account account = mock(Account.class);
+
+        when(account.getAccountNumber()).thenReturn(123456L);
+
         Connection connection = mock(Connection.class);
         PreparedStatement statement = mock(PreparedStatement.class);
         ResultSet resultSet = mock(ResultSet.class);
@@ -155,16 +158,15 @@ class AccountRepositoryTest {
 
         when(statement.executeQuery()).thenReturn(resultSet);
         when(resultSet.next()).thenReturn(true);
-        when(resultSet.getDouble("balance")).thenReturn(1500.75);
+        when(resultSet.getDouble(1)).thenReturn(1500.75);
 
         try (MockedStatic<ConnectionFactory> factoryMock =
                      mockStatic(ConnectionFactory.class)) {
             factoryMock.when(ConnectionFactory::getAutoCommitConnection).thenReturn(connection);
 
-            OptionalDouble balance = AccountRepository.getBalance(123456L);
+            double balance = AccountRepository.getBalance(account);
 
-            assertTrue(balance.isPresent());
-            assertEquals(1500.75, balance.getAsDouble());
+            assertEquals(1500.75, balance);
 
             verify(connection).prepareStatement(
                     "SELECT balance FROM Account WHERE accountNumber = ?;"
@@ -177,7 +179,7 @@ class AccountRepositoryTest {
 
             verify(statement).executeQuery();
             verify(resultSet).next();
-            verify(resultSet).getDouble("balance");
+            verify(resultSet).getDouble(1);
         }
     }
 
@@ -231,10 +233,8 @@ class AccountRepositoryTest {
             verify(statement).setString(1, "john");
             verify(statement).executeQuery();
 
-            repositoryMock.when(() -> AccountRepository.getBalance(111111L))
-                    .thenReturn(OptionalDouble.of(100.00));
-            repositoryMock.when(() -> AccountRepository.getBalance(222222L))
-                    .thenReturn(OptionalDouble.of(500.00));
+            repositoryMock.when(() -> AccountRepository.getBalance(first)).thenReturn(100.00);
+            repositoryMock.when(() -> AccountRepository.getBalance(second)).thenReturn(500.00);
 
             assertEquals(100.00, first.getBalance());
             assertEquals(500.00, second.getBalance());
@@ -305,3 +305,4 @@ class AccountRepositoryTest {
         }
     }
 }
+

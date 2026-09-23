@@ -84,13 +84,24 @@ public class AccountRepository {
         }
     }
 
-    public static OptionalDouble getBalance(long accountNumber) {
-        try (Connection connection = ConnectionFactory.getAutoCommitConnection()) {
-            return getBalance(connection, accountNumber);
+    // Get the balance of the given account
+    public static double getBalance(Account account) {
+        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
+
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, account.getAccountNumber());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getDouble(1);
+                }
+            }
         } catch (SQLException e) {
-            log.error("Error getting balance for account {}: {}", accountNumber, e.getMessage());
-            return OptionalDouble.empty();
+            log.error("Error getting balance for account {}: {}", account.getAccountNumber(), e.getMessage());
         }
+
+        return 0;
     }
 
     public OptionalDouble transferFunds(long sourceAccountNumber, long destinationAccountNumber, double amount) {
