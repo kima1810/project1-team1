@@ -18,12 +18,14 @@ public class TransactionModelRepositoryTest {
     private static long nonExistentAccountNumber = -123456789014L;
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
-
-    private TransactionModelRepository transactionModelRepository;
+    private static TransactionModelRepository transactionModelRepository;
 
     //before any tests are ran, insert the test data into the database
     @BeforeAll
     static void initializeData() {
+        //create transactionModelRepository object to use
+        transactionModelRepository = new TransactionModelRepository();
+
         //I had to insert values into all three tables since the tables have foreign keys
         //for inserting into the user table
         String userQuery = """
@@ -138,13 +140,13 @@ public class TransactionModelRepositoryTest {
     //check if printOutTransactions received an empty list
     @Test
     void printOutTransactionsWithNonExistentId(){
-        assertTrue(transactionModelRepository.printOutTransactions(nonExistentAccountNumber).isEmpty());
+        assertTrue(transactionModelRepository.printOutTransactions(nonExistentAccountNumber, 1, 0).isEmpty());
     }
 
     //check printOutTransactions works with an existing id
     @Test
     void printOutTransactionsWithExistingId(){
-        assertFalse(transactionModelRepository.printOutTransactions(testAccountNumber).isEmpty());
+        assertFalse(transactionModelRepository.printOutTransactions(testAccountNumber, 1, 0).isEmpty());
     }
     //check if addDepositOrWithdrawal returns false it a non-existent id
     @Test

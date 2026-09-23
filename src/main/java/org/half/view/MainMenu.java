@@ -40,6 +40,8 @@ public class MainMenu implements Model {
 
     private AppState currentState = AppState.MENU;
     private ActionType currentAction = ActionType.NONE;
+    //Gavin's added variable
+    private int historyOffset = 0;
 
     private final User activeUser;
     private final Account activeAccount;
@@ -71,10 +73,15 @@ public class MainMenu implements Model {
     public UpdateResult<? extends Model> update(Message msg) {
         if (msg instanceof KeyPressMessage keyPressMessage) {
             String key = keyPressMessage.key();
+
+            //System.out.println("Key pressed: [" + key + "]");
+
             return switch (currentState) {
                 case MENU -> handleMenuInput(key);
                 case TYPING_INPUT -> handleTypingInput(key);
-                case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, VIEWING_HISTORY, NOTIFICATION -> handleSimpleReturn(key);
+                //case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, VIEWING_HISTORY, NOTIFICATION -> handleSimpleReturn(key);
+                case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, NOTIFICATION -> handleSimpleReturn(key);
+                case VIEWING_HISTORY -> handleHistoryInput(key);
             };
         }
         return UpdateResult.from(this);
@@ -98,6 +105,22 @@ public class MainMenu implements Model {
         };
     }
 
+    private UpdateResult<? extends Model> handleHistoryInput(String key) {
+        if (key.equals(" ")) {
+            historyOffset += 10;
+        }
+        else if(key.equals("ctrl+h")){
+            if(historyOffset - 10 >= 0){
+                historyOffset = historyOffset - 10;
+            }
+        }
+        else if (key.equals("q") || key.equals("esc") || key.equals("enter")) {
+            currentState = AppState.MENU;
+        }
+
+        return UpdateResult.from(this);
+    }
+
     private UpdateResult<? extends Model> routeMenuSelection() {
         switch (cursor) {
             case 0: currentState = AppState.VIEWING_BALANCE; break;
@@ -105,7 +128,11 @@ public class MainMenu implements Model {
             case 2: currentAction = ActionType.WITHDRAW; prepareInput(); break;
             case 3: currentAction = ActionType.DEPOSIT; prepareInput(); break;
             case 4: currentAction = ActionType.TRANSFER_DEST; prepareInput(); break;
-            case 5: currentState = AppState.VIEWING_HISTORY; break;
+            case 5:
+                //currentState = AppState.VIEWING_HISTORY; break;
+                historyOffset = 0;
+                currentState = AppState.VIEWING_HISTORY;
+                break;
             case 6: return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_SELECTION, activeUser)); // Routes back to Account Selection!
         }
         return UpdateResult.from(this);
@@ -190,7 +217,8 @@ public class MainMenu implements Model {
             case VIEWING_ACCOUNT_NUMBER -> renderAccountNumber();
             case TYPING_INPUT -> renderTypingBox();
             case NOTIFICATION -> renderNotification();
-            case VIEWING_HISTORY -> renderHistory();
+            //case VIEWING_HISTORY -> renderHistory();
+            case VIEWING_HISTORY -> renderHistory(10, historyOffset);
         };
     }
 
@@ -246,6 +274,7 @@ public class MainMenu implements Model {
         return Theme.CONTENT_PANEL.render(content);
     }
 
+    /*
     private String renderHistory() {
         StringBuilder content = new StringBuilder();
         content.append(Theme.TITLE.render("Transaction History")).append("\n\n");
@@ -257,6 +286,7 @@ public class MainMenu implements Model {
         content.append("──────────────────────────────────────────────────────────────────────────────────\n");
 
         List<TransactionModel> history = transactionModelRepository.printOutTransactions(activeAccount.getAccountNumber());
+
 
         if (history.isEmpty()) {
             content.append(Theme.FOOTER_TEXT.render("No transactions found.\n"));
@@ -280,4 +310,73 @@ public class MainMenu implements Model {
 
         return Theme.CONTENT_PANEL.render(content.toString());
     }
+    */
+
+    private String renderHistory(int limit, int offset) {
+
+        StringBuilder content = new StringBuilder();
+
+        content.append(Theme.TITLE.render("Transaction History")).append("\n\n");
+
+        String header = String.format(
+                "%-22s %-12s %-15s %-15s %-15s",
+                "Date", "Type", "Amount", "Origin ID", "Dest ID"
+        );
+
+        content.append(Theme.USERNAME.render(header)).append("\n");
+        content.append("──────────────────────────────────────────────────────────────────────────────────\n");
+
+        List<TransactionModel> history =
+                transactionModelRepository.printOutTransactions(
+                        activeAccount.getAccountNumber(),
+                        limit,
+                        offset
+                );
+
+        if (history.isEmpty()) {
+
+            content.append(
+                    Theme.FOOTER_TEXT.render("No more transactions found.\n")
+            );
+
+        } else {
+
+            for (TransactionModel t : history) {
+
+                String origin =
+                        (t.getOriginAccountId() == 0)
+                                ? "N/A"
+                                : String.valueOf(t.getOriginAccountId());
+
+                String dest =
+                        (t.getDestinationAccountId() == 0)
+                                ? "N/A"
+                                : String.valueOf(t.getDestinationAccountId());
+
+                String row = String.format(
+                        "%-22s %-12s $%-14.2f %-15s %-15s",
+                        t.getDateTime(),
+                        t.getType(),
+                        t.getAmount(),
+                        origin,
+                        dest
+                );
+
+                content.append(row).append("\n");
+            }
+        }
+
+        content.append("\n\n");
+
+        content.append(
+                Theme.FOOTER_TEXT.render(
+                        "Press SPACE for more transactions, BACKSPACE for the previous list, or ENTER to return"
+                )
+        );
+
+        return Theme.CONTENT_PANEL.render(content.toString());
+    }
+
+
+
 }
