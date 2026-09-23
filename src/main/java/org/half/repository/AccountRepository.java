@@ -4,15 +4,19 @@ import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.utility.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountRepository {
+    private static final Logger log = LoggerFactory.getLogger(AccountRepository.class);
+
     // Add a new account to the database
     public void addAccount(Account account) throws SQLException {
-        // Query
+        // Query to insert new account record
         String query = "INSERT INTO Account VALUES (?,?,?,?,?);";
 
         // Connect to database to create a new account
@@ -31,17 +35,27 @@ public class AccountRepository {
         }
     }
 
-    public static double getBalance(long accountNumber) {
+    // Get the balance of the given account number
+    public static double getBalance(Account account) {
+        // Query to get account balance
         String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
 
+        // Connection to database to query
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, accountNumber);
+
+            // Pass in the account number
+            statement.setLong(1, account.getAccountNumber());
+
+            // Get the result set
             ResultSet resultSet = statement.executeQuery();
             resultSet.next();
+
+            // Return the balance
             return resultSet.getDouble(1);
         } catch (SQLException e) {
             // This should not happen
+            log.error("Error getting balance. Error: {}", e.getMessage());
         }
 
         return 0;
@@ -49,7 +63,7 @@ public class AccountRepository {
 
     // Get all the accounts of a user from the database
     public List<Account> getAllAccounts(User user) throws SQLException {
-        // Query
+        // Query to get all accounts of the user
         String query = "SELECT * FROM Account WHERE username=?;";
 
         // Connect to database to query
