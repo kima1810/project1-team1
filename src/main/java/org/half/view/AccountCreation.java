@@ -1,5 +1,6 @@
 package org.half.view;
 
+import org.half.exceptions.IllegalPinLength;
 import org.half.model.RouteModel;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
@@ -80,9 +81,11 @@ public class AccountCreation implements Model {
             case "enter" -> {
                 if (cursor == 0) {
                     selectedType = AccountType.CHECKING;
+                    log.info("User selected account type: {}", selectedType);
                     currentStep = Step.ENTER_PIN;
                 } else if (cursor == 1) {
                     selectedType = AccountType.SAVINGS;
+                    log.info("User selected account type: {}", selectedType);
                     currentStep = Step.ENTER_PIN;
                 } else {
                     return cancelAndReturn();
@@ -117,11 +120,13 @@ public class AccountCreation implements Model {
             if (!confirmPinBuffer.isEmpty()) confirmPinBuffer = confirmPinBuffer.substring(0, confirmPinBuffer.length() - 1);
         } else if (key.equals("enter") && confirmPinBuffer.length() == 4) {
             if (!confirmPinBuffer.equals(pinBuffer)) {
+                log.warn("PINs entered do not match.");
                 errorMessage = "PINs do not match. Please try again.";
                 pinBuffer = "";
                 confirmPinBuffer = "";
                 currentStep = Step.ERROR;
             } else {
+                log.info("PIN accepted.");
                 createAccountRecord();
             }
         } else if (key.length() == 1 && Character.isDigit(key.charAt(0)) && confirmPinBuffer.length() < 4) {
@@ -137,12 +142,18 @@ public class AccountCreation implements Model {
             if (accNum != -1) {
                 createdAccountNumber = accNum;
                 currentStep = Step.SUCCESS;
-                log.info("Successfully created {} account for user {}", selectedType, user.getUsername());
+                log.info("Account successfully created! {username: {}, account: {}", user.getUsername(), selectedType + String.format("****%04d", createdAccountNumber));
             } else {
-                errorMessage = "Failed to create account. Please try again.";
+                errorMessage = "Failed to create account. Please try again...";
+                log.error("Failed to create an account for user: {}", user.getUsername());
                 currentStep = Step.ERROR;
             }
+        } catch (IllegalPinLength illegalPinLength) {
+            errorMessage = illegalPinLength.getMessage();
+            log.error("Illegal pin length was passed for account creation.");
+            currentStep = Step.ERROR;
         } catch (Exception e) {
+            log.error("Something when wrong when creating a new account: {}", e.getMessage());
             errorMessage = e.getMessage();
             currentStep = Step.ERROR;
         }
@@ -182,6 +193,8 @@ public class AccountCreation implements Model {
     }
 
     private String renderChooseType() {
+        log.info("Creating a new account for user: {}", user.getUsername());
+
         StringBuilder buffer = new StringBuilder();
         buffer.append(Theme.TITLE.render("Create a New Account")).append("\n\n");
         buffer.append("Choose account type:\n\n");

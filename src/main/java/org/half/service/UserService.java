@@ -1,5 +1,6 @@
 package org.half.service;
 
+import org.half.exceptions.EmptyStringException;
 import org.half.exceptions.UserAlreadyExists;
 import org.half.model.User;
 import org.half.repository.UserRepository;
@@ -40,7 +41,8 @@ public class UserService {
 
     public User verifyUser(String userName, String userPassword){
         if(userName.isEmpty() || userPassword.isEmpty()) {
-            throw new IllegalArgumentException("Can Not Enter Empty Strings.");
+            log.warn("Empty String(s) passed to verifyUser");
+            throw new EmptyStringException("Empty String(s) passed to verifyUser.");
         }
         String dataBasePassword = userRepository.getPasswordHash(userName);
 

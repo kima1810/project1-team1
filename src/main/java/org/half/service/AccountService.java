@@ -1,5 +1,6 @@
 package org.half.service;
 
+import org.half.exceptions.IllegalPinLength;
 import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.model.User;
@@ -26,12 +27,12 @@ public class AccountService {
     }
 
     // Create a new bank account and add it to database
-    public long createAccount(User user, int pin, AccountType accountType) {
+    public long createAccount(User user, int pin, AccountType accountType) throws IllegalPinLength {
         // Check if PIN is more than 4 digits long
         if (pin > 9999) {
             // Invalid PIN
             log.warn("Invalid pin. Cannot be more than 4 digits.");
-            throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
+            throw new IllegalPinLength("Invalid pin. Cannot be more than 4 digits.");
         }
 
         // Hash the PIN
@@ -69,12 +70,12 @@ public class AccountService {
     }
 
     // Method to verify if the entered user PIN matches the account PIN hash
-    public boolean verifyAccount(Account account, int userInputPIN) {
+    public boolean verifyAccount(Account account, int userInputPIN) throws IllegalPinLength {
         // Check if user input is valid
         if (userInputPIN > 9999) {
             // Input PIN cannot be more than 4 digits
             log.warn("Invalid pin. Cannot be more than 4 digits.");
-            throw new IllegalArgumentException("Invalid pin. Cannot be more than 4 digits.");
+            throw new IllegalPinLength("Invalid pin. Cannot be more than 4 digits.");
         }
 
         // Return ture if password is correct, else false
