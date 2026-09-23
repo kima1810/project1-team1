@@ -77,7 +77,7 @@ public class AccountSelection implements Model {
                     // Send RouteModel to MasterControl to swap to AccountCreation
                     return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_CREATION, user));
                 } else {
-                    // Send RouteModel to MasterControl to logout to WelcomeMenu
+                    // Send RouteModel to MasterControl to log out to WelcomeMenu
                     return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.WELCOME, null));
                 }
             }

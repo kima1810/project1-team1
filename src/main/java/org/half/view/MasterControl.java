@@ -59,9 +59,7 @@ public class MasterControl implements Model {
                     this.currentView = new AccountSelection(user, accounts);
                 }
             }
-            case ACCOUNT_CREATION -> {
-                this.currentView = new AccountCreation((User) msg.payload());
-            }
+            case ACCOUNT_CREATION -> this.currentView = new AccountCreation((User) msg.payload());
             case MAIN_MENU -> {
                 // Safely unpacks the array sent by verifyPin()
                 Object[] payload = (Object[]) msg.payload();

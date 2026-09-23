@@ -5,12 +5,10 @@ import org.half.exceptions.UserAlreadyExists;
 import org.half.model.User;
 import org.half.repository.UserRepository;
 import org.half.security.PasswordService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import static org.half.security.PasswordService.verifyPassword;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
