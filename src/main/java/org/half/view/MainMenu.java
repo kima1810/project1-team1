@@ -189,6 +189,7 @@ public class MainMenu implements Model {
     }
 
     private String renderMenu() {
+        log.info("Displaying main menu...");
         StringBuilder content = new StringBuilder();
         content.append(Theme.TITLE.render("Main Menu")).append("\n\n");
         for (int i = 0; i < CHOICES.length; i++) {
