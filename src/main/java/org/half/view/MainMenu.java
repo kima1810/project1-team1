@@ -7,6 +7,7 @@ import org.half.repository.AccountRepository;
 import org.half.service.AccountService;
 import org.half.service.TransactionHistoryService;
 import org.half.style.Theme;
+import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
@@ -21,6 +22,7 @@ import com.williamcallahan.tui4j.compat.lipgloss.Style;
 import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
 
+
 public class MainMenu implements Model {
     private static final Logger log = LoggerFactory.getLogger(MainMenu.class);
 
@@ -33,7 +35,7 @@ public class MainMenu implements Model {
 
     // --- 1. SPA State Management ---
     private enum AppState {
-        MENU, VIEWING_BALANCE, VIEWING_HISTORY, TYPING_INPUT, NOTIFICATION
+        MENU, VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, VIEWING_HISTORY, TYPING_INPUT, NOTIFICATION
     }
     private enum ActionType {
         NONE, WITHDRAW, DEPOSIT, TRANSFER_DEST, TRANSFER_AMOUNT
@@ -54,7 +56,7 @@ public class MainMenu implements Model {
 
 
     private final static String[] CHOICES = {
-            "View balance", "Withdraw", "Deposit", "Transfer", "Transaction history", "Switch Account"
+            "View balance", "View Account Number", "Withdraw", "Deposit", "Transfer", "Transaction history", "Switch Account"
     };
     private int cursor = 0;
 
@@ -67,7 +69,7 @@ public class MainMenu implements Model {
     @Override
     public Command init() { return null; }
 
-    // --- 3. The Router (Update) ---
+    // --- 2. The Router (Update) ---
     @Override
     public UpdateResult<? extends Model> update(Message msg) {
         if (msg instanceof KeyPressMessage keyPressMessage) {
@@ -75,7 +77,7 @@ public class MainMenu implements Model {
             return switch (currentState) {
                 case MENU -> handleMenuInput(key);
                 case TYPING_INPUT -> handleTypingInput(key);
-                case VIEWING_BALANCE, VIEWING_HISTORY, NOTIFICATION -> handleSimpleReturn(key);
+                case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, VIEWING_HISTORY, NOTIFICATION -> handleSimpleReturn(key);
             };
         }
         return UpdateResult.from(this);
@@ -102,11 +104,12 @@ public class MainMenu implements Model {
     private UpdateResult<? extends Model> routeMenuSelection() {
         switch (cursor) {
             case 0: currentState = AppState.VIEWING_BALANCE; break;
-            case 1: currentAction = ActionType.WITHDRAW; prepareInput(); break;
-            case 2: currentAction = ActionType.DEPOSIT; prepareInput(); break;
-            case 3: currentAction = ActionType.TRANSFER_DEST; prepareInput(); break;
-            case 4: currentState = AppState.VIEWING_HISTORY; break;
-            case 5: return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_SELECTION, activeUser)); // Routes back to Account Selection!
+            case 1: currentState = AppState.VIEWING_ACCOUNT_NUMBER; break;
+            case 2: currentAction = ActionType.WITHDRAW; prepareInput(); break;
+            case 3: currentAction = ActionType.DEPOSIT; prepareInput(); break;
+            case 4: currentAction = ActionType.TRANSFER_DEST; prepareInput(); break;
+            case 5: currentState = AppState.VIEWING_HISTORY; break;
+            case 6: return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_SELECTION, activeUser)); // Routes back to Account Selection!
         }
         return UpdateResult.from(this);
     }
@@ -181,6 +184,7 @@ public class MainMenu implements Model {
         return switch (currentState) {
             case MENU -> renderMenu();
             case VIEWING_BALANCE -> renderBalance();
+            case VIEWING_ACCOUNT_NUMBER -> renderAccountNumber();
             case TYPING_INPUT -> renderTypingBox();
             case NOTIFICATION -> renderNotification();
             case VIEWING_HISTORY -> renderHistory();
@@ -194,7 +198,7 @@ public class MainMenu implements Model {
             if (cursor == i) {
                 content.append(Theme.ACTIVE_ITEM_SELECT.render("▶ " + CHOICES[i])).append("\n");
             } else {
-                if (i == 5) content.append(Theme.ERROR_TEXT.render("  " + CHOICES[i])).append("\n");
+                if (i == CHOICES.length - 1) content.append(Theme.ERROR_TEXT.render("  " + CHOICES[i])).append("\n");
                 else content.append("  ").append(CHOICES[i]).append("\n");
             }
         }
@@ -204,6 +208,13 @@ public class MainMenu implements Model {
     private String renderBalance() {
         String content = Theme.TITLE.render("Account Balance") + "\n\n" +
                 "Available Funds: " + Theme.LOGO.render(String.format("$%.2f", activeAccount.getBalance())) + "\n\n" +
+                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+        return Theme.CONTENT_PANEL.render(content);
+    }
+
+    private String renderAccountNumber() {
+        String content = Theme.TITLE.render("Account Number") + "\n\n" +
+                "Your account number is: " + Theme.LOGO.render("" + activeAccount.getAccountNumber()) + "\n\n" +
                 Theme.FOOTER_TEXT.render("Press 'enter' to return");
         return Theme.CONTENT_PANEL.render(content);
     }

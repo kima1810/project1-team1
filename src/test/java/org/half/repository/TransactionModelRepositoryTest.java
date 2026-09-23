@@ -20,6 +20,8 @@ public class TransactionModelRepositoryTest {
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
 
+    private TransactionModelRepository transactionModelRepository;
+
     //before any tests are ran, insert the test data into the database
     @BeforeAll
     static void initializeData() {
@@ -137,43 +139,43 @@ public class TransactionModelRepositoryTest {
     //check if printOutTransactions received an empty list
     @Test
     void printOutTransactionsWithNonExistentId(){
-        assertTrue(TransactionModelRepository.printOutTransactions(nonExistentAccountNumber).isEmpty());
+        assertTrue(transactionModelRepository.printOutTransactions(nonExistentAccountNumber).isEmpty());
     }
 
     //check printOutTransactions works with an existing id
     @Test
     void printOutTransactionsWithExistingId(){
-        assertFalse(TransactionModelRepository.printOutTransactions(testAccountNumber).isEmpty());
+        assertFalse(transactionModelRepository.printOutTransactions(testAccountNumber).isEmpty());
     }
     //check if addDepositOrWithdrawal returns false it a non-existent id
     @Test
     void addDepositOrWithdrawalWithNonExistentId(){
         TransactionModel transactionModel = new TransactionModel("Deposit", 100.00, nonExistentAccountNumber);
-        assertFalse(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
+        assertFalse(transactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
     //check if addDepositOrWithdrawal works with valid information
     @Test
     void addDepositOrWithdrawalWithExistentId(){
         TransactionModel transactionModel = new TransactionModel("Deposit", 100.00, testAccountNumber);
-        assertTrue(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
+        assertTrue(transactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
     //check if addTransfer returns false with a non-existent origin id
     @Test
     void addTransferWithNonExistentOriginId(){
         TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, nonExistentAccountNumber, testAccountNumber2);
-        assertFalse(TransactionModelRepository.addTransfer(transactionModel));
+        assertFalse(transactionModelRepository.addTransfer(transactionModel));
     }
     //check if addTransfer returns false with a non-existent destination id
     @Test
     void addTransferWithNonExistentDestinationId(){
         TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, testAccountNumber, nonExistentAccountNumber);
-        assertFalse(TransactionModelRepository.addTransfer(transactionModel));
+        assertFalse(transactionModelRepository.addTransfer(transactionModel));
     }
     //check if addTransfer works with valid information
     @Test
     void addTransferWithBothExistentIDs(){
         TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, testAccountNumber, testAccountNumber2);
-        assertTrue(TransactionModelRepository.addTransfer(transactionModel));
+        assertTrue(transactionModelRepository.addTransfer(transactionModel));
     }
 
     //deletes all the test information that was placed into the database after every testcase has run

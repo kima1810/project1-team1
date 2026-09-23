@@ -64,7 +64,8 @@ public class SignIn implements Model {
 
     private UpdateResult<? extends Model> attemptLogin() {
         if (inputs[0].isEmpty() || inputs[1].isEmpty()) {
-            errorMessage = "Username and password are required.";
+            errorMessage = "Invalid credentials. Try again.";
+            log.warn("Login failed: userId={}", inputs[0]);
             return UpdateResult.from(this);
         }
 
@@ -76,6 +77,7 @@ public class SignIn implements Model {
         } else {
             errorMessage = "Invalid credentials. Try again.";
             inputs[1] = ""; // Clear password field on failure
+            log.warn("Login failed: userId={}", inputs[0]);
             return UpdateResult.from(this);
         }
     }
