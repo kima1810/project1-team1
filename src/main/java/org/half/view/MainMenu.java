@@ -74,8 +74,6 @@ public class MainMenu implements Model {
         if (msg instanceof KeyPressMessage keyPressMessage) {
             String key = keyPressMessage.key();
 
-            //System.out.println("Key pressed: [" + key + "]");
-
             return switch (currentState) {
                 case MENU -> handleMenuInput(key);
                 case TYPING_INPUT -> handleTypingInput(key);
@@ -273,44 +271,6 @@ public class MainMenu implements Model {
                 Theme.FOOTER_TEXT.render("Press 'enter' to continue");
         return Theme.CONTENT_PANEL.render(content);
     }
-
-    /*
-    private String renderHistory() {
-        StringBuilder content = new StringBuilder();
-        content.append(Theme.TITLE.render("Transaction History")).append("\n\n");
-
-        String header = String.format("%-22s %-12s %-15s %-15s %-15s",
-                "Date", "Type", "Amount", "Origin ID", "Dest ID");
-
-        content.append(Theme.USERNAME.render(header)).append("\n");
-        content.append("──────────────────────────────────────────────────────────────────────────────────\n");
-
-        List<TransactionModel> history = transactionModelRepository.printOutTransactions(activeAccount.getAccountNumber());
-
-
-        if (history.isEmpty()) {
-            content.append(Theme.FOOTER_TEXT.render("No transactions found.\n"));
-        } else {
-            for (TransactionModel t : history) {
-                String origin = (t.getOriginAccountId() == 0) ? "N/A" : String.valueOf(t.getOriginAccountId());
-                String dest = (t.getDestinationAccountId() == 0) ? "N/A" : String.valueOf(t.getDestinationAccountId());
-
-                String row = String.format("%-22s %-12s $%-14.2f %-15s %-15s",
-                        t.getDateTime(),
-                        t.getType(),
-                        t.getAmount(),
-                        origin,
-                        dest);
-                content.append(row).append("\n");
-            }
-        }
-
-        content.append("\n\n");
-        content.append(Theme.FOOTER_TEXT.render("Press 'enter' to return"));
-
-        return Theme.CONTENT_PANEL.render(content.toString());
-    }
-    */
 
     private String renderHistory(int limit, int offset) {
 
