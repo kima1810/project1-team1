@@ -20,6 +20,8 @@ public class TransactionHistoryServiceTest {
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
 
+    private TransactionHistoryService transactionHistoryService;
+
     //before any tests are ran, insert the test data into the database
     @BeforeAll
     static void initializeData() {
@@ -136,53 +138,53 @@ public class TransactionHistoryServiceTest {
     @Test
     void attemptPrintOutTransactionsWithNonExistentId() {
         Account account = new Account(null, -1, "1234", CHECKING, 0.00);
-        assertFalse(TransactionHistoryService.attemptPrintOutTransactions(account));
+        assertFalse(transactionHistoryService.attemptPrintOutTransactions(account));
     }
     //check if it works alright with proper input
     @Test
     void attemptPrintOutTransactionsWithExistentId() throws SQLException {
         Account account = new Account(null, testAccountNumber, "1234", CHECKING, 0.00);
-        assertTrue(TransactionHistoryService.attemptPrintOutTransactions(account));
+        assertTrue(transactionHistoryService.attemptPrintOutTransactions(account));
     }
     //check if attemptAddDepositOrWithdrawal rejects it while using the transfer type, it is only supposed to be either Deposit or Withdrawal
     @Test
     void attemptAddDepositOrWithdrawalWithBadTransfer(){
-        assertFalse(TransactionHistoryService.attemptAddDepositOrWithdrawal("Transfer", 100.00, testAccountNumber));
+        assertFalse(transactionHistoryService.attemptAddDepositOrWithdrawal("Transfer", 100.00, testAccountNumber));
     }
     //check if attemptAddDepositOrWithdrawal returns false if the type is just nonsense
     @Test
     void attemptAddDepositOrWithdrawalWithIncorrectType(){
-        assertFalse(TransactionHistoryService.attemptAddDepositOrWithdrawal("randomThing", 100.00, testAccountNumber));
+        assertFalse(transactionHistoryService.attemptAddDepositOrWithdrawal("randomThing", 100.00, testAccountNumber));
     }
     //check if attemptAddDepositOrWithdrawal returns false if the amount is less than 0
     @Test
     void attemptAddDepositOrWithdrawalWithLessThanZero(){
-        assertFalse(TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", -0.1, testAccountNumber));
+        assertFalse(transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", -0.1, testAccountNumber));
     }
     //check if it works when the input is valid
     @Test
     void attemptAddDepositOrWithdrawalWithValidInformation(){
-        assertTrue(TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", 100.00, testAccountNumber));
+        assertTrue(transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", 100.00, testAccountNumber));
     }
     //check if attemptAddTransfer rejects it if the type is deposit, it is only supposed to be Transfer
     @Test
     void attemptAddTransferWithBadDepositOrWithdrawal(){
-        assertFalse(TransactionHistoryService.attemptAddTransfer("Deposit", 100.00, testAccountNumber, testAccountNumber2));
+        assertFalse(transactionHistoryService.attemptAddTransfer("Deposit", 100.00, testAccountNumber, testAccountNumber2));
     }
     //check if attemptAddTransfer returns false if the type is nonsense
     @Test
     void attemptAddTransferWithIncorrectType(){
-        assertFalse(TransactionHistoryService.attemptAddTransfer("randomStuff", 100.00, testAccountNumber, testAccountNumber2));
+        assertFalse(transactionHistoryService.attemptAddTransfer("randomStuff", 100.00, testAccountNumber, testAccountNumber2));
     }
     // if attemptAddTransfer returns false with a negative amount
     @Test
     void attemptAddTransferWithLessThanZero(){
-        assertFalse(TransactionHistoryService.attemptAddTransfer("Transfer", -0.1, testAccountNumber, testAccountNumber2));
+        assertFalse(transactionHistoryService.attemptAddTransfer("Transfer", -0.1, testAccountNumber, testAccountNumber2));
     }
     //check if attemptAddTransfer works with valid inputs
     @Test
     void attemptAddTransferWithValidInformation(){
-        assertTrue(TransactionHistoryService.attemptAddTransfer("Transfer", 100.00, testAccountNumber, testAccountNumber2));
+        assertTrue(transactionHistoryService.attemptAddTransfer("Transfer", 100.00, testAccountNumber, testAccountNumber2));
     }
 
     //deletes all the test information that was placed into the database after every testcase has run
