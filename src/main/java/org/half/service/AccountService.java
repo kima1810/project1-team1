@@ -180,8 +180,6 @@ public class AccountService {
     }
 
     private static boolean hasAtMostTwoDecimalPlaces(double amount) {
-        double cents = amount * 100;
-        return Double.isFinite(cents)
-                && Math.abs(cents - Math.rint(cents)) < 0.0000001;
+        return amount * 100 % 1 == 0;
     }
 }

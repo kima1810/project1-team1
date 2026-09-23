@@ -121,48 +121,83 @@ public class AccountRepository {
                 VALUES ('Transfer', ?, ?, ?);
                 """;
         try (Connection connection = ConnectionFactory.getManualCommitConnection()) {
-            try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery);
-                 PreparedStatement creditStatement = connection.prepareStatement(creditQuery);
-                 PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
+            try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery)) {
                 debitStatement.setDouble(1, amount);
                 debitStatement.setLong(2, sourceAccountNumber);
                 debitStatement.setDouble(3, amount);
                 if (debitStatement.executeUpdate() != 1) {
-                    connection.rollback();
+                    log.warn("Transfer debit rejected: source account {} is missing or has insufficient funds.", sourceAccountNumber);
+                    rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
+            } catch (SQLException e) {
+                log.error("Transfer failed while debiting account {}.", sourceAccountNumber, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
 
+            try (PreparedStatement creditStatement = connection.prepareStatement(creditQuery)) {
                 creditStatement.setDouble(1, amount);
                 creditStatement.setLong(2, destinationAccountNumber);
                 if (creditStatement.executeUpdate() != 1) {
-                    connection.rollback();
+                    log.warn("Transfer credit rejected: destination account {} was not updated.", destinationAccountNumber);
+                    rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
+            } catch (SQLException e) {
+                log.error("Transfer failed while crediting account {}.", destinationAccountNumber, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
 
+            try (PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
                 historyStatement.setDouble(1, amount);
                 historyStatement.setLong(2, sourceAccountNumber);
                 historyStatement.setLong(3, destinationAccountNumber);
                 if (historyStatement.executeUpdate() != 1) {
-                    connection.rollback();
+                    log.warn("Transfer history was not inserted for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber);
+                    rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
-
-                OptionalDouble updatedSourceBalance = getBalance(connection, sourceAccountNumber);
-                if (updatedSourceBalance.isEmpty()) {
-                    connection.rollback();
-                    return OptionalDouble.empty();
-                }
-
-                connection.commit();
-                return updatedSourceBalance;
             } catch (SQLException e) {
-                connection.rollback();
-                e.printStackTrace();
+                log.error("Transfer failed while recording history for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber, e);
+                rollbackTransfer(connection);
                 return OptionalDouble.empty();
             }
+
+            OptionalDouble updatedSourceBalance;
+            try {
+                updatedSourceBalance = getBalance(connection, sourceAccountNumber);
+                if (updatedSourceBalance.isEmpty()) {
+                    log.warn("Transfer balance lookup failed: source account {} was not found.", sourceAccountNumber);
+                    rollbackTransfer(connection);
+                    return OptionalDouble.empty();
+                }
+            } catch (SQLException e) {
+                log.error("Transfer failed while reading the updated balance for account {}.", sourceAccountNumber, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
+
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                log.error("Transfer commit failed for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
+            return updatedSourceBalance;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Transfer connection failed to open or close for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber, e);
             return OptionalDouble.empty();
+        }
+    }
+
+    private static void rollbackTransfer(Connection connection) {
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            log.error("Transfer rollback failed; the transaction outcome needs verification.", e);
         }
     }
 
