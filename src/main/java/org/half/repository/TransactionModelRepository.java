@@ -1,8 +1,5 @@
 package org.half.repository;
-import org.half.model.Account;
 import org.half.model.TransactionModel;
-import org.half.model.enums.AccountType;
-import org.half.service.TransactionHistoryService;
 import org.half.utility.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
