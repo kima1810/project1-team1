@@ -1,10 +1,12 @@
 package org.half.service;
 
+import org.half.exceptions.IllegalPinLength;
 import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
+import org.half.security.PasswordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,33 +36,45 @@ class AccountServiceTest {
     }
 
     @Test
-    void createAccount_shouldThrowException_whenPinHasMoreThanFourDigits() {
+    void createAccount_shouldThrowIllegalPinLength_whenPinHasMoreThanFourDigits() {
         User user = mock(User.class);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        assertThrows(IllegalPinLength.class,
                 () -> accountService.createAccount(
                         user,
-                        10_000,
+                        10000,
                         AccountType.CHECKING
                 )
-        );
-
-        assertEquals(
-                "Invalid pin. Cannot be more than 4 digits.",
-                exception.getMessage()
         );
 
         verifyNoInteractions(accountRepository);
     }
 
     @Test
-    void createAccount_shouldCreateAccountSuccessfully() throws SQLException {
+    void createAccount_shouldAcceptFourDigitPin() throws SQLException, IllegalPinLength {
+
         User user = mock(User.class);
 
-        doNothing()
-                .when(accountRepository)
+        doNothing().when(accountRepository).addAccount(any(Account.class));
+
+        long accountNumber = accountService.createAccount(
+                user,
+                9999,
+                AccountType.CHECKING
+        );
+
+        assertTrue(accountNumber >= 100000000000L);
+        assertTrue(accountNumber < 1000000000000L);
+
+        verify(accountRepository, times(1))
                 .addAccount(any(Account.class));
+    }
+
+    @Test
+    void createAccount_shouldCreateAccountSuccessfully() throws SQLException, IllegalPinLength {
+        User user = mock(User.class);
+
+        doNothing().when(accountRepository).addAccount(any(Account.class));
 
         long accountNumber = accountService.createAccount(
                 user,
@@ -68,46 +82,20 @@ class AccountServiceTest {
                 AccountType.CHECKING
         );
 
-        assertTrue(accountNumber >= 100_000_000_000L);
-        assertTrue(accountNumber < 1_000_000_000_000L);
+        assertTrue(accountNumber >= 100000000000L);
+        assertTrue(accountNumber < 1000000000000L);
 
         verify(accountRepository, times(1))
                 .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldAcceptFourDigitPin() throws SQLException {
+    void createAccount_shouldRetry_whenAccountNumberAlreadyExists() throws SQLException, IllegalPinLength {
         User user = mock(User.class);
 
-        doNothing()
-                .when(accountRepository)
-                .addAccount(any(Account.class));
+        SQLException duplicateKeyException = new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
 
-        assertDoesNotThrow(() ->
-                accountService.createAccount(
-                        user,
-                        9999,
-                        AccountType.CHECKING
-                )
-        );
-
-        verify(accountRepository, times(1))
-                .addAccount(any(Account.class));
-    }
-
-    @Test
-    void createAccount_shouldRetry_whenAccountNumberAlreadyExists()
-            throws SQLException {
-
-        User user = mock(User.class);
-
-        SQLException duplicateKeyException =
-                new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
-
-        doThrow(duplicateKeyException)
-                .doNothing()
-                .when(accountRepository)
-                .addAccount(any(Account.class));
+        doThrow(duplicateKeyException).doNothing().when(accountRepository).addAccount(any(Account.class));
 
         long accountNumber = accountService.createAccount(
                 user,
@@ -115,25 +103,20 @@ class AccountServiceTest {
                 AccountType.CHECKING
         );
 
-        assertTrue(accountNumber >= 100_000_000_000L);
-        assertTrue(accountNumber < 1_000_000_000_000L);
+        assertTrue(accountNumber >= 100000000000L);
+        assertTrue(accountNumber < 1000000000000L);
 
         verify(accountRepository, times(2))
                 .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldReturnMinusOne_afterTenFailures()
-            throws SQLException {
-
+    void createAccount_shouldReturnMinusOne_afterTenDuplicateKeyFailures() throws SQLException, IllegalPinLength {
         User user = mock(User.class);
 
-        SQLException duplicateKeyException =
-                new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
+        SQLException duplicateKeyException = new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
 
-        doThrow(duplicateKeyException)
-                .when(accountRepository)
-                .addAccount(any(Account.class));
+        doThrow(duplicateKeyException).when(accountRepository).addAccount(any(Account.class));
 
         long result = accountService.createAccount(
                 user,
@@ -143,41 +126,64 @@ class AccountServiceTest {
 
         assertEquals(-1, result);
 
-        verify(accountRepository, times(10))
-                .addAccount(any(Account.class));
+        verify(accountRepository, times(10)).addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldRetry_whenNonPrimaryKeySqlExceptionOccurs()
-            throws SQLException {
+    void verifyAccount_shouldThrowIllegalPinLength_whenPinHasMoreThanFourDigits() {
+        Account account = mock(Account.class);
 
-        User user = mock(User.class);
-
-        SQLException sqlException =
-                new SQLException("Database connection failed");
-
-        doThrow(sqlException)
-                .doNothing()
-                .when(accountRepository)
-                .addAccount(any(Account.class));
-
-        long accountNumber = accountService.createAccount(
-                user,
-                1234,
-                AccountType.CHECKING
+        IllegalPinLength exception = assertThrows(
+                IllegalPinLength.class,
+                () -> accountService.verifyAccount(
+                        account,
+                        10000
+                )
         );
 
-        assertTrue(accountNumber >= 100_000_000_000L);
-        assertTrue(accountNumber < 1_000_000_000_000L);
+        assertEquals(
+                "Invalid pin. Cannot be more than 4 digits.",
+                exception.getMessage()
+        );
 
-        verify(accountRepository, times(2))
-                .addAccount(any(Account.class));
+        verifyNoInteractions(account);
     }
 
     @Test
-    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds()
-            throws SQLException {
+    void verifyAccount_shouldReturnTrue_whenPinIsCorrect() throws IllegalPinLength {
+        Account account = mock(Account.class);
 
+        when(account.getPinHash()).thenReturn(PasswordService.hashPassword("1234"));
+
+        boolean result = accountService.verifyAccount(
+                account,
+                1234
+        );
+
+        assertTrue(result);
+
+        verify(account, times(1)).getPinHash();
+    }
+
+    @Test
+    void verifyAccount_shouldReturnFalse_whenPinIsIncorrect() throws IllegalPinLength {
+        Account account = mock(Account.class);
+
+        when(account.getPinHash()).thenReturn(PasswordService.hashPassword("1234"));
+
+        boolean result = accountService.verifyAccount(
+                account,
+                9999
+        );
+
+        assertFalse(result);
+
+        verify(account, times(1))
+                .getPinHash();
+    }
+
+    @Test
+    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds() throws SQLException {
         User user = mock(User.class);
 
         List<Account> expectedAccounts = List.of(
@@ -185,34 +191,27 @@ class AccountServiceTest {
                 mock(Account.class)
         );
 
-        when(accountRepository.getAllAccounts(user))
-                .thenReturn(expectedAccounts);
+        when(accountRepository.getAllAccounts(user)).thenReturn(expectedAccounts);
 
-        List<Account> actualAccounts =
-                accountService.getAccounts(user);
+        List<Account> actualAccounts = accountService.getAccounts(user);
 
         assertSame(expectedAccounts, actualAccounts);
 
-        verify(accountRepository, times(1))
-                .getAllAccounts(user);
+        verify(accountRepository, times(1)).getAllAccounts(user);
     }
 
     @Test
-    void getAccounts_shouldReturnNull_whenRepositoryThrowsSQLException()
-            throws SQLException {
-
+    void getAccounts_shouldReturnEmptyList_whenRepositoryReturnsEmptyList() throws SQLException {
         User user = mock(User.class);
 
-        SQLException exception =
-                new SQLException("Database error");
+        List<Account> expectedAccounts = List.of();
 
-        when(accountRepository.getAllAccounts(user))
-                .thenThrow(exception);
+        when(accountRepository.getAllAccounts(user)).thenReturn(expectedAccounts);
 
-        List<Account> actualAccounts =
-                accountService.getAccounts(user);
+        List<Account> actualAccounts = accountService.getAccounts(user);
 
-        assertNull(actualAccounts);
+        assertNotNull(actualAccounts);
+        assertTrue(actualAccounts.isEmpty());
 
         verify(accountRepository, times(1))
                 .getAllAccounts(user);
