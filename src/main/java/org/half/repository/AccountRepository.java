@@ -8,6 +8,7 @@ import org.half.utility.ConnectionFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 
 public class AccountRepository {
     // Add a new account to the database
@@ -79,7 +80,7 @@ public class AccountRepository {
         }
     }
 
-    public boolean transferFunds(Account sourceAccount, long destinationAccountNumber, double amount) {
+    public OptionalDouble transferFunds(long sourceAccountNumber, long destinationAccountNumber, double amount) {
         String debitQuery = """
                 UPDATE Account
                 SET balance = balance - ?
@@ -90,53 +91,61 @@ public class AccountRepository {
                 SET balance = balance + ?
                 WHERE accountNumber = ?;
                 """;
-        //I just commented out this code here because it actually gets ran twice, once here and once in the service layer
-        //since the service layer only returns true if this repository function runs smoothly, I figured it would make
-        //the most sense to only have the transactionHistory logic go in the service
-        /*
         String historyQuery = """
                 INSERT INTO TransactionHistory
                     (type, amount, originAccountNumber, destinationAccountNumber)
                 VALUES ('Transfer', ?, ?, ?);
                 """;
-        */
+        String balanceQuery = "SELECT balance FROM Account WHERE accountNumber = ?;";
+
         try (Connection connection = ConnectionFactory.getManualCommitConnection()) {
             try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery);
-                 PreparedStatement creditStatement = connection.prepareStatement(creditQuery)
-                 //PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
-            ){
+                 PreparedStatement creditStatement = connection.prepareStatement(creditQuery);
+                 PreparedStatement historyStatement = connection.prepareStatement(historyQuery);
+                 PreparedStatement balanceStatement = connection.prepareStatement(balanceQuery)) {
                 debitStatement.setDouble(1, amount);
-                debitStatement.setLong(2, sourceAccount.getAccountNumber());
+                debitStatement.setLong(2, sourceAccountNumber);
                 debitStatement.setDouble(3, amount);
                 if (debitStatement.executeUpdate() != 1) {
                     connection.rollback();
-                    return false;
+                    return OptionalDouble.empty();
                 }
 
                 creditStatement.setDouble(1, amount);
                 creditStatement.setLong(2, destinationAccountNumber);
                 if (creditStatement.executeUpdate() != 1) {
                     connection.rollback();
-                    return false;
+                    return OptionalDouble.empty();
                 }
 
-                /*
                 historyStatement.setDouble(1, amount);
-                historyStatement.setLong(2, sourceAccount.getAccountNumber());
+                historyStatement.setLong(2, sourceAccountNumber);
                 historyStatement.setLong(3, destinationAccountNumber);
-                historyStatement.executeUpdate();
-                */
+                if (historyStatement.executeUpdate() != 1) {
+                    connection.rollback();
+                    return OptionalDouble.empty();
+                }
+
+                balanceStatement.setLong(1, sourceAccountNumber);
+                double updatedSourceBalance;
+                try (ResultSet resultSet = balanceStatement.executeQuery()) {
+                    if (!resultSet.next()) {
+                        connection.rollback();
+                        return OptionalDouble.empty();
+                    }
+                    updatedSourceBalance = resultSet.getDouble("balance");
+                }
 
                 connection.commit();
-                return true;
+                return OptionalDouble.of(updatedSourceBalance);
             } catch (SQLException e) {
                 connection.rollback();
                 e.printStackTrace();
-                return false;
+                return OptionalDouble.empty();
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return OptionalDouble.empty();
         }
     }
 

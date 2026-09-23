@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
@@ -100,24 +101,20 @@ public class AccountService {
     public boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
         if (!Double.isFinite(amount)
                 || amount <= 0
-                || amount > sourceAccount.getBalance()
                 || sourceAccount.getAccountNumber() == destinationAccountNumber) {
             return false;
         }
 
-        if (!accountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+        OptionalDouble updatedSourceBalance = accountRepository.transferFunds(
+                sourceAccount.getAccountNumber(),
+                destinationAccountNumber,
+                amount
+        );
+        if (updatedSourceBalance.isEmpty()) {
             return false;
         }
 
-        
-        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
-        //
-        transactionHistoryService.attemptAddTransfer(
-                "Transfer",
-                amount,
-                sourceAccount.getAccountNumber(),
-                destinationAccountNumber
-        );
+        sourceAccount.setBalance(updatedSourceBalance.getAsDouble());
         return true;
     }
 
