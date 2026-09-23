@@ -4,6 +4,8 @@ import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.utility.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,9 +13,11 @@ import java.util.List;
 import java.util.OptionalDouble;
 
 public class AccountRepository {
+    private static final Logger log = LoggerFactory.getLogger(AccountRepository.class);
+
     // Add a new account to the database
     public void addAccount(Account account) throws SQLException {
-        // Query
+        // Query to insert new account record
         String query = "INSERT INTO Account VALUES (?,?,?,?,?);";
 
         // Connect to database to create a new account
@@ -34,7 +38,7 @@ public class AccountRepository {
 
     // Get all the accounts of a user from the database
     public List<Account> getAllAccounts(User user) throws SQLException {
-        // Query
+        // Query to get all accounts of the user
         String query = "SELECT * FROM Account WHERE username=?;";
 
         // Connect to database to query
@@ -80,11 +84,11 @@ public class AccountRepository {
         }
     }
 
-    public OptionalDouble getBalance(long accountNumber) {
+    public static OptionalDouble getBalance(long accountNumber) {
         try (Connection connection = ConnectionFactory.getAutoCommitConnection()) {
             return getBalance(connection, accountNumber);
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Error getting balance for account {}: {}", accountNumber, e.getMessage());
             return OptionalDouble.empty();
         }
     }
@@ -151,7 +155,7 @@ public class AccountRepository {
         }
     }
 
-    private OptionalDouble getBalance(Connection connection, long accountNumber) throws SQLException {
+    private static OptionalDouble getBalance(Connection connection, long accountNumber) throws SQLException {
         String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, accountNumber);
@@ -164,13 +168,28 @@ public class AccountRepository {
         }
     }
 
-    public void Update_Balance(Account account, double new_amount) {
-        String query = "UPDATE Account SET balance=? WHERE accountNumber=?;";
+    public void Deposit_Balance(Account account, double amount) {
+        String query = "UPDATE Account SET balance=balance+? WHERE accountNumber=?;";
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
             // Set values
-            statement.setDouble(1, new_amount);
+            statement.setDouble(1, amount);
+            statement.setLong(2, account.getAccountNumber());
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void Withdraw_Balance(Account account, double amount) {
+        String query = "UPDATE Account SET balance=balance-? WHERE accountNumber=?;";
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Set values
+            statement.setDouble(1, amount);
             statement.setLong(2, account.getAccountNumber());
             statement.executeUpdate();
 
