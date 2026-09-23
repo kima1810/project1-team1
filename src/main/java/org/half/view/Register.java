@@ -75,37 +75,79 @@ public class Register implements Model {
         // 1. First Name Validation
         if (inputs[0].isBlank() || inputs[0].length() > 20) {
             errorMessage = "First name must be 1-20 characters.";
+            if(inputs[0].isBlank()) {
+                log.warn("No first name was entered.");
+            }
+            if(inputs[0].length() > 20) {
+                log.warn("First name is too long: {}", inputs[0]);
+            }
             activeIndex = 0; return UpdateResult.from(this);
         }
+        log.info("First name validated successfully: {}", inputs[0]);
+        
         // 2. Last Name Validation
         if (inputs[1].isBlank() || inputs[1].length() > 20) {
             errorMessage = "Last name must be 1-20 characters.";
+            if(inputs[1].isBlank()) {
+                log.warn("No last name was entered.");
+            }
+            if(inputs[1].length() > 20) {
+                log.warn("Last name is too long: {}", inputs[1]);
+            }
             activeIndex = 1; return UpdateResult.from(this);
         }
+        log.info("Last name validated successfully: {}", inputs[1]);
+
         // 3. Email Validation
         if (!inputs[2].matches(".*@.*\\..*") || userRepository.getUserByEmail(inputs[2]) != null) {
             errorMessage = "Invalid email or already in use.";
+            if(!inputs[2].matches(".*@.*\\..*")) {
+                log.warn("Invalid email format: {}", inputs[2]);
+            }
+            if(userRepository.getUserByEmail(inputs[2]) != null) {
+                log.warn("Email already in use: {}", inputs[2]);
+            }
             activeIndex = 2; return UpdateResult.from(this);
         }
+        log.info("Email validated successfully: {}", inputs[2]);
+
         // 4. Phone Validation
         if (!inputs[3].matches("[0-9+()\\- ]+")) {
             errorMessage = "Invalid phone number format.";
+            log.warn("Invalid phone number format: {}", inputs[3]);
             activeIndex = 3; return UpdateResult.from(this);
         }
+        log.info("Phone number validated successfully: {}", inputs[3]);
+
         // 5. Username Validation
         if (inputs[4].length() < 5 || inputs[4].length() > 50 || userRepository.getUser(inputs[4]) != null) {
             errorMessage = "Username must be 5-50 chars and unique.";
+            if(inputs[4].length() < 5) {
+                log.warn("Username too short: {}", inputs[4]);
+            }
+            if(inputs[4].length() > 50) {
+                log.warn("Username too long: {}", inputs[4]);
+            }
+            if(userRepository.getUser(inputs[4]) != null) {
+                log.warn("Username already in use: {}", inputs[4]);
+            }
             activeIndex = 4; return UpdateResult.from(this);
         }
+        log.info("Username validated successfully: {}", inputs[4]);
+
         // 6. Password Validation
         if (inputs[5].length() < 8) {
             errorMessage = "Password must be at least 8 characters.";
+            log.warn("Password too short: {}", inputs[5]);
             activeIndex = 5; return UpdateResult.from(this);
         }
+        log.info("Password validated successfully: {}", inputs[5]);
         if (!inputs[6].equals(inputs[5])) {
             errorMessage = "Passwords do not match.";
+            log.warn("Passwords do not match: {} and {}", inputs[5], inputs[6]);
             activeIndex = 6; return UpdateResult.from(this);
         }
+        log.info("Password confirmation validated successfully: {}", inputs[6]);
 
         // All checks passed
         User registeredUser = userService.createUser(
