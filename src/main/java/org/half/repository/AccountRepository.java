@@ -80,6 +80,15 @@ public class AccountRepository {
         }
     }
 
+    public OptionalDouble getBalance(long accountNumber) {
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection()) {
+            return getBalance(connection, accountNumber);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return OptionalDouble.empty();
+        }
+    }
+
     public OptionalDouble transferFunds(long sourceAccountNumber, long destinationAccountNumber, double amount) {
         String debitQuery = """
                 UPDATE Account
@@ -96,13 +105,10 @@ public class AccountRepository {
                     (type, amount, originAccountNumber, destinationAccountNumber)
                 VALUES ('Transfer', ?, ?, ?);
                 """;
-        String balanceQuery = "SELECT balance FROM Account WHERE accountNumber = ?;";
-
         try (Connection connection = ConnectionFactory.getManualCommitConnection()) {
             try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery);
                  PreparedStatement creditStatement = connection.prepareStatement(creditQuery);
-                 PreparedStatement historyStatement = connection.prepareStatement(historyQuery);
-                 PreparedStatement balanceStatement = connection.prepareStatement(balanceQuery)) {
+                 PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
                 debitStatement.setDouble(1, amount);
                 debitStatement.setLong(2, sourceAccountNumber);
                 debitStatement.setDouble(3, amount);
@@ -126,18 +132,14 @@ public class AccountRepository {
                     return OptionalDouble.empty();
                 }
 
-                balanceStatement.setLong(1, sourceAccountNumber);
-                double updatedSourceBalance;
-                try (ResultSet resultSet = balanceStatement.executeQuery()) {
-                    if (!resultSet.next()) {
-                        connection.rollback();
-                        return OptionalDouble.empty();
-                    }
-                    updatedSourceBalance = resultSet.getDouble("balance");
+                OptionalDouble updatedSourceBalance = getBalance(connection, sourceAccountNumber);
+                if (updatedSourceBalance.isEmpty()) {
+                    connection.rollback();
+                    return OptionalDouble.empty();
                 }
 
                 connection.commit();
-                return OptionalDouble.of(updatedSourceBalance);
+                return updatedSourceBalance;
             } catch (SQLException e) {
                 connection.rollback();
                 e.printStackTrace();
@@ -146,6 +148,19 @@ public class AccountRepository {
         } catch (SQLException e) {
             e.printStackTrace();
             return OptionalDouble.empty();
+        }
+    }
+
+    private OptionalDouble getBalance(Connection connection, long accountNumber) throws SQLException {
+        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, accountNumber);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return OptionalDouble.empty();
+                }
+                return OptionalDouble.of(resultSet.getDouble("balance"));
+            }
         }
     }
 
