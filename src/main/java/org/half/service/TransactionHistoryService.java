@@ -66,6 +66,11 @@ public class TransactionHistoryService {
             logger.warn("User tried depositing or withdrawing a value less than or equal to 0");
             return false;
         }
+        if(!hasAtMostTwoDecimalPlaces(transactionModel.getAmount())){
+            System.out.println("Amount cannot have more than 2 decimal places");
+            logger.warn("Deposit or withdrawal amount had more than 2 decimal places");
+            return false;
+        }
         //run the repository method, which will either return true or false
         return transactionModelRepository.addDepositOrWithdrawal(transactionModel);
     }
@@ -93,7 +98,18 @@ public class TransactionHistoryService {
             logger.warn("amount less than zero for the transaction");
             return false;
         }
+        if(!hasAtMostTwoDecimalPlaces(transactionModel.getAmount())){
+            System.out.println("Amount cannot have more than 2 decimal places");
+            logger.warn("Transfer amount had more than 2 decimal places");
+            return false;
+        }
         //will either return true or false
         return transactionModelRepository.addTransfer(transactionModel);
+    }
+
+    private static boolean hasAtMostTwoDecimalPlaces(double amount) {
+        double cents = amount * 100;
+        return Double.isFinite(cents)
+                && Math.abs(cents - Math.rint(cents)) < 0.0000001;
     }
 }

@@ -102,6 +102,7 @@ public class AccountService {
     public boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
         if (!Double.isFinite(amount)
                 || amount <= 0
+                || !hasAtMostTwoDecimalPlaces(amount)
                 || sourceAccount.getAccountNumber() == destinationAccountNumber) {
             return false;
         }
@@ -120,6 +121,8 @@ public class AccountService {
     }
 
     public void Deposit_Request(Account account, double amount) {
+        validateMoneyAmount(amount);
+
         //Negative value check
         if (amount < 0) {
             log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
@@ -138,6 +141,8 @@ public class AccountService {
     }
 
     public void Withdraw_Request(Account account, double amount) {
+        validateMoneyAmount(amount);
+
         //Negative value check
         if (amount < 0) {
             log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
@@ -164,5 +169,19 @@ public class AccountService {
             log.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
             throw e;
         }
+    }
+
+    private static void validateMoneyAmount(double amount) {
+        if (!Double.isFinite(amount) || !hasAtMostTwoDecimalPlaces(amount)) {
+            throw new IllegalArgumentException(
+                    "Amount must be a number with no more than 2 decimal places."
+            );
+        }
+    }
+
+    private static boolean hasAtMostTwoDecimalPlaces(double amount) {
+        double cents = amount * 100;
+        return Double.isFinite(cents)
+                && Math.abs(cents - Math.rint(cents)) < 0.0000001;
     }
 }
