@@ -31,6 +31,22 @@ public class AccountRepository {
         }
     }
 
+    public static double getBalance(long accountNumber) {
+        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
+
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, accountNumber);
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            return resultSet.getDouble(1);
+        } catch (SQLException e) {
+            // This should not happen
+        }
+
+        return 0;
+    }
+
     // Get all the accounts of a user from the database
     public List<Account> getAllAccounts(User user) throws SQLException {
         // Query
@@ -140,13 +156,28 @@ public class AccountRepository {
         }
     }
 
-    public void Update_Balance(Account account, double new_amount) {
-        String query = "UPDATE Account SET balance=? WHERE accountNumber=?;";
+    public void Deposit_Balance(Account account, double amount) {
+        String query = "UPDATE Account SET balance=balance+? WHERE accountNumber=?;";
         try (Connection connection = ConnectionFactory.getAutoCommitConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
             // Set values
-            statement.setDouble(1, new_amount);
+            statement.setDouble(1, amount);
+            statement.setLong(2, account.getAccountNumber());
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void Withdraw_Balance(Account account, double amount) {
+        String query = "UPDATE Account SET balance=balance-? WHERE accountNumber=?;";
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Set values
+            statement.setDouble(1, amount);
             statement.setLong(2, account.getAccountNumber());
             statement.executeUpdate();
 

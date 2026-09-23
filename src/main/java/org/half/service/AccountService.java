@@ -109,8 +109,6 @@ public class AccountService {
             return false;
         }
 
-        
-        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         //
         transactionHistoryService.attemptAddTransfer(
                 "Transfer",
@@ -129,12 +127,8 @@ public class AccountService {
         }
 
         try {
-            //Create new Balance
-            double NewBalance = account.getBalance() + amount;
             //Update Balance column in DataBase
-            accountRepository.Update_Balance(account, NewBalance);
-            //Update current instance of Balance (balance stay updated throughout instance)
-            account.setBalance(NewBalance);
+            accountRepository.Deposit_Balance(account, amount);
             //Now the transaction will be added
             transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
         } catch (Exception e) {
@@ -157,20 +151,14 @@ public class AccountService {
         }
 
         try {
-            // Create new Balance
-            double NewBalance = account.getBalance() - amount;
-
             // Update Balance column in DataBase
-            accountRepository.Update_Balance(account, NewBalance);
-
-            // Update current instance of Balance
-            account.setBalance(NewBalance);
+            accountRepository.Withdraw_Balance(account, amount);
 
             // Add transaction history
             transactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
 
             // 2. The "Happy Path" (INFO)
-            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), NewBalance);
+            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), account.getBalance());
 
         } catch (Exception e) {
             log.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
