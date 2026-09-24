@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 
 public class AccountRepository {
     private static final Logger log = LoggerFactory.getLogger(AccountRepository.class);
@@ -109,7 +110,10 @@ public class AccountRepository {
         }
     }
 
-    public boolean transferFunds(Account sourceAccount, long destinationAccountNumber, double amount) {
+    public OptionalDouble transferFunds(long sourceAccountNumber, long destinationAccountNumber, double amount) {
+        String sourceLastFour = lastFourDigits(sourceAccountNumber);
+        String destinationLastFour = lastFourDigits(destinationAccountNumber);
+
         String debitQuery = """
                 UPDATE Account
                 SET balance = balance - ?
@@ -120,53 +124,106 @@ public class AccountRepository {
                 SET balance = balance + ?
                 WHERE accountNumber = ?;
                 """;
-        //I just commented out this code here because it actually gets ran twice, once here and once in the service layer
-        //since the service layer only returns true if this repository function runs smoothly, I figured it would make
-        //the most sense to only have the transactionHistory logic go in the service
-        /*
         String historyQuery = """
                 INSERT INTO TransactionHistory
                     (type, amount, originAccountNumber, destinationAccountNumber)
                 VALUES ('Transfer', ?, ?, ?);
                 """;
-        */
         try (Connection connection = ConnectionFactory.getManualCommitConnection()) {
-            try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery);
-                 PreparedStatement creditStatement = connection.prepareStatement(creditQuery)
-                 //PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
-            ){
+            try (PreparedStatement debitStatement = connection.prepareStatement(debitQuery)) {
                 debitStatement.setDouble(1, amount);
-                debitStatement.setLong(2, sourceAccount.getAccountNumber());
+                debitStatement.setLong(2, sourceAccountNumber);
                 debitStatement.setDouble(3, amount);
                 if (debitStatement.executeUpdate() != 1) {
-                    connection.rollback();
-                    return false;
+                    log.warn("Transfer debit rejected: source account ending in {} is missing or has insufficient funds.", sourceLastFour);
+                    rollbackTransfer(connection);
+                    return OptionalDouble.empty();
                 }
+            } catch (SQLException e) {
+                log.error("Transfer failed while debiting account ending in {}.", sourceLastFour, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
 
+            try (PreparedStatement creditStatement = connection.prepareStatement(creditQuery)) {
                 creditStatement.setDouble(1, amount);
                 creditStatement.setLong(2, destinationAccountNumber);
                 if (creditStatement.executeUpdate() != 1) {
-                    connection.rollback();
-                    return false;
+                    log.warn("Transfer credit rejected: destination account ending in {} was not updated.", destinationLastFour);
+                    rollbackTransfer(connection);
+                    return OptionalDouble.empty();
                 }
-
-                /*
-                historyStatement.setDouble(1, amount);
-                historyStatement.setLong(2, sourceAccount.getAccountNumber());
-                historyStatement.setLong(3, destinationAccountNumber);
-                historyStatement.executeUpdate();
-                */
-
-                connection.commit();
-                return true;
             } catch (SQLException e) {
-                connection.rollback();
-                e.printStackTrace();
-                return false;
+                log.error("Transfer failed while crediting account ending in {}.", destinationLastFour, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
             }
+
+            try (PreparedStatement historyStatement = connection.prepareStatement(historyQuery)) {
+                historyStatement.setDouble(1, amount);
+                historyStatement.setLong(2, sourceAccountNumber);
+                historyStatement.setLong(3, destinationAccountNumber);
+                if (historyStatement.executeUpdate() != 1) {
+                    log.warn("Transfer history was not inserted for accounts ending in {} to {}.", sourceLastFour, destinationLastFour);
+                    rollbackTransfer(connection);
+                    return OptionalDouble.empty();
+                }
+            } catch (SQLException e) {
+                log.error("Transfer failed while recording history for accounts ending in {} to {}.", sourceLastFour, destinationLastFour, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
+
+            OptionalDouble updatedSourceBalance;
+            try {
+                updatedSourceBalance = getBalance(connection, sourceAccountNumber);
+                if (updatedSourceBalance.isEmpty()) {
+                    log.warn("Transfer balance lookup failed: source account ending in {} was not found.", sourceLastFour);
+                    rollbackTransfer(connection);
+                    return OptionalDouble.empty();
+                }
+            } catch (SQLException e) {
+                log.error("Transfer failed while reading the updated balance for account ending in {}.", sourceLastFour, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
+
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                log.error("Transfer commit failed for accounts ending in {} to {}.", sourceLastFour, destinationLastFour, e);
+                rollbackTransfer(connection);
+                return OptionalDouble.empty();
+            }
+            return updatedSourceBalance;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            log.error("Transfer connection failed to open or close for accounts ending in {} to {}.", sourceLastFour, destinationLastFour, e);
+            return OptionalDouble.empty();
+        }
+    }
+
+    private static void rollbackTransfer(Connection connection) {
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            log.error("Transfer rollback failed; the transaction outcome needs verification.", e);
+        }
+    }
+
+    private static String lastFourDigits(long accountNumber) {
+        return String.format("%04d", Math.floorMod(accountNumber, 10_000));
+    }
+
+    private static OptionalDouble getBalance(Connection connection, long accountNumber) throws SQLException {
+        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setLong(1, accountNumber);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return OptionalDouble.empty();
+                }
+                return OptionalDouble.of(resultSet.getDouble("balance"));
+            }
         }
     }
 

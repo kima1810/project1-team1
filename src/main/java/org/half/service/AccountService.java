@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
@@ -101,31 +102,27 @@ public class AccountService {
     public boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
         if (!Double.isFinite(amount)
                 || amount <= 0
-                || amount > sourceAccount.getBalance()
+                || !hasAtMostTwoDecimalPlaces(amount)
                 || sourceAccount.getAccountNumber() == destinationAccountNumber) {
             return false;
         }
 
-        if (amount > 10_000) {
-            log.warn("Failed transfer ammount: Account {} try to transfer an amount exceeding $10,000 to Account {}.", String.format("%s ****%04d", sourceAccount.getAccountType(), (sourceAccount.getAccountNumber() % 10000)), destinationAccountNumber);
-            throw new IllegalArgumentException("Amount cannot exceed $10,000");
-        }
-
-        if (!accountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+        OptionalDouble updatedSourceBalance = accountRepository.transferFunds(
+                sourceAccount.getAccountNumber(),
+                destinationAccountNumber,
+                amount
+        );
+        if (updatedSourceBalance.isEmpty()) {
             return false;
         }
 
-        //
-        transactionHistoryService.attemptAddTransfer(
-                "Transfer",
-                amount,
-                sourceAccount.getAccountNumber(),
-                destinationAccountNumber
-        );
+        sourceAccount.setBalance(updatedSourceBalance.getAsDouble());
         return true;
     }
 
     public void Deposit_Request(Account account, double amount) {
+        validateMoneyAmount(amount);
+
         //Negative value check
         if (amount < 0) {
             log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
@@ -149,6 +146,8 @@ public class AccountService {
     }
 
     public void Withdraw_Request(Account account, double amount) {
+        validateMoneyAmount(amount);
+
         //Negative value check
         if (amount < 0) {
             log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
@@ -175,5 +174,17 @@ public class AccountService {
             log.error("System error during withdrawal for Account {}: {}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), e.getMessage(), e);
             throw e;
         }
+    }
+
+    private static void validateMoneyAmount(double amount) {
+        if (!Double.isFinite(amount) || !hasAtMostTwoDecimalPlaces(amount)) {
+            throw new IllegalArgumentException(
+                    "Amount must be a number with no more than 2 decimal places."
+            );
+        }
+    }
+
+    private static boolean hasAtMostTwoDecimalPlaces(double amount) {
+        return amount * 100 % 1 == 0;
     }
 }
