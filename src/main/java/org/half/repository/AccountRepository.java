@@ -36,6 +36,32 @@ public class AccountRepository {
         }
     }
 
+    // Get the balance of the given account number
+    public static double getBalance(Account account) {
+        // Query to get account balance
+        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
+
+        // Connection to database to query
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Pass in the account number
+            statement.setLong(1, account.getAccountNumber());
+
+            // Get the result set
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+
+            // Return the balance
+            return resultSet.getDouble(1);
+        } catch (SQLException e) {
+            // This should not happen
+            log.error("Error getting balance. Error: {}", e.getMessage());
+        }
+
+        return 0;
+    }
+
     // Get all the accounts of a user from the database
     public List<Account> getAllAccounts(User user) throws SQLException {
         // Query to get all accounts of the user
@@ -82,26 +108,6 @@ public class AccountRepository {
             e.printStackTrace();
             return false;
         }
-    }
-
-    // Get the balance of the given account
-    public static double getBalance(Account account) {
-        String query = "SELECT balance FROM Account WHERE accountNumber = ?;";
-
-        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setLong(1, account.getAccountNumber());
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    return resultSet.getDouble(1);
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Error getting balance for account {}: {}", account.getAccountNumber(), e.getMessage());
-        }
-
-        return 0;
     }
 
     public OptionalDouble transferFunds(long sourceAccountNumber, long destinationAccountNumber, double amount) {
