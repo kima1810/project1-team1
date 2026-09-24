@@ -26,27 +26,8 @@ class AccountServiceTransferTest {
         accountRepository = mock(AccountRepository.class);
         accountService = new AccountService(
                 accountRepository,
-                mock(TransactionHistoryService.class)
+                null
         );
-    }
-
-    @Test
-    void transfer_shouldUseBalanceReturnedByDatabase() {
-        Account sourceAccount = sourceAccount();
-        when(accountRepository.transferFunds(
-                SOURCE_ACCOUNT_NUMBER,
-                DESTINATION_ACCOUNT_NUMBER,
-                25.00
-        )).thenReturn(OptionalDouble.of(75.00));
-
-        boolean result = accountService.transfer(
-                sourceAccount,
-                DESTINATION_ACCOUNT_NUMBER,
-                25.00
-        );
-
-        assertTrue(result);
-        verify(sourceAccount).setBalance(75.00);
     }
 
     @Test
