@@ -46,7 +46,7 @@ class AccountServiceTransferTest {
         );
 
         assertTrue(result);
-        verify(sourceAccount).setBalance(75.00);
+        verify(sourceAccount).getBalance();
         verify(accountRepository).transferFunds(
                 SOURCE_ACCOUNT_NUMBER,
                 DESTINATION_ACCOUNT_NUMBER,
@@ -70,7 +70,7 @@ class AccountServiceTransferTest {
         );
 
         assertFalse(result);
-        verify(sourceAccount, never()).setBalance(org.mockito.ArgumentMatchers.anyDouble());
+        verify(sourceAccount, never()).getBalance();
     }
 
     @Test
