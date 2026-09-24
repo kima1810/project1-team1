@@ -105,6 +105,9 @@ public class AccountRepository {
     }
 
     public OptionalDouble transferFunds(long sourceAccountNumber, long destinationAccountNumber, double amount) {
+        String sourceLastFour = lastFourDigits(sourceAccountNumber);
+        String destinationLastFour = lastFourDigits(destinationAccountNumber);
+
         String debitQuery = """
                 UPDATE Account
                 SET balance = balance - ?
@@ -126,12 +129,12 @@ public class AccountRepository {
                 debitStatement.setLong(2, sourceAccountNumber);
                 debitStatement.setDouble(3, amount);
                 if (debitStatement.executeUpdate() != 1) {
-                    log.warn("Transfer debit rejected: source account {} is missing or has insufficient funds.", sourceAccountNumber);
+                    log.warn("Transfer debit rejected: source account ending in {} is missing or has insufficient funds.", sourceLastFour);
                     rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
             } catch (SQLException e) {
-                log.error("Transfer failed while debiting account {}.", sourceAccountNumber, e);
+                log.error("Transfer failed while debiting account ending in {}.", sourceLastFour, e);
                 rollbackTransfer(connection);
                 return OptionalDouble.empty();
             }
@@ -140,12 +143,12 @@ public class AccountRepository {
                 creditStatement.setDouble(1, amount);
                 creditStatement.setLong(2, destinationAccountNumber);
                 if (creditStatement.executeUpdate() != 1) {
-                    log.warn("Transfer credit rejected: destination account {} was not updated.", destinationAccountNumber);
+                    log.warn("Transfer credit rejected: destination account ending in {} was not updated.", destinationLastFour);
                     rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
             } catch (SQLException e) {
-                log.error("Transfer failed while crediting account {}.", destinationAccountNumber, e);
+                log.error("Transfer failed while crediting account ending in {}.", destinationLastFour, e);
                 rollbackTransfer(connection);
                 return OptionalDouble.empty();
             }
@@ -155,12 +158,12 @@ public class AccountRepository {
                 historyStatement.setLong(2, sourceAccountNumber);
                 historyStatement.setLong(3, destinationAccountNumber);
                 if (historyStatement.executeUpdate() != 1) {
-                    log.warn("Transfer history was not inserted for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber);
+                    log.warn("Transfer history was not inserted for accounts ending in {} to {}.", sourceLastFour, destinationLastFour);
                     rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
             } catch (SQLException e) {
-                log.error("Transfer failed while recording history for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber, e);
+                log.error("Transfer failed while recording history for accounts ending in {} to {}.", sourceLastFour, destinationLastFour, e);
                 rollbackTransfer(connection);
                 return OptionalDouble.empty();
             }
@@ -169,12 +172,12 @@ public class AccountRepository {
             try {
                 updatedSourceBalance = getBalance(connection, sourceAccountNumber);
                 if (updatedSourceBalance.isEmpty()) {
-                    log.warn("Transfer balance lookup failed: source account {} was not found.", sourceAccountNumber);
+                    log.warn("Transfer balance lookup failed: source account ending in {} was not found.", sourceLastFour);
                     rollbackTransfer(connection);
                     return OptionalDouble.empty();
                 }
             } catch (SQLException e) {
-                log.error("Transfer failed while reading the updated balance for account {}.", sourceAccountNumber, e);
+                log.error("Transfer failed while reading the updated balance for account ending in {}.", sourceLastFour, e);
                 rollbackTransfer(connection);
                 return OptionalDouble.empty();
             }
@@ -182,13 +185,13 @@ public class AccountRepository {
             try {
                 connection.commit();
             } catch (SQLException e) {
-                log.error("Transfer commit failed for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber, e);
+                log.error("Transfer commit failed for accounts ending in {} to {}.", sourceLastFour, destinationLastFour, e);
                 rollbackTransfer(connection);
                 return OptionalDouble.empty();
             }
             return updatedSourceBalance;
         } catch (SQLException e) {
-            log.error("Transfer connection failed to open or close for accounts {} to {}.", sourceAccountNumber, destinationAccountNumber, e);
+            log.error("Transfer connection failed to open or close for accounts ending in {} to {}.", sourceLastFour, destinationLastFour, e);
             return OptionalDouble.empty();
         }
     }
@@ -199,6 +202,10 @@ public class AccountRepository {
         } catch (SQLException e) {
             log.error("Transfer rollback failed; the transaction outcome needs verification.", e);
         }
+    }
+
+    private static String lastFourDigits(long accountNumber) {
+        return String.format("%04d", Math.floorMod(accountNumber, 10_000));
     }
 
     private static OptionalDouble getBalance(Connection connection, long accountNumber) throws SQLException {
