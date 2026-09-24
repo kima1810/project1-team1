@@ -107,7 +107,7 @@ public class AccountService {
         }
 
         if (amount > 10_000) {
-            log.warn("Failed transfer ammount: Account {} try to transfer an amount exceeding $10,000 to Account {}.", sourceAccount.getAccountNumber(), destinationAccountNumber);
+            log.warn("Failed transfer ammount: Account {} try to transfer an amount exceeding $10,000 to Account {}.", String.format("%s ****%04d", sourceAccount.getAccountType(), (sourceAccount.getAccountNumber() % 10000)), destinationAccountNumber);
             throw new IllegalArgumentException("Amount cannot exceed $10,000");
         }
 
@@ -128,12 +128,12 @@ public class AccountService {
     public void Deposit_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
-            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
         if (amount > 1_000_000) {
-            log.warn("Failed deposit attempt: Account {} entered amount exceeding $1,000,000 (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed deposit attempt: Account {} entered amount exceeding $1,000,000 (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
             throw new IllegalArgumentException("Amount cannot exceeds $1,000,000.");
         }
 
@@ -143,7 +143,7 @@ public class AccountService {
             //Now the transaction will be added
             transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
         } catch (Exception e) {
-            log.error("System error during deposit for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
+            log.error("System error during deposit for Account {}: {}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), e.getMessage(), e);
             throw e;
         }
     }
@@ -151,13 +151,13 @@ public class AccountService {
     public void Withdraw_Request(Account account, double amount) {
         //Negative value check
         if (amount < 0) {
-            log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
         //Overdraft
         if (account.getBalance() < amount) {
-            log.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", account.getAccountNumber(), account.getBalance(), amount);
+            log.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), account.getBalance(), amount);
             throw new InsufficientFundsException(String.format("Amount withdrawn attempted overdraft. Balance: $%.2f", account.getBalance()));
         }
 
@@ -169,10 +169,10 @@ public class AccountService {
             transactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
 
             // 2. The "Happy Path" (INFO)
-            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), account.getBalance());
+            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), account.getBalance());
 
         } catch (Exception e) {
-            log.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
+            log.error("System error during withdrawal for Account {}: {}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), e.getMessage(), e);
             throw e;
         }
     }
