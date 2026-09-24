@@ -138,16 +138,16 @@ public class Register implements Model {
         // 6. Password Validation
         if (inputs[5].length() < 8) {
             errorMessage = "Password must be at least 8 characters.";
-            log.warn("Password too short: {}", inputs[5]);
+            log.warn("Password too short: {}", "*".repeat(inputs[5].length()));
             activeIndex = 5; return UpdateResult.from(this);
         }
-        log.info("Password validated successfully: {}", inputs[5]);
+        log.info("Password validated successfully: {}", "*".repeat(inputs[5].length()));
         if (!inputs[6].equals(inputs[5])) {
             errorMessage = "Passwords do not match.";
-            log.warn("Passwords do not match: {} and {}", inputs[5], inputs[6]);
+            log.warn("Passwords do not match: {} and {}", "*".repeat(inputs[5].length()), "*".repeat(inputs[6].length()));
             activeIndex = 6; return UpdateResult.from(this);
         }
-        log.info("Password confirmation validated successfully: {}", inputs[6]);
+        log.info("Password confirmation validated successfully: {}", "*".repeat(inputs[6].length()));
 
         // All checks passed
         User registeredUser = userService.createUser(
