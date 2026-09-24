@@ -2,13 +2,8 @@ package org.half.service;
 import org.half.repository.TransactionModelRepository;
 import org.junit.jupiter.api.*;
 
-
-import static org.half.model.enums.AccountType.CHECKING;
 import static org.junit.jupiter.api.Assertions.*;
-import org.half.service.TransactionHistoryService;
 import org.half.utility.ConnectionFactory;
-
-import org.half.model.Account;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,8 +11,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class TransactionHistoryServiceTest {
-    private static long testAccountNumber = 123456789012L;
-    private static long testAccountNumber2 = 123456789013L;
+    private static final long testAccountNumber = 123456789012L;
+    private static final long testAccountNumber2 = 123456789013L;
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
     private static TransactionHistoryService transactionHistoryService;

@@ -13,9 +13,9 @@ import java.sql.Types;
 
 
 public class TransactionModelRepositoryTest {
-    private static long testAccountNumber = 123456789012L;
-    private static long testAccountNumber2 = 123456789013L;
-    private static long nonExistentAccountNumber = -123456789014L;
+    private static final long testAccountNumber = 123456789012L;
+    private static final long testAccountNumber2 = 123456789013L;
+    private static final long nonExistentAccountNumber = -123456789014L;
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
     private static TransactionModelRepository transactionModelRepository;

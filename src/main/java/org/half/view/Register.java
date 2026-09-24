@@ -79,11 +79,11 @@ public class Register implements Model {
                 log.warn("No first name was entered.");
             }
             if(inputs[0].length() > 20) {
-                log.warn("First name is too long: {}", inputs[0]);
+                log.warn("First name is too long");
             }
             activeIndex = 0; return UpdateResult.from(this);
         }
-        log.info("First name validated successfully: {}", inputs[0]);
+        log.info("First name validated successfully");
         
         // 2. Last Name Validation
         if (inputs[1].isBlank() || inputs[1].length() > 20) {
@@ -96,7 +96,7 @@ public class Register implements Model {
             }
             activeIndex = 1; return UpdateResult.from(this);
         }
-        log.info("Last name validated successfully: {}", inputs[1]);
+        log.info("Last name validated successfully");
 
         // 3. Email Validation
         if (!inputs[2].matches(".*@.*\\..*") || userRepository.getUserByEmail(inputs[2]) != null) {
@@ -109,7 +109,7 @@ public class Register implements Model {
             }
             activeIndex = 2; return UpdateResult.from(this);
         }
-        log.info("Email validated successfully: {}", inputs[2]);
+        log.info("Email validated successfully");
 
         // 4. Phone Validation
         if (!inputs[3].matches("[0-9+()\\- ]+")) {
@@ -117,7 +117,7 @@ public class Register implements Model {
             log.warn("Invalid phone number format: {}", inputs[3]);
             activeIndex = 3; return UpdateResult.from(this);
         }
-        log.info("Phone number validated successfully: {}", inputs[3]);
+        log.info("Phone number validated successfully");
 
         // 5. Username Validation
         if (inputs[4].length() < 5 || inputs[4].length() > 50 || userRepository.getUser(inputs[4]) != null) {
@@ -133,21 +133,21 @@ public class Register implements Model {
             }
             activeIndex = 4; return UpdateResult.from(this);
         }
-        log.info("Username validated successfully: {}", inputs[4]);
+        log.info("Username validated successfully");
 
         // 6. Password Validation
         if (inputs[5].length() < 8) {
             errorMessage = "Password must be at least 8 characters.";
-            log.warn("Password too short: {}", inputs[5]);
+            log.warn("Password too short");
             activeIndex = 5; return UpdateResult.from(this);
         }
-        log.info("Password validated successfully: {}", inputs[5]);
+        log.info("Password validated successfully");
         if (!inputs[6].equals(inputs[5])) {
             errorMessage = "Passwords do not match.";
-            log.warn("Passwords do not match: {} and {}", inputs[5], inputs[6]);
+            log.warn("Passwords do not match");
             activeIndex = 6; return UpdateResult.from(this);
         }
-        log.info("Password confirmation validated successfully: {}", inputs[6]);
+        log.info("Password confirmation validated successfully");
 
         // All checks passed
         User registeredUser = userService.createUser(
@@ -163,7 +163,7 @@ public class Register implements Model {
     @Override
     public String view() {
         StringBuilder content = new StringBuilder();
-        content.append(Theme.TITLE.render("Create a New Account")).append("\n\n");
+        content.append(Theme.TITLE.render("Create a new Profile")).append("\n\n");
 
         for (int i = 0; i < fieldNames.length; i++) {
             String displayString = inputs[i];
@@ -188,7 +188,7 @@ public class Register implements Model {
         if (!errorMessage.isEmpty()) {
             content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
-            content.append(Theme.FOOTER_TEXT.render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
+            content.append(Theme.FOOTER_TEXT.render("[Tab] switch fields • [Enter] submit • [Esc] cancel")).append("\n\n");
         }
 
         return Theme.MAIN_PANEL.render(content.toString());

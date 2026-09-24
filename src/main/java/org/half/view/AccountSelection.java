@@ -187,14 +187,14 @@ public class AccountSelection implements Model {
         String content = Theme.TITLE.render("Secure Login") + "\n\n" +
                 "Enter 4-digit PIN for " + formattedAccount + ":\n" +
                 Theme.TITLE.render(maskedPin) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderError() {
         String content = Theme.TITLE.render("Authentication Failed") + "\n\n" +
                 Theme.ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to try again");
+                Theme.FOOTER_TEXT.render("[Enter] try again");
         return Theme.CONTENT_PANEL.render(content);
     }
 }

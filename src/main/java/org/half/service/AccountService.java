@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountService {
@@ -101,39 +102,35 @@ public class AccountService {
     public boolean transfer(Account sourceAccount, long destinationAccountNumber, double amount) {
         if (!Double.isFinite(amount)
                 || amount <= 0
-                || amount > sourceAccount.getBalance()
+                || !hasAtMostTwoDecimalPlaces(amount)
                 || sourceAccount.getAccountNumber() == destinationAccountNumber) {
             return false;
         }
 
-        if (amount > 10_000) {
-            log.warn("Failed transfer ammount: Account {} try to transfer an amount exceeding $10,000 to Account {}.", sourceAccount.getAccountNumber(), destinationAccountNumber);
-            throw new IllegalArgumentException("Amount cannot exceed $10,000");
-        }
-
-        if (!accountRepository.transferFunds(sourceAccount, destinationAccountNumber, amount)) {
+        OptionalDouble updatedSourceBalance = accountRepository.transferFunds(
+                sourceAccount.getAccountNumber(),
+                destinationAccountNumber,
+                amount
+        );
+        if (updatedSourceBalance.isEmpty()) {
             return false;
         }
 
-        //
-        transactionHistoryService.attemptAddTransfer(
-                "Transfer",
-                amount,
-                sourceAccount.getAccountNumber(),
-                destinationAccountNumber
-        );
+        sourceAccount.getBalance();
         return true;
     }
 
     public void Deposit_Request(Account account, double amount) {
+        validateMoneyAmount(amount);
+
         //Negative value check
         if (amount < 0) {
-            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed deposit attempt: Account {} entered a negative amount (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
         if (amount > 1_000_000) {
-            log.warn("Failed deposit attempt: Account {} entered amount exceeding $1,000,000 (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed deposit attempt: Account {} entered amount exceeding $1,000,000 (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
             throw new IllegalArgumentException("Amount cannot exceeds $1,000,000.");
         }
 
@@ -143,21 +140,23 @@ public class AccountService {
             //Now the transaction will be added
             transactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", amount, account.getAccountNumber());
         } catch (Exception e) {
-            log.error("System error during deposit for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
+            log.error("System error during deposit for Account {}: {}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), e.getMessage(), e);
             throw e;
         }
     }
 
     public void Withdraw_Request(Account account, double amount) {
+        validateMoneyAmount(amount);
+
         //Negative value check
         if (amount < 0) {
-            log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", account.getAccountNumber(), amount);
+            log.warn("Failed Withdraw attempt: Account {} entered a negative amount (${}).", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), amount);
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
         //Overdraft
         if (account.getBalance() < amount) {
-            log.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", account.getAccountNumber(), account.getBalance(), amount);
+            log.warn("Failed withdrawal attempt: Account {} attempted overdraft. Balance: ${}, Attempted: ${}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), account.getBalance(), amount);
             throw new InsufficientFundsException(String.format("Amount withdrawn attempted overdraft. Balance: $%.2f", account.getBalance()));
         }
 
@@ -169,11 +168,23 @@ public class AccountService {
             transactionHistoryService.attemptAddDepositOrWithdrawal("Withdraw", amount, account.getAccountNumber());
 
             // 2. The "Happy Path" (INFO)
-            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, account.getAccountNumber(), account.getBalance());
+            log.info("Success: Withdrew ${} from Account {}. New Balance: ${}", amount, String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), account.getBalance());
 
         } catch (Exception e) {
-            log.error("System error during withdrawal for Account {}: {}", account.getAccountNumber(), e.getMessage(), e);
+            log.error("System error during withdrawal for Account {}: {}", String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000)), e.getMessage(), e);
             throw e;
         }
+    }
+
+    private static void validateMoneyAmount(double amount) {
+        if (!Double.isFinite(amount) || !hasAtMostTwoDecimalPlaces(amount)) {
+            throw new IllegalArgumentException(
+                    "Amount must be a number with no more than 2 decimal places."
+            );
+        }
+    }
+
+    private static boolean hasAtMostTwoDecimalPlaces(double amount) {
+        return amount * 100 % 1 == 0;
     }
 }
