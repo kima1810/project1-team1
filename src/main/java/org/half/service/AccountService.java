@@ -116,7 +116,7 @@ public class AccountService {
             return false;
         }
 
-        sourceAccount.setBalance(updatedSourceBalance.getAsDouble());
+        sourceAccount.getBalance();
         return true;
     }
 
