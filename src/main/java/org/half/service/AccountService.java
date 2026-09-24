@@ -129,6 +129,11 @@ public class AccountService {
             throw new IllegalArgumentException("Amount cannot be negative.");
         }
 
+        if (amount > 1_000_000) {
+            log.warn("Failed deposit attempt: Account {} entered amount exceeding $1,000,000 (${}).", account.getAccountNumber(), amount);
+            throw new IllegalArgumentException("Amount cannot exceeds $1,000,000.");
+        }
+
         try {
             //Update Balance column in DataBase
             accountRepository.Deposit_Balance(account, amount);

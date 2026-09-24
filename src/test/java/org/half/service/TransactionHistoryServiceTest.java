@@ -1,4 +1,5 @@
 package org.half.service;
+import org.half.repository.TransactionModelRepository;
 import org.junit.jupiter.api.*;
 
 
@@ -19,12 +20,14 @@ public class TransactionHistoryServiceTest {
     private static long testAccountNumber2 = 123456789013L;
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
-
-    private TransactionHistoryService transactionHistoryService;
-
+    private static TransactionHistoryService transactionHistoryService;
+    private static TransactionModelRepository transactionModelRepository;
     //before any tests are ran, insert the test data into the database
     @BeforeAll
     static void initializeData() {
+        //create the objects to use
+        transactionModelRepository = new TransactionModelRepository();
+        transactionHistoryService = new TransactionHistoryService(transactionModelRepository);
         //I had to insert values into all three tables since the tables have foreign keys
         //for inserting into the user table
         String userQuery = """
@@ -134,18 +137,7 @@ public class TransactionHistoryServiceTest {
             e.printStackTrace();
         }
     }
-    //check if the attemptPrintOutTransactions returns false if the account id is non-existent
-    @Test
-    void attemptPrintOutTransactionsWithNonExistentId() {
-        Account account = new Account(null, -1, "1234", CHECKING, 0.00);
-        assertFalse(transactionHistoryService.attemptPrintOutTransactions(account));
-    }
-    //check if it works alright with proper input
-    @Test
-    void attemptPrintOutTransactionsWithExistentId() throws SQLException {
-        Account account = new Account(null, testAccountNumber, "1234", CHECKING, 0.00);
-        assertTrue(transactionHistoryService.attemptPrintOutTransactions(account));
-    }
+
     //check if attemptAddDepositOrWithdrawal rejects it while using the transfer type, it is only supposed to be either Deposit or Withdrawal
     @Test
     void attemptAddDepositOrWithdrawalWithBadTransfer(){

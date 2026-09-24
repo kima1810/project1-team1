@@ -1,8 +1,5 @@
 package org.half.repository;
-import org.half.model.Account;
 import org.half.model.TransactionModel;
-import org.half.model.enums.AccountType;
-import org.half.service.TransactionHistoryService;
 import org.half.utility.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +15,10 @@ public class TransactionModelRepository {
     //logger
     private static final Logger logger = LoggerFactory.getLogger(TransactionModelRepository.class);
 
-    //if items are found, it will return a list of the transactions
-    public List<TransactionModel> printOutTransactions(long id){
+    public List<TransactionModel> printOutTransactions(long id, int limit, int offset){
         //create the query
         String query = "SELECT dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
-                "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
+                "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=? " + "ORDER BY dateTime DESC " + "LIMIT ? OFFSET ?;";
 
         //create the list container
         List<TransactionModel> transactionList = new ArrayList<>();
@@ -34,15 +30,17 @@ public class TransactionModelRepository {
             //check if a value's originAccountNumber or destinationAccountNumber match the imputed it
             statement.setLong(1, id);
             statement.setLong(2, id);
+            statement.setInt(3, limit);
+            statement.setInt(4, offset);
             ResultSet resultSet = statement.executeQuery();
             //add it to the list
             while(resultSet.next()) {
                 transactionList.add(new TransactionModel(
-                    resultSet.getString("dateTime"),
-                    resultSet.getString("type"),
-                    resultSet.getDouble("amount"),
-                    resultSet.getLong("originAccountNumber"),
-                    resultSet.getLong("destinationAccountNumber")
+                        resultSet.getString("dateTime"),
+                        resultSet.getString("type"),
+                        resultSet.getDouble("amount"),
+                        resultSet.getLong("originAccountNumber"),
+                        resultSet.getLong("destinationAccountNumber")
                 ));
             }
 
@@ -54,6 +52,7 @@ public class TransactionModelRepository {
         logger.info("History successfully retrieved, no issues with the database");
         return transactionList;
     }
+
     //inserts a deposit or withdrawal into the table
     public boolean addDepositOrWithdrawal(TransactionModel transactionModel){
         //the query

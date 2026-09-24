@@ -71,13 +71,18 @@ public class AccountSelection implements Model {
             case "enter" -> {
                 if (cursor < accounts.size()) {
                     selectedAccountForPin = accounts.get(cursor);
+                    log.info("User attempting to log into account: {user: {}, account: {}}",
+                            user.getUsername(),
+                            selectedAccountForPin.getAccountType() +
+                                    String.format(" ****%04d", selectedAccountForPin.getAccountNumber() % 10000));
                     currentState = AppState.ENTERING_PIN;
                     pinBuffer = "";
                 } else if (cursor == accounts.size()) {
                     // Send RouteModel to MasterControl to swap to AccountCreation
                     return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_CREATION, user));
                 } else {
-                    // Send RouteModel to MasterControl to logout to WelcomeMenu
+                    // Send RouteModel to MasterControl to log out to WelcomeMenu
+                    log.info("Logging out user: {}", user.getUsername());
                     return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.WELCOME, null));
                 }
             }
@@ -107,8 +112,16 @@ public class AccountSelection implements Model {
             int pin = Integer.parseInt(pinBuffer);
             if (accountService.verifyAccount(selectedAccountForPin, pin)) {
                 // Success! Send the Object[] array payload to the Master Router
+                log.info("Successfully logged into account: {user: {}, account: {}}",
+                        user.getUsername(),
+                        selectedAccountForPin.getAccountType() +
+                                String.format(" ****%04d", selectedAccountForPin.getAccountNumber() % 10000));
                 return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.MAIN_MENU, new Object[]{user, selectedAccountForPin}));
             } else {
+                log.warn("Account login failed: {user: {}, account: {}}",
+                        user.getUsername(),
+                        selectedAccountForPin.getAccountType() +
+                                String.format(" ****%04d", selectedAccountForPin.getAccountNumber() % 10000));
                 currentState = AppState.ERROR;
                 pinBuffer = "";
             }
@@ -145,6 +158,8 @@ public class AccountSelection implements Model {
         buffer.append("\nWelcome, ").append(Theme.USERNAME.render(user.getUsername())).append("!\n\n");
         buffer.append(Theme.TITLE.render("Your Accounts:")).append("\n\n");
 
+        log.info("Printing all the accounts for user: {}", user.getUsername());
+
         for (int i = 0; i < accounts.size(); i++) {
             Account account = accounts.get(i);
             String formattedAccount = String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000));
@@ -172,14 +187,14 @@ public class AccountSelection implements Model {
         String content = Theme.TITLE.render("Secure Login") + "\n\n" +
                 "Enter 4-digit PIN for " + formattedAccount + ":\n" +
                 Theme.TITLE.render(maskedPin) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderError() {
         String content = Theme.TITLE.render("Authentication Failed") + "\n\n" +
                 Theme.ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to try again");
+                Theme.FOOTER_TEXT.render("[Enter] try again");
         return Theme.CONTENT_PANEL.render(content);
     }
 }

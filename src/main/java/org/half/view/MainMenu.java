@@ -7,7 +7,6 @@ import org.half.repository.AccountRepository;
 import org.half.service.AccountService;
 import org.half.service.TransactionHistoryService;
 import org.half.style.Theme;
-import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
@@ -18,8 +17,6 @@ import com.williamcallahan.tui4j.compat.bubbletea.Command;
 import com.williamcallahan.tui4j.compat.bubbletea.Message;
 import com.williamcallahan.tui4j.compat.bubbletea.Model;
 import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
-import com.williamcallahan.tui4j.compat.lipgloss.Style;
-import com.williamcallahan.tui4j.compat.lipgloss.color.Color;
 import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
 
 
@@ -43,6 +40,8 @@ public class MainMenu implements Model {
 
     private AppState currentState = AppState.MENU;
     private ActionType currentAction = ActionType.NONE;
+    //Gavin's added variable
+    private int historyOffset = 0;
 
     private final User activeUser;
     private final Account activeAccount;
@@ -74,10 +73,13 @@ public class MainMenu implements Model {
     public UpdateResult<? extends Model> update(Message msg) {
         if (msg instanceof KeyPressMessage keyPressMessage) {
             String key = keyPressMessage.key();
+
             return switch (currentState) {
                 case MENU -> handleMenuInput(key);
                 case TYPING_INPUT -> handleTypingInput(key);
-                case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, VIEWING_HISTORY, NOTIFICATION -> handleSimpleReturn(key);
+                //case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, VIEWING_HISTORY, NOTIFICATION -> handleSimpleReturn(key);
+                case VIEWING_BALANCE, VIEWING_ACCOUNT_NUMBER, NOTIFICATION -> handleSimpleReturn(key);
+                case VIEWING_HISTORY -> handleHistoryInput(key);
             };
         }
         return UpdateResult.from(this);
@@ -101,6 +103,20 @@ public class MainMenu implements Model {
         };
     }
 
+    private UpdateResult<? extends Model> handleHistoryInput(String key) {
+        switch (key) {
+            case " ", "up" -> historyOffset += 10;
+            case "ctrl+h", "down" -> {
+                if (historyOffset - 10 >= 0) {
+                    historyOffset = historyOffset - 10;
+                }
+            }
+            case "q", "esc", "enter" -> currentState = AppState.MENU;
+        }
+
+        return UpdateResult.from(this);
+    }
+
     private UpdateResult<? extends Model> routeMenuSelection() {
         switch (cursor) {
             case 0: currentState = AppState.VIEWING_BALANCE; break;
@@ -108,7 +124,11 @@ public class MainMenu implements Model {
             case 2: currentAction = ActionType.WITHDRAW; prepareInput(); break;
             case 3: currentAction = ActionType.DEPOSIT; prepareInput(); break;
             case 4: currentAction = ActionType.TRANSFER_DEST; prepareInput(); break;
-            case 5: currentState = AppState.VIEWING_HISTORY; break;
+            case 5:
+                //currentState = AppState.VIEWING_HISTORY; break;
+                historyOffset = 0;
+                currentState = AppState.VIEWING_HISTORY;
+                break;
             case 6: return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_SELECTION, activeUser)); // Routes back to Account Selection!
         }
         return UpdateResult.from(this);
@@ -128,7 +148,13 @@ public class MainMenu implements Model {
             }
         } else if (key.equals("enter") && !inputBuffer.isEmpty()) {
             processTransactionInput();
-        } else if (key.length() == 1 && (Character.isDigit(key.charAt(0)) || key.equals("."))) {
+        } else if (key.length() == 1 && Character.isDigit(key.charAt(0))) {
+            int decimalIndex = inputBuffer.indexOf(".");
+            // Allow digits only if there are fewer than 2 digits after the decimal
+            if (decimalIndex == -1 || (inputBuffer.length() - decimalIndex - 1) < 2) {
+                inputBuffer += key;
+            }
+        } else if (key.equals(".") && !inputBuffer.contains(".")) {
             inputBuffer += key;
         }
         return UpdateResult.from(this);
@@ -187,11 +213,13 @@ public class MainMenu implements Model {
             case VIEWING_ACCOUNT_NUMBER -> renderAccountNumber();
             case TYPING_INPUT -> renderTypingBox();
             case NOTIFICATION -> renderNotification();
-            case VIEWING_HISTORY -> renderHistory();
+            //case VIEWING_HISTORY -> renderHistory();
+            case VIEWING_HISTORY -> renderHistory(10, historyOffset);
         };
     }
 
     private String renderMenu() {
+        log.info("Displaying main menu...");
         StringBuilder content = new StringBuilder();
         content.append(Theme.TITLE.render("Main Menu")).append("\n\n");
         for (int i = 0; i < CHOICES.length; i++) {
@@ -208,14 +236,14 @@ public class MainMenu implements Model {
     private String renderBalance() {
         String content = Theme.TITLE.render("Account Balance") + "\n\n" +
                 "Available Funds: " + Theme.LOGO.render(String.format("$%.2f", activeAccount.getBalance())) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+                Theme.FOOTER_TEXT.render("[Enter] return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderAccountNumber() {
         String content = Theme.TITLE.render("Account Number") + "\n\n" +
                 "Your account number is: " + Theme.LOGO.render("" + activeAccount.getAccountNumber()) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+                Theme.FOOTER_TEXT.render("[Enter] return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
@@ -231,49 +259,82 @@ public class MainMenu implements Model {
         String content = Theme.TITLE.render("Transaction Input") + "\n\n" +
                 prompt + "\n" +
                 Theme.TITLE.render(inputBuffer) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderNotification() {
         String content = Theme.TITLE.render("System Notice") + "\n\n" +
                 notificationMessage + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to continue");
+                Theme.FOOTER_TEXT.render("[Enter] continue");
         return Theme.CONTENT_PANEL.render(content);
     }
 
-    private String renderHistory() {
+    private String renderHistory(int limit, int offset) {
+
         StringBuilder content = new StringBuilder();
+
         content.append(Theme.TITLE.render("Transaction History")).append("\n\n");
 
-        String header = String.format("%-22s %-12s %-15s %-15s %-15s",
-                "Date", "Type", "Amount", "Origin ID", "Dest ID");
+        String header = String.format(
+                "%-22s %-12s %-15s %-15s %-15s",
+                "Date", "Type", "Amount", "Origin ID", "Dest ID"
+        );
 
         content.append(Theme.USERNAME.render(header)).append("\n");
         content.append("──────────────────────────────────────────────────────────────────────────────────\n");
 
-        List<TransactionModel> history = transactionModelRepository.printOutTransactions(activeAccount.getAccountNumber());
+        List<TransactionModel> history =
+                transactionModelRepository.printOutTransactions(
+                        activeAccount.getAccountNumber(),
+                        limit,
+                        offset
+                );
 
         if (history.isEmpty()) {
-            content.append(Theme.FOOTER_TEXT.render("No transactions found.\n"));
-        } else {
-            for (TransactionModel t : history) {
-                String origin = (t.getOriginAccountId() == 0) ? "N/A" : String.valueOf(t.getOriginAccountId());
-                String dest = (t.getDestinationAccountId() == 0) ? "N/A" : String.valueOf(t.getDestinationAccountId());
 
-                String row = String.format("%-22s %-12s $%-14.2f %-15s %-15s",
+            content.append(
+                    Theme.FOOTER_TEXT.render("No more transactions found.\n")
+            );
+
+        } else {
+
+            for (TransactionModel t : history) {
+
+                String origin =
+                        (t.getOriginAccountId() == 0)
+                                ? "N/A"
+                                : String.valueOf(t.getOriginAccountId());
+
+                String dest =
+                        (t.getDestinationAccountId() == 0)
+                                ? "N/A"
+                                : String.valueOf(t.getDestinationAccountId());
+
+                String row = String.format(
+                        "%-22s %-12s $%-14.2f %-15s %-15s",
                         t.getDateTime(),
                         t.getType(),
                         t.getAmount(),
                         origin,
-                        dest);
+                        dest
+                );
+
                 content.append(row).append("\n");
             }
         }
 
         content.append("\n\n");
-        content.append(Theme.FOOTER_TEXT.render("Press 'enter' to return"));
+
+        content.append(
+                Theme.FOOTER_TEXT.render(
+                        "[Space] next page • [Backspace] previous page • [Enter] return"
+                )
+        );
 
         return Theme.CONTENT_PANEL.render(content.toString());
     }
+
+
+
 }
