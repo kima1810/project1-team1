@@ -37,4 +37,8 @@ public class Account {
     public User getUser() {
         return user;
     }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
 }
