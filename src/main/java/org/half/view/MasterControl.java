@@ -53,11 +53,8 @@ public class MasterControl implements Model {
             case ACCOUNT_SELECTION -> {
                 User user = (User) msg.payload();
                 List<Account> accounts = accountService.getAccounts(user);
-                if (accounts == null || accounts.isEmpty()) {
-                    this.currentView = new AccountCreation(user);
-                } else {
-                    this.currentView = new AccountSelection(user, accounts);
-                }
+                this.currentView = new AccountSelection(user, accounts);
+
             }
             case ACCOUNT_CREATION -> this.currentView = new AccountCreation((User) msg.payload());
             case MAIN_MENU -> {

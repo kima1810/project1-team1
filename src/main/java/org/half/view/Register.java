@@ -157,7 +157,7 @@ public class Register implements Model {
         log.info("User registration successful for user: {}", registeredUser.getUsername());
 
         // Send RouteModel to MasterControl to swap to AccountCreation and pass the user
-        return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_CREATION, registeredUser));
+        return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.WELCOME, registeredUser));
     }
 
     @Override
