@@ -24,11 +24,6 @@ public class User {
         this.accounts = new ArrayList<>();
     }
 
-    /* --- Methods --- */
-    public void addAccount(Account account) {
-        //this.accounts.add(new Account(this, type, pin));
-    }
-
     /* --- Getters and Setters --- */
     public String getFirstName() {
         return firstName;
