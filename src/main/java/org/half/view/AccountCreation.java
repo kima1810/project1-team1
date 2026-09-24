@@ -218,7 +218,7 @@ public class AccountCreation implements Model {
         String content = Theme.TITLE.render("Account Setup (" + selectedType + ")") + "\n\n" +
                 heading + "\n" +
                 Theme.TITLE.render(masked) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Type 4 digits • [Enter] continue • [Esc] back");
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] back");
         return Theme.MAIN_PANEL.render(content);
     }
 
@@ -226,14 +226,14 @@ public class AccountCreation implements Model {
         String content = Theme.TITLE.render("Account Successfully Created!") + "\n\n" +
                 "Type: " + Theme.LOGO.render(selectedType.toString()) + "\n" +
                 "Account Number: " + Theme.TITLE.render(String.valueOf(createdAccountNumber)) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to return to Account Selection");
+                Theme.FOOTER_TEXT.render("[Enter] continue");
         return Theme.MAIN_PANEL.render(content);
     }
 
     private String renderError() {
         String content = Theme.TITLE.render("Account Creation Failed") + "\n\n" +
                 Theme.ERROR_TEXT.render("⚠ " + errorMessage) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to try again");
+                Theme.FOOTER_TEXT.render("[Enter] try again");
         return Theme.MAIN_PANEL.render(content);
     }
 }
