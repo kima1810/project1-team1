@@ -24,7 +24,7 @@ public class UserService {
             || phoneNumber == null || !phoneNumber.matches("[0-9+()\\- ]+")
             || username == null || username.length() < 5 || username.length() > 50
             || password == null || password.length() > 255) {
-            log.error("Invalid user input: firstName={}, lastName={}, email={}, phoneNumber={}, username={}", firstName, lastName, email, phoneNumber, username);
+            log.warn("Invalid user input");
             return null;
         }
         try{
@@ -34,7 +34,7 @@ public class UserService {
             return user;
         } catch (UserAlreadyExists e) {
             System.out.println(e.getMessage());
-            log.error("User already exists: {}", e.getMessage());
+            log.warn("User already exists: {}", e.getMessage());
             return null;
         }
     }
