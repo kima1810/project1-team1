@@ -41,7 +41,7 @@ public class UserService {
 
     public User verifyUser(String userName, String userPassword){
         if(userName.isEmpty() || userPassword.isEmpty()) {
-            log.warn("Empty String(s) passed to verifyUser");
+            log.error("Empty String(s) passed to verifyUser");
             throw new EmptyStringException("Empty String(s) passed to verifyUser.");
         }
         String dataBasePassword = userRepository.getPasswordHash(userName);
