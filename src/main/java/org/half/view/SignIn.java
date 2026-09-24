@@ -106,7 +106,7 @@ public class SignIn implements Model {
         if (!errorMessage.isEmpty()) {
             content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
-            content.append(Theme.FOOTER_TEXT.render("[Tab] switch fields • [Enter] login")).append("\n\n");
+            content.append(Theme.FOOTER_TEXT.render("[Tab] switch fields • [Enter] login • [Esc] cancel")).append("\n\n");
         }
 
         return Theme.MAIN_PANEL.render(content.toString());

@@ -104,16 +104,14 @@ public class MainMenu implements Model {
     }
 
     private UpdateResult<? extends Model> handleHistoryInput(String key) {
-        if (key.equals(" ")) {
-            historyOffset += 10;
-        }
-        else if(key.equals("ctrl+h")){
-            if(historyOffset - 10 >= 0){
-                historyOffset = historyOffset - 10;
+        switch (key) {
+            case " ", "up" -> historyOffset += 10;
+            case "ctrl+h", "down" -> {
+                if (historyOffset - 10 >= 0) {
+                    historyOffset = historyOffset - 10;
+                }
             }
-        }
-        else if (key.equals("q") || key.equals("esc") || key.equals("enter")) {
-            currentState = AppState.MENU;
+            case "q", "esc", "enter" -> currentState = AppState.MENU;
         }
 
         return UpdateResult.from(this);
@@ -238,14 +236,14 @@ public class MainMenu implements Model {
     private String renderBalance() {
         String content = Theme.TITLE.render("Account Balance") + "\n\n" +
                 "Available Funds: " + Theme.LOGO.render(String.format("$%.2f", activeAccount.getBalance())) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+                Theme.FOOTER_TEXT.render("[Enter] return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderAccountNumber() {
         String content = Theme.TITLE.render("Account Number") + "\n\n" +
                 "Your account number is: " + Theme.LOGO.render("" + activeAccount.getAccountNumber()) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+                Theme.FOOTER_TEXT.render("[Enter] return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
@@ -261,14 +259,14 @@ public class MainMenu implements Model {
         String content = Theme.TITLE.render("Transaction Input") + "\n\n" +
                 prompt + "\n" +
                 Theme.TITLE.render(inputBuffer) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderNotification() {
         String content = Theme.TITLE.render("System Notice") + "\n\n" +
                 notificationMessage + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to continue");
+                Theme.FOOTER_TEXT.render("[Enter] continue");
         return Theme.CONTENT_PANEL.render(content);
     }
 
@@ -330,7 +328,7 @@ public class MainMenu implements Model {
 
         content.append(
                 Theme.FOOTER_TEXT.render(
-                        "Press SPACE for more transactions, BACKSPACE for the previous list, or ENTER to return"
+                        "[Space] next page • [Backspace] previous page • [Enter] return"
                 )
         );
 

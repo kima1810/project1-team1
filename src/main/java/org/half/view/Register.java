@@ -163,7 +163,7 @@ public class Register implements Model {
     @Override
     public String view() {
         StringBuilder content = new StringBuilder();
-        content.append(Theme.TITLE.render("Create a New Account")).append("\n\n");
+        content.append(Theme.TITLE.render("Create a new Profile")).append("\n\n");
 
         for (int i = 0; i < fieldNames.length; i++) {
             String displayString = inputs[i];
@@ -188,7 +188,7 @@ public class Register implements Model {
         if (!errorMessage.isEmpty()) {
             content.append(Theme.ERROR_TEXT.render("⚠ " + errorMessage)).append("\n\n");
         } else {
-            content.append(Theme.FOOTER_TEXT.render("Use [Tab] to navigate • [Enter] to submit")).append("\n\n");
+            content.append(Theme.FOOTER_TEXT.render("[Tab] switch fields • [Enter] submit • [Esc] cancel")).append("\n\n");
         }
 
         return Theme.MAIN_PANEL.render(content.toString());
