@@ -104,12 +104,19 @@ public class MainMenu implements Model {
     }
 
     private UpdateResult<? extends Model> handleHistoryInput(String key) {
-        if (key.equals(" ")) {
-            historyOffset += 10;
+        int limit = 10;
+        // Fetch total transactions so we don't scroll past the last page
+        int totalTransactions = transactionModelRepository.getTransactionCount(activeAccount.getAccountNumber());
+        int maxOffset = Math.max(0, ((totalTransactions - 1) / limit) * limit);
+
+        if (key.equals("right") || key.equals(" ")) {
+            if (historyOffset < maxOffset) {
+                historyOffset += limit;
+            }
         }
-        else if(key.equals("ctrl+h")){
-            if(historyOffset - 10 >= 0){
-                historyOffset = historyOffset - 10;
+        else if (key.equals("left") || key.equals("backspace") || key.equals("ctrl+h")) {
+            if (historyOffset - limit >= 0) {
+                historyOffset -= limit;
             }
         }
         else if (key.equals("q") || key.equals("esc") || key.equals("enter")) {
@@ -273,9 +280,7 @@ public class MainMenu implements Model {
     }
 
     private String renderHistory(int limit, int offset) {
-
         StringBuilder content = new StringBuilder();
-
         content.append(Theme.TITLE.render("Transaction History")).append("\n\n");
 
         String header = String.format(
@@ -286,53 +291,37 @@ public class MainMenu implements Model {
         content.append(Theme.USERNAME.render(header)).append("\n");
         content.append("──────────────────────────────────────────────────────────────────────────────────\n");
 
-        List<TransactionModel> history =
-                transactionModelRepository.printOutTransactions(
-                        activeAccount.getAccountNumber(),
-                        limit,
-                        offset
-                );
+        List<TransactionModel> history = transactionModelRepository.printOutTransactions(
+                activeAccount.getAccountNumber(), limit, offset);
 
-        if (history.isEmpty()) {
+        // Get total count for the page indicator math
+        int totalTransactions = transactionModelRepository.getTransactionCount(activeAccount.getAccountNumber());
 
-            content.append(
-                    Theme.FOOTER_TEXT.render("No more transactions found.\n")
-            );
-
+        if (history.isEmpty() && offset == 0) {
+            content.append(Theme.FOOTER_TEXT.render("No transactions found.\n"));
         } else {
-
             for (TransactionModel t : history) {
-
-                String origin =
-                        (t.getOriginAccountId() == 0)
-                                ? "N/A"
-                                : String.valueOf(t.getOriginAccountId());
-
-                String dest =
-                        (t.getDestinationAccountId() == 0)
-                                ? "N/A"
-                                : String.valueOf(t.getDestinationAccountId());
+                String origin = (t.getOriginAccountId() == 0) ? "N/A" : String.valueOf(t.getOriginAccountId());
+                String dest = (t.getDestinationAccountId() == 0) ? "N/A" : String.valueOf(t.getDestinationAccountId());
 
                 String row = String.format(
                         "%-22s %-12s $%-14.2f %-15s %-15s",
-                        t.getDateTime(),
-                        t.getType(),
-                        t.getAmount(),
-                        origin,
-                        dest
+                        t.getDateTime(), t.getType(), t.getAmount(), origin, dest
                 );
-
                 content.append(row).append("\n");
             }
         }
 
         content.append("\n\n");
 
-        content.append(
-                Theme.FOOTER_TEXT.render(
-                        "Press SPACE for more transactions, BACKSPACE for the previous list, or ENTER to return"
-                )
-        );
+        // --- PAGE INDICATOR MATH ---
+        int currentPage = (offset / limit) + 1;
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalTransactions / limit));
+
+        String pageIndicator = String.format("Page %d of %d", currentPage, totalPages);
+        content.append(Theme.ACTIVE_ITEM_SELECT.render(pageIndicator)).append("\n\n");
+
+        content.append(Theme.FOOTER_TEXT.render("Press [Right Arrow] next • [Left Arrow] prev • [Enter] return"));
 
         return Theme.CONTENT_PANEL.render(content.toString());
     }

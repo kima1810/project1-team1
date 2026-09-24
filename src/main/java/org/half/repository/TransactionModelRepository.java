@@ -101,4 +101,31 @@ public class TransactionModelRepository {
         return true;
     }
 
+    // gets the total count of transactions for a specific account for pagination math
+    public int getTransactionCount(long accountId) {
+        int count = 0;
+        String query = "SELECT COUNT(*) FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?;";
+
+        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setLong(1, accountId);
+            statement.setLong(2, accountId);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                count = resultSet.getInt(1); // Grabs the result of COUNT(*)
+            }
+
+            logger.info("Successfully retrieved transaction count for pagination");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error("Error interacting with the database to get transaction count");
+        }
+
+        return count;
+    }
+
 }
