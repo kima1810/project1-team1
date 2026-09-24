@@ -104,16 +104,14 @@ public class MainMenu implements Model {
     }
 
     private UpdateResult<? extends Model> handleHistoryInput(String key) {
-        if (key.equals(" ")) {
-            historyOffset += 10;
-        }
-        else if(key.equals("ctrl+h")){
-            if(historyOffset - 10 >= 0){
-                historyOffset = historyOffset - 10;
+        switch (key) {
+            case " ", "up" -> historyOffset += 10;
+            case "ctrl+h", "down" -> {
+                if (historyOffset - 10 >= 0) {
+                    historyOffset = historyOffset - 10;
+                }
             }
-        }
-        else if (key.equals("q") || key.equals("esc") || key.equals("enter")) {
-            currentState = AppState.MENU;
+            case "q", "esc", "enter" -> currentState = AppState.MENU;
         }
 
         return UpdateResult.from(this);
