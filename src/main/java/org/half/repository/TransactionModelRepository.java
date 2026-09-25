@@ -1,9 +1,14 @@
 package org.half.repository;
+import org.half.model.Account;
 import org.half.model.TransactionModel;
+import org.half.model.enums.AccountType;
+import org.half.service.TransactionHistoryService;
 import org.half.utility.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.*;
@@ -13,10 +18,11 @@ public class TransactionModelRepository {
     //logger
     private static final Logger logger = LoggerFactory.getLogger(TransactionModelRepository.class);
 
-    public List<TransactionModel> printOutTransactions(long id, int limit, int offset){
+    //if items are found, it will return a list of the transactions
+    public List<TransactionModel> printOutTransactions(long id){
         //create the query
         String query = "SELECT dateTime, type, amount, originAccountNumber, destinationAccountNumber " +
-                "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=? " + "ORDER BY dateTime DESC " + "LIMIT ? OFFSET ?;";
+                "FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?" + "ORDER BY dateTime DESC;";
 
         //create the list container
         List<TransactionModel> transactionList = new ArrayList<>();
@@ -28,17 +34,15 @@ public class TransactionModelRepository {
             //check if a value's originAccountNumber or destinationAccountNumber match the imputed it
             statement.setLong(1, id);
             statement.setLong(2, id);
-            statement.setInt(3, limit);
-            statement.setInt(4, offset);
             ResultSet resultSet = statement.executeQuery();
             //add it to the list
             while(resultSet.next()) {
                 transactionList.add(new TransactionModel(
-                        resultSet.getString("dateTime"),
-                        resultSet.getString("type"),
-                        resultSet.getDouble("amount"),
-                        resultSet.getLong("originAccountNumber"),
-                        resultSet.getLong("destinationAccountNumber")
+                    resultSet.getString("dateTime"),
+                    resultSet.getString("type"),
+                    resultSet.getDouble("amount"),
+                    resultSet.getLong("originAccountNumber"),
+                    resultSet.getLong("destinationAccountNumber")
                 ));
             }
 
@@ -50,7 +54,6 @@ public class TransactionModelRepository {
         logger.info("History successfully retrieved, no issues with the database");
         return transactionList;
     }
-
     //inserts a deposit or withdrawal into the table
     public boolean addDepositOrWithdrawal(TransactionModel transactionModel){
         //the query
@@ -97,33 +100,6 @@ public class TransactionModelRepository {
         }
         logger.info("Transfer successfully added, no issues with the database.");
         return true;
-    }
-
-    // gets the total count of transactions for a specific account for pagination math
-    public int getTransactionCount(long accountId) {
-        int count = 0;
-        String query = "SELECT COUNT(*) FROM TransactionHistory WHERE originAccountNumber=? OR destinationAccountNumber=?;";
-
-        try (Connection connection = ConnectionFactory.getAutoCommitConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setLong(1, accountId);
-            statement.setLong(2, accountId);
-
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                count = resultSet.getInt(1); // Grabs the result of COUNT(*)
-            }
-
-            logger.info("Successfully retrieved transaction count for pagination");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            logger.error("Error interacting with the database to get transaction count");
-        }
-
-        return count;
     }
 
 }

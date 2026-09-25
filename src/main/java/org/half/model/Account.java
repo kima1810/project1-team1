@@ -1,6 +1,5 @@
 package org.half.model;
 import org.half.model.enums.AccountType;
-import org.half.repository.AccountRepository;
 
 public class Account {
     private final User user;
@@ -18,7 +17,6 @@ public class Account {
     }
 
     public double getBalance() {
-        this.balance = AccountRepository.getBalance(this);
         return balance;
     }
 
@@ -36,5 +34,9 @@ public class Account {
 
     public User getUser() {
         return user;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 }

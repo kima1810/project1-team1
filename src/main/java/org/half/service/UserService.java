@@ -1,6 +1,5 @@
 package org.half.service;
 
-import org.half.exceptions.EmptyStringException;
 import org.half.exceptions.UserAlreadyExists;
 import org.half.model.User;
 import org.half.repository.UserRepository;
@@ -24,7 +23,7 @@ public class UserService {
             || phoneNumber == null || !phoneNumber.matches("[0-9+()\\- ]+")
             || username == null || username.length() < 5 || username.length() > 50
             || password == null || password.length() > 255) {
-            log.warn("Invalid user input");
+            log.error("Invalid user input: firstName={}, lastName={}, email={}, phoneNumber={}, username={}", firstName, lastName, email, phoneNumber, username);
             return null;
         }
         try{
@@ -34,15 +33,14 @@ public class UserService {
             return user;
         } catch (UserAlreadyExists e) {
             System.out.println(e.getMessage());
-            log.warn("User already exists: {}", e.getMessage());
+            log.error("User already exists: {}", e.getMessage());
             return null;
         }
     }
 
     public User verifyUser(String userName, String userPassword){
         if(userName.isEmpty() || userPassword.isEmpty()) {
-            log.error("Empty String(s) passed to verifyUser");
-            throw new EmptyStringException("Empty String(s) passed to verifyUser.");
+            throw new IllegalArgumentException("Can Not Enter Empty Strings.");
         }
         String dataBasePassword = userRepository.getPasswordHash(userName);
 

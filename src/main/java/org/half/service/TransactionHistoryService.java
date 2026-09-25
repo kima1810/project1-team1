@@ -1,8 +1,12 @@
 package org.half.service;
 
+import org.half.model.Account;
 import org.half.model.TransactionModel;
 import org.half.repository.TransactionModelRepository;
 
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import org.half.utility.ANSI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +19,30 @@ public class TransactionHistoryService {
 
     public TransactionHistoryService(TransactionModelRepository transactionModelRepository) {
         this.transactionModelRepository = transactionModelRepository;
+    }
+
+    //prints all the transactions
+    public boolean attemptPrintOutTransactions(Account chosenAccount){
+        //runs the repository method
+        List<TransactionModel> transactionList = transactionModelRepository.printOutTransactions(chosenAccount.getAccountNumber());
+
+        //if there are no transactions found with the associated id then return false
+        if(transactionList.isEmpty()){
+            System.out.println("No transactions found.");
+            logger.warn("No transactions were found for the attemptPrintOutTransactions method with the account number: "
+                    + chosenAccount.getAccountNumber());
+            return false;
+        }
+
+        for(TransactionModel transactions : transactionList){
+            System.out.printf(ANSI.MAGENTA + ANSI.ITALIC + "%-20s" + ANSI.CYAN + ANSI.ITALIC + " %-10s" +
+                    ANSI.YELLOW + ANSI.ITALIC + "$%-14.2f" + ANSI.RED + ANSI.ITALIC + "%-20s"
+                    + ANSI.GREEN + ANSI.ITALIC + "%-20s%n", transactions.getDateTime(), transactions.getType(),
+                    transactions.getAmount(), transactions.getOriginAccountId(), transactions.getDestinationAccountId());
+
+        }
+
+        return true;
     }
 
     //runs the repository method to create a deposit or withdrawal

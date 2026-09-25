@@ -37,4 +37,18 @@ public class ConnectionFactory {
             statement.execute(config);
         }
     }
+
+    // Example
+    public static void main(String[] args) throws SQLException {
+        Connection autoConnection = getAutoCommitConnection();
+
+        Statement statement = autoConnection.createStatement();
+        boolean success = statement.execute("SELECT * FROM User");
+        System.out.println(success ? "Success" : "Failed");
+        statement.close();
+
+        autoConnection.close();
+        Connection manualConnection = getManualCommitConnection();
+        manualConnection.close();
+    }
 }

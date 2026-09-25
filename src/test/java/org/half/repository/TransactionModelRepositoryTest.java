@@ -10,22 +10,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 public class TransactionModelRepositoryTest {
-    private static final long testAccountNumber = 123456789012L;
-    private static final long testAccountNumber2 = 123456789013L;
-    private static final long nonExistentAccountNumber = -123456789014L;
+    private static long testAccountNumber = 123456789012L;
+    private static long testAccountNumber2 = 123456789013L;
+    private static long nonExistentAccountNumber = -123456789014L;
     private static final String testUsername = "testuser123";
     private static final String testUsername2 = "testuser124";
-    private static TransactionModelRepository transactionModelRepository;
 
     //before any tests are ran, insert the test data into the database
     @BeforeAll
     static void initializeData() {
-        //create transactionModelRepository object to use
-        transactionModelRepository = new TransactionModelRepository();
-
         //I had to insert values into all three tables since the tables have foreign keys
         //for inserting into the user table
         String userQuery = """
@@ -140,43 +137,43 @@ public class TransactionModelRepositoryTest {
     //check if printOutTransactions received an empty list
     @Test
     void printOutTransactionsWithNonExistentId(){
-        assertTrue(transactionModelRepository.printOutTransactions(nonExistentAccountNumber, 1, 0).isEmpty());
+        assertTrue(TransactionModelRepository.printOutTransactions(nonExistentAccountNumber).isEmpty());
     }
 
     //check printOutTransactions works with an existing id
     @Test
     void printOutTransactionsWithExistingId(){
-        assertFalse(transactionModelRepository.printOutTransactions(testAccountNumber, 1, 0).isEmpty());
+        assertFalse(TransactionModelRepository.printOutTransactions(testAccountNumber).isEmpty());
     }
     //check if addDepositOrWithdrawal returns false it a non-existent id
     @Test
     void addDepositOrWithdrawalWithNonExistentId(){
         TransactionModel transactionModel = new TransactionModel("Deposit", 100.00, nonExistentAccountNumber);
-        assertFalse(transactionModelRepository.addDepositOrWithdrawal(transactionModel));
+        assertFalse(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
     //check if addDepositOrWithdrawal works with valid information
     @Test
     void addDepositOrWithdrawalWithExistentId(){
         TransactionModel transactionModel = new TransactionModel("Deposit", 100.00, testAccountNumber);
-        assertTrue(transactionModelRepository.addDepositOrWithdrawal(transactionModel));
+        assertTrue(TransactionModelRepository.addDepositOrWithdrawal(transactionModel));
     }
     //check if addTransfer returns false with a non-existent origin id
     @Test
     void addTransferWithNonExistentOriginId(){
         TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, nonExistentAccountNumber, testAccountNumber2);
-        assertFalse(transactionModelRepository.addTransfer(transactionModel));
+        assertFalse(TransactionModelRepository.addTransfer(transactionModel));
     }
     //check if addTransfer returns false with a non-existent destination id
     @Test
     void addTransferWithNonExistentDestinationId(){
         TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, testAccountNumber, nonExistentAccountNumber);
-        assertFalse(transactionModelRepository.addTransfer(transactionModel));
+        assertFalse(TransactionModelRepository.addTransfer(transactionModel));
     }
     //check if addTransfer works with valid information
     @Test
     void addTransferWithBothExistentIDs(){
         TransactionModel transactionModel = new TransactionModel("Transfer", 25.00, testAccountNumber, testAccountNumber2);
-        assertTrue(transactionModelRepository.addTransfer(transactionModel));
+        assertTrue(TransactionModelRepository.addTransfer(transactionModel));
     }
 
     //deletes all the test information that was placed into the database after every testcase has run
