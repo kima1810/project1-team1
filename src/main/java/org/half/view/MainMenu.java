@@ -245,14 +245,14 @@ public class MainMenu implements Model {
     private String renderBalance() {
         String content = Theme.TITLE.render("Account Balance") + "\n\n" +
                 "Available Funds: " + Theme.LOGO.render(String.format("$%.2f", activeAccount.getBalance())) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+                Theme.FOOTER_TEXT.render("[Enter] return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderAccountNumber() {
         String content = Theme.TITLE.render("Account Number") + "\n\n" +
                 "Your account number is: " + Theme.LOGO.render("" + activeAccount.getAccountNumber()) + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to return");
+                Theme.FOOTER_TEXT.render("[Enter] return");
         return Theme.CONTENT_PANEL.render(content);
     }
 
@@ -268,14 +268,14 @@ public class MainMenu implements Model {
         String content = Theme.TITLE.render("Transaction Input") + "\n\n" +
                 prompt + "\n" +
                 Theme.TITLE.render(inputBuffer) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press [Enter] to submit • [Esc] to cancel");
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] cancel");
         return Theme.CONTENT_PANEL.render(content);
     }
 
     private String renderNotification() {
         String content = Theme.TITLE.render("System Notice") + "\n\n" +
                 notificationMessage + "\n\n" +
-                Theme.FOOTER_TEXT.render("Press 'enter' to continue");
+                Theme.FOOTER_TEXT.render("[Enter] continue");
         return Theme.CONTENT_PANEL.render(content);
     }
 
@@ -321,7 +321,7 @@ public class MainMenu implements Model {
         String pageIndicator = String.format("Page %d of %d", currentPage, totalPages);
         content.append(Theme.ACTIVE_ITEM_SELECT.render(pageIndicator)).append("\n\n");
 
-        content.append(Theme.FOOTER_TEXT.render("Press [Right Arrow] next • [Left Arrow] prev • [Enter] return"));
+        content.append(Theme.FOOTER_TEXT.render("[Right Arrow] next • [Left Arrow] prev • [Enter] return"));
 
         return Theme.CONTENT_PANEL.render(content.toString());
     }
