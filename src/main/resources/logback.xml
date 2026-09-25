@@ -73,7 +73,7 @@
         </encoder>
     </appender>
 
-    <!-- Set appenders -->
+    <!-- Set appender -->
     <root level="INFO">
 <!--        <appender-ref ref="STDOUT"/>-->
         <appender-ref ref="INFO_FILE"/>

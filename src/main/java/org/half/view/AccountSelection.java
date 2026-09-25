@@ -1,21 +1,25 @@
 package org.half.view;
 
 import org.half.model.Account;
+import org.half.model.RouteModel;
 import org.half.model.User;
 import org.half.repository.AccountRepository;
 import org.half.repository.TransactionModelRepository;
 import org.half.service.AccountService;
 import org.half.service.TransactionHistoryService;
-import org.half.utility.ANSI;
-import org.half.utility.BankScanner;
+import org.half.style.Theme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.williamcallahan.tui4j.compat.bubbletea.Command;
+import com.williamcallahan.tui4j.compat.bubbletea.Message;
+import com.williamcallahan.tui4j.compat.bubbletea.Model;
+import com.williamcallahan.tui4j.compat.bubbletea.UpdateResult;
+import com.williamcallahan.tui4j.compat.bubbletea.KeyPressMessage;
+
 import java.util.List;
 
-// Account selection view
-public class AccountSelection {
-    // Class specific Logger for logging
+public class AccountSelection implements Model {
     private static final Logger log = LoggerFactory.getLogger(AccountSelection.class);
 
     private static final AccountRepository accountRepository = new AccountRepository();
@@ -25,117 +29,172 @@ public class AccountSelection {
 
     private static final AccountService accountService = new AccountService(accountRepository, transactionHistoryService);
 
-    // View for user to select their account
-    public static void selectAccount(User user) {
-        // Welcome the user
-        System.out.println("\n**********************************");
-        System.out.println(ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "Welcome, " +
-                ANSI.CYAN + ANSI.ITALIC + user.getFirstName() + ANSI.RESET +
-                ANSI.MAGENTA + ANSI.HIGH_INTENSITY + "!" + ANSI.RESET);
-        System.out.println("**********************************");
 
-        // Show the account selection menu
-        while (true) {
-            // Get all the accounts for the logged-in user
-            List<Account> accounts = accountService.getAccounts(user);
+    // --- State Management ---
+    private enum AppState { SELECTING, ENTERING_PIN, ERROR }
 
-            // If user has no account, keep prompting them to create a new account
-            while (accounts == null || accounts.isEmpty()) {
-                System.out.println(ANSI.userWarning("No accounts found."));
+    private AppState currentState = AppState.SELECTING;
+    private final User user;
+    private final List<Account> accounts;
 
-                // Call the account creation view
-                AccountCreation.createAccount(user);
+    private int cursor = 0;
+    private String pinBuffer = "";
+    private Account selectedAccountForPin = null;
 
-                // Retry getting accounts
-                accounts = accountService.getAccounts(user);
-            }
+    public AccountSelection(User user, List<Account> accounts) {
+        this.user = user;
+        this.accounts = accounts;
+    }
 
-            // Selecting accounts title
-            System.out.println("\n" + ANSI.title(
-                    """
-                            ┌────────────────────────────────┐
-                            │  Your Accounts:                │
-                            └────────────────────────────────┘
-                            """));
+    @Override
+    public Command init() { return null; }
 
-            log.info("Printing all the accounts for user: {}", user.getUsername());
+    @Override
+    public UpdateResult<? extends Model> update(Message msg) {
+        if (msg instanceof KeyPressMessage keyPressMessage) {
+            String key = keyPressMessage.key();
+            return switch (currentState) {
+                case SELECTING -> handleSelectionInput(key);
+                case ENTERING_PIN -> handlePinInput(key);
+                case ERROR -> handleSimpleReturn(key);
+            };
+        }
+        return UpdateResult.from(this);
+    }
 
-            // Print each account and their options
-            System.out.print(ANSI.rgb(100, 255, 100));
-            for (int i = 1; i <= accounts.size(); i++) {
-                Account account = accounts.get(i - 1);
-                System.out.println(ANSI.optionPositive("[" + i + "] " + account.getAccountType() + String.format(" ****%04d", (account.getAccountNumber() % 10000))));
-            }
+    private UpdateResult<? extends Model> handleSelectionInput(String key) {
+        int maxCursor = accounts.size() + 1; // Accounts + New Account + Logout
 
-            // Print other options
-            System.out.println(ANSI.rgb(50, 245, 245) + "[-1] Open a new account.");
-            System.out.println(ANSI.optionNegative("[0] Logout"));
-
-            System.out.println("\n──────────────────────────────────");
-
-            // Prompt user to input an option
-            System.out.print("Please select your account: ");
-            int userInput = BankScanner.promptUserSelection();
-
-            // Check if a valid option was selected
-            while (userInput > accounts.size()) {
-                System.out.print(ANSI.userWarning("Please enter a number from -1 to " + accounts.size() +": "));
-                log.warn("User selection is invalid.");
-                userInput = BankScanner.promptUserSelection();
-            }
-
-            log.info("User selected option: {}", userInput);
-
-            // Check if user wants to log out
-            if (userInput == 0) {
-                // Log out the user
-                System.out.println(ANSI.userWarning("Logging out of profile..."));
-                log.info("Logging out user: {}", user.getUsername());
-                break;
-            }
-
-            // Check if the user wants to create a new account
-            else if (userInput == -1) {
-                // Call the account creation view
-                AccountCreation.createAccount(user);
-                continue;
-            }
-
-            // Find the account user selected
-            Account selectedAccount = accounts.get(userInput - 1);
-
-            log.info("User attempting to log into account: {user: {}, account: {}}",
-                    user.getUsername(),
-                    selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
-
-            // Keep asking for account PIN until a valid PIN is entered
-            while (true) {
-                // Prompt the user to enter account PIN
-                System.out.print("Enter your account PIN: ");
-                int accountPinInput = BankScanner.promptUserForPIN();
-
-                try {
-                    // Attempt to log into the account
-                    if (accountService.verifyAccount(accounts.get(userInput - 1), accountPinInput)) {
-                        break;
-                    } else {
-                        System.out.println(ANSI.userWarning("Invalid credentials."));
-                        log.warn("Account login failed: {user: {}, account: {}}",
-                                user.getUsername(),
-                                selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
-                    }
-                } catch (IllegalArgumentException e) {
-                    System.out.println(ANSI.userWarning("Something went wrong."));
-                    log.error("Something went wrong: {}", e.getMessage());
+        switch (key) {
+            case "k", "K", "up" -> cursor = (cursor - 1 < 0) ? maxCursor : cursor - 1;
+            case "j", "J", "down" -> cursor = (cursor + 1 > maxCursor) ? 0 : cursor + 1;
+            case "enter" -> {
+                if (cursor < accounts.size()) {
+                    selectedAccountForPin = accounts.get(cursor);
+                    log.info("User attempting to log into account: {user: {}, account: {}}",
+                            user.getUsername(),
+                            selectedAccountForPin.getAccountType() +
+                                    String.format(" ****%04d", selectedAccountForPin.getAccountNumber() % 10000));
+                    currentState = AppState.ENTERING_PIN;
+                    pinBuffer = "";
+                } else if (cursor == accounts.size()) {
+                    // Send RouteModel to MasterControl to swap to AccountCreation
+                    return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.ACCOUNT_CREATION, user));
+                } else {
+                    // Send RouteModel to MasterControl to log out to WelcomeMenu
+                    log.info("Logging out user: {}", user.getUsername());
+                    return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.WELCOME, null));
                 }
             }
-            System.out.println(ANSI.success("Success! Logging into your account..."));
-            log.info("Successfully logged into account: {user: {}, account: {}}",
-                    user.getUsername(),
-                    selectedAccount.getAccountType() +  String.format(" ****%04d", selectedAccount.getAccountNumber() % 10000));
-
-            // Call the main menu view
-            MainMenu.mainMenu(selectedAccount);
+            case "q", "Q" -> {
+                return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.WELCOME, null));
+            }
         }
+        return UpdateResult.from(this);
+    }
+
+    private UpdateResult<? extends Model> handlePinInput(String key) {
+        if (key.equals("esc")) {
+            currentState = AppState.SELECTING;
+            pinBuffer = "";
+        } else if (key.equals("backspace") || key.equals("ctrl+h") || key.equals("delete") || key.equals("\b")) {
+            if (!pinBuffer.isEmpty()) pinBuffer = pinBuffer.substring(0, pinBuffer.length() - 1);
+        } else if (key.equals("enter") && !pinBuffer.isEmpty()) {
+            return verifyPin();
+        } else if (key.length() == 1 && Character.isDigit(key.charAt(0)) && pinBuffer.length() < 4) {
+            pinBuffer += key;
+        }
+        return UpdateResult.from(this);
+    }
+
+    private UpdateResult<? extends Model> verifyPin() {
+        try {
+            int pin = Integer.parseInt(pinBuffer);
+            if (accountService.verifyAccount(selectedAccountForPin, pin)) {
+                // Success! Send the Object[] array payload to the Master Router
+                log.info("Successfully logged into account: {user: {}, account: {}}",
+                        user.getUsername(),
+                        selectedAccountForPin.getAccountType() +
+                                String.format(" ****%04d", selectedAccountForPin.getAccountNumber() % 10000));
+                return UpdateResult.from(this, () -> new RouteModel(RouteModel.Route.MAIN_MENU, new Object[]{user, selectedAccountForPin}));
+            } else {
+                log.warn("Account login failed: {user: {}, account: {}}",
+                        user.getUsername(),
+                        selectedAccountForPin.getAccountType() +
+                                String.format(" ****%04d", selectedAccountForPin.getAccountNumber() % 10000));
+                currentState = AppState.ERROR;
+                pinBuffer = "";
+            }
+        } catch (NumberFormatException e) {
+            currentState = AppState.ERROR;
+            pinBuffer = "";
+        } catch (Exception e) {
+            // This catches hidden database/backend crashes so the app doesn't just disappear!
+            log.error("Fatal error during PIN verification", e);
+            currentState = AppState.ERROR;
+            pinBuffer = "";
+        }
+        return UpdateResult.from(this);
+    }
+
+    private UpdateResult<? extends Model> handleSimpleReturn(String key) {
+        if (key.equals("enter") || key.equals("esc")) {
+            currentState = AppState.ENTERING_PIN;
+        }
+        return UpdateResult.from(this);
+    }
+
+    @Override
+    public String view() {
+        return switch (currentState) {
+            case SELECTING -> renderSelection();
+            case ENTERING_PIN -> renderPinEntry();
+            case ERROR -> renderError();
+        };
+    }
+
+    private String renderSelection() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("\nWelcome, ").append(Theme.USERNAME.render(user.getUsername())).append("!\n\n");
+        buffer.append(Theme.TITLE.render("Your Accounts:")).append("\n\n");
+
+        log.info("Printing all the accounts for user: {}", user.getUsername());
+
+        for (int i = 0; i < accounts.size(); i++) {
+            Account account = accounts.get(i);
+            String formattedAccount = String.format("%s ****%04d", account.getAccountType(), (account.getAccountNumber() % 10000));
+            if (cursor == i) {
+                buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ " + formattedAccount));
+            } else {
+                buffer.append("  ").append(formattedAccount);
+            }
+            buffer.append("\n");
+        }
+
+        if (cursor == accounts.size()) buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ Open a new account")).append("\n");
+        else buffer.append(Theme.NEW_ACCOUNT.render("  Open a new account")).append("\n");
+
+        if (cursor == accounts.size() + 1) buffer.append(Theme.ACTIVE_ITEM_SELECT.render("▶ Logout")).append("\n");
+        else buffer.append(Theme.ERROR_TEXT.render("  Logout")).append("\n");
+
+        return Theme.MAIN_PANEL.render(buffer.toString());
+    }
+
+    private String renderPinEntry() {
+        String formattedAccount = String.format("%s ****%04d", selectedAccountForPin.getAccountType(), (selectedAccountForPin.getAccountNumber() % 10000));
+        String maskedPin = "*".repeat(pinBuffer.length());
+
+        String content = Theme.TITLE.render("Secure Login") + "\n\n" +
+                "Enter 4-digit PIN for " + formattedAccount + ":\n" +
+                Theme.TITLE.render(maskedPin) + Theme.TEXT_CURSOR.render("█") + "\n\n" +
+                Theme.FOOTER_TEXT.render("[Enter] submit • [Esc] cancel");
+        return Theme.CONTENT_PANEL.render(content);
+    }
+
+    private String renderError() {
+        String content = Theme.TITLE.render("Authentication Failed") + "\n\n" +
+                Theme.ERROR_TEXT.render("⚠ Invalid PIN credentials.") + "\n\n" +
+                Theme.FOOTER_TEXT.render("[Enter] try again");
+        return Theme.CONTENT_PANEL.render(content);
     }
 }

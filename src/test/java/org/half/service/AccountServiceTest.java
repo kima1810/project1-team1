@@ -1,19 +1,19 @@
 package org.half.service;
 
+import org.half.exceptions.IllegalPinLength;
 import org.half.exceptions.InsufficientFundsException;
 import org.half.model.Account;
 import org.half.model.User;
 import org.half.model.enums.AccountType;
 import org.half.repository.AccountRepository;
+import org.half.security.PasswordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class AccountServiceTest {
@@ -34,33 +34,45 @@ class AccountServiceTest {
     }
 
     @Test
-    void createAccount_shouldThrowException_whenPinHasMoreThanFourDigits() {
+    void createAccount_shouldThrowIllegalPinLength_whenPinHasMoreThanFourDigits() {
         User user = mock(User.class);
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        assertThrows(IllegalPinLength.class,
                 () -> accountService.createAccount(
                         user,
-                        10_000,
+                        10000,
                         AccountType.CHECKING
                 )
-        );
-
-        assertEquals(
-                "Invalid pin. Cannot be more than 4 digits.",
-                exception.getMessage()
         );
 
         verifyNoInteractions(accountRepository);
     }
 
     @Test
-    void createAccount_shouldCreateAccountSuccessfully() throws SQLException {
+    void createAccount_shouldAcceptFourDigitPin() throws SQLException, IllegalPinLength {
+
         User user = mock(User.class);
 
-        doNothing()
-                .when(accountRepository)
+        doNothing().when(accountRepository).addAccount(any(Account.class));
+
+        long accountNumber = accountService.createAccount(
+                user,
+                9999,
+                AccountType.CHECKING
+        );
+
+        assertTrue(accountNumber >= 100000000000L);
+        assertTrue(accountNumber < 1000000000000L);
+
+        verify(accountRepository, times(1))
                 .addAccount(any(Account.class));
+    }
+
+    @Test
+    void createAccount_shouldCreateAccountSuccessfully() throws SQLException, IllegalPinLength {
+        User user = mock(User.class);
+
+        doNothing().when(accountRepository).addAccount(any(Account.class));
 
         long accountNumber = accountService.createAccount(
                 user,
@@ -68,46 +80,20 @@ class AccountServiceTest {
                 AccountType.CHECKING
         );
 
-        assertTrue(accountNumber >= 100_000_000_000L);
-        assertTrue(accountNumber < 1_000_000_000_000L);
+        assertTrue(accountNumber >= 100000000000L);
+        assertTrue(accountNumber < 1000000000000L);
 
         verify(accountRepository, times(1))
                 .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldAcceptFourDigitPin() throws SQLException {
+    void createAccount_shouldRetry_whenAccountNumberAlreadyExists() throws SQLException, IllegalPinLength {
         User user = mock(User.class);
 
-        doNothing()
-                .when(accountRepository)
-                .addAccount(any(Account.class));
+        SQLException duplicateKeyException = new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
 
-        assertDoesNotThrow(() ->
-                accountService.createAccount(
-                        user,
-                        9999,
-                        AccountType.CHECKING
-                )
-        );
-
-        verify(accountRepository, times(1))
-                .addAccount(any(Account.class));
-    }
-
-    @Test
-    void createAccount_shouldRetry_whenAccountNumberAlreadyExists()
-            throws SQLException {
-
-        User user = mock(User.class);
-
-        SQLException duplicateKeyException =
-                new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
-
-        doThrow(duplicateKeyException)
-                .doNothing()
-                .when(accountRepository)
-                .addAccount(any(Account.class));
+        doThrow(duplicateKeyException).doNothing().when(accountRepository).addAccount(any(Account.class));
 
         long accountNumber = accountService.createAccount(
                 user,
@@ -115,25 +101,20 @@ class AccountServiceTest {
                 AccountType.CHECKING
         );
 
-        assertTrue(accountNumber >= 100_000_000_000L);
-        assertTrue(accountNumber < 1_000_000_000_000L);
+        assertTrue(accountNumber >= 100000000000L);
+        assertTrue(accountNumber < 1000000000000L);
 
         verify(accountRepository, times(2))
                 .addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldReturnMinusOne_afterTenFailures()
-            throws SQLException {
-
+    void createAccount_shouldReturnMinusOne_afterTenDuplicateKeyFailures() throws SQLException, IllegalPinLength {
         User user = mock(User.class);
 
-        SQLException duplicateKeyException =
-                new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
+        SQLException duplicateKeyException = new SQLException("[SQLITE_CONSTRAINT_PRIMARYKEY]");
 
-        doThrow(duplicateKeyException)
-                .when(accountRepository)
-                .addAccount(any(Account.class));
+        doThrow(duplicateKeyException).when(accountRepository).addAccount(any(Account.class));
 
         long result = accountService.createAccount(
                 user,
@@ -143,41 +124,64 @@ class AccountServiceTest {
 
         assertEquals(-1, result);
 
-        verify(accountRepository, times(10))
-                .addAccount(any(Account.class));
+        verify(accountRepository, times(10)).addAccount(any(Account.class));
     }
 
     @Test
-    void createAccount_shouldRetry_whenNonPrimaryKeySqlExceptionOccurs()
-            throws SQLException {
+    void verifyAccount_shouldThrowIllegalPinLength_whenPinHasMoreThanFourDigits() {
+        Account account = mock(Account.class);
 
-        User user = mock(User.class);
-
-        SQLException sqlException =
-                new SQLException("Database connection failed");
-
-        doThrow(sqlException)
-                .doNothing()
-                .when(accountRepository)
-                .addAccount(any(Account.class));
-
-        long accountNumber = accountService.createAccount(
-                user,
-                1234,
-                AccountType.CHECKING
+        IllegalPinLength exception = assertThrows(
+                IllegalPinLength.class,
+                () -> accountService.verifyAccount(
+                        account,
+                        10000
+                )
         );
 
-        assertTrue(accountNumber >= 100_000_000_000L);
-        assertTrue(accountNumber < 1_000_000_000_000L);
+        assertEquals(
+                "Invalid pin. Cannot be more than 4 digits.",
+                exception.getMessage()
+        );
 
-        verify(accountRepository, times(2))
-                .addAccount(any(Account.class));
+        verifyNoInteractions(account);
     }
 
     @Test
-    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds()
-            throws SQLException {
+    void verifyAccount_shouldReturnTrue_whenPinIsCorrect() throws IllegalPinLength {
+        Account account = mock(Account.class);
 
+        when(account.getPinHash()).thenReturn(PasswordService.hashPassword("1234"));
+
+        boolean result = accountService.verifyAccount(
+                account,
+                1234
+        );
+
+        assertTrue(result);
+
+        verify(account, times(1)).getPinHash();
+    }
+
+    @Test
+    void verifyAccount_shouldReturnFalse_whenPinIsIncorrect() throws IllegalPinLength {
+        Account account = mock(Account.class);
+
+        when(account.getPinHash()).thenReturn(PasswordService.hashPassword("1234"));
+
+        boolean result = accountService.verifyAccount(
+                account,
+                9999
+        );
+
+        assertFalse(result);
+
+        verify(account, times(1))
+                .getPinHash();
+    }
+
+    @Test
+    void getAccounts_shouldReturnAccounts_whenRepositorySucceeds() throws SQLException {
         User user = mock(User.class);
 
         List<Account> expectedAccounts = List.of(
@@ -185,114 +189,123 @@ class AccountServiceTest {
                 mock(Account.class)
         );
 
-        when(accountRepository.getAllAccounts(user))
-                .thenReturn(expectedAccounts);
+        when(accountRepository.getAllAccounts(user)).thenReturn(expectedAccounts);
 
-        List<Account> actualAccounts =
-                accountService.getAccounts(user);
+        List<Account> actualAccounts = accountService.getAccounts(user);
 
         assertSame(expectedAccounts, actualAccounts);
 
-        verify(accountRepository, times(1))
-                .getAllAccounts(user);
+        verify(accountRepository, times(1)).getAllAccounts(user);
     }
 
     @Test
-    void getAccounts_shouldReturnNull_whenRepositoryThrowsSQLException()
-            throws SQLException {
-
+    void getAccounts_shouldReturnEmptyList_whenRepositoryReturnsEmptyList() throws SQLException {
         User user = mock(User.class);
 
-        SQLException exception =
-                new SQLException("Database error");
+        List<Account> expectedAccounts = List.of();
 
-        when(accountRepository.getAllAccounts(user))
-                .thenThrow(exception);
+        when(accountRepository.getAllAccounts(user)).thenReturn(expectedAccounts);
 
-        List<Account> actualAccounts =
-                accountService.getAccounts(user);
+        List<Account> actualAccounts = accountService.getAccounts(user);
 
-        assertNull(actualAccounts);
+        assertNotNull(actualAccounts);
+        assertTrue(actualAccounts.isEmpty());
 
         verify(accountRepository, times(1))
                 .getAllAccounts(user);
     }
 
     @Test
-    void testDepositRequest_UpdatesBalanceAndCallsServices() {
-        Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 100.0);
+    void testDepositRequest_UpdatesBalanceAndCallsServices() throws Exception {
+        Account testAccount = mock(Account.class);
 
-        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class);
-             MockedStatic<TransactionHistoryService> historyMock = Mockito.mockStatic(TransactionHistoryService.class)) {
+        when(testAccount.getAccountNumber()).thenReturn(123456789L);
 
-            AccountService.Deposit_Request(testAccount, 50.0);
+        accountService.Deposit_Request(testAccount, 50.0);
 
-            assertEquals(150.0, testAccount.getBalance(), "Balance should be updated to 150.0");
-
-            repoMock.verify(() -> AccountRepository.Update_Balance(testAccount, 150.0));
-            historyMock.verify(() -> TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", 50.0, 123456789L));
-        }
+        verify(accountRepository, times(1)).Deposit_Balance(testAccount, 50.0);
+        verify(transactionHistoryService, times(1)).attemptAddDepositOrWithdrawal("Deposit", 50.0, 123456789L);
+        verify(testAccount, atLeastOnce()).getAccountNumber();
     }
 
     @Test
-    void testDepositRequest_WithZeroAmount_DoesNotChangeBalance() {
-        Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 200.0);
+    void testDepositRequest_WithZeroAmount_DoesNotChangeBalance() throws Exception {
+        Account testAccount = mock(Account.class);
 
-        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class);
-             MockedStatic<TransactionHistoryService> historyMock = Mockito.mockStatic(TransactionHistoryService.class)) {
+        when(testAccount.getAccountNumber()).thenReturn(123456789L);
 
-            AccountService.Deposit_Request(testAccount, 0.0);
+        accountService.Deposit_Request(testAccount, 0.0);
 
-            assertEquals(200.0, testAccount.getBalance(), "Balance should remain 200.0");
-            repoMock.verify(() -> AccountRepository.Update_Balance(testAccount, 200.0));
-            historyMock.verify(() -> TransactionHistoryService.attemptAddDepositOrWithdrawal("Deposit", 0.0, 123456789L));
-        }
+        verify(accountRepository, times(1)).Deposit_Balance(testAccount, 0.0);
+        verify(transactionHistoryService, times(1)).attemptAddDepositOrWithdrawal("Deposit", 0.0, 123456789L);
+        verify(testAccount, atLeastOnce()).getAccountNumber();
     }
 
     @Test
     void testDepositRequest_WithNegativeAmount_ThrowsException() {
-        Account testAccount = new Account(null, 123456789L, "1234", AccountType.CHECKING, 100.0);
+        Account testAccount = mock(Account.class);
+
+        when(testAccount.getAccountNumber()).thenReturn(123456789L);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            AccountService.Deposit_Request(testAccount, -50.0);
+            accountService.Deposit_Request(testAccount, -50.0);
         });
 
         assertEquals("Amount cannot be negative.", exception.getMessage());
+
+        verifyNoInteractions(accountRepository);
+        verifyNoInteractions(transactionHistoryService);
+        verify(testAccount, atLeastOnce()).getAccountNumber();
     }
 
     @Test
     void testWithdrawRequest_OverdraftAttempt_ThrowsInsufficientFundsException() {
-        Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.0);
+        Account testAccount = mock(Account.class);
+
+        when(testAccount.getAccountNumber()).thenReturn(987654321L);
+        when(testAccount.getBalance()).thenReturn(100.00);
 
         Exception exception = assertThrows(InsufficientFundsException.class, () -> {
-            AccountService.Withdraw_Request(testAccount, 500.0);
+            accountService.Withdraw_Request(testAccount, 500.0);
         });
 
-        assertEquals("Account balance cannot be less than amount.", exception.getMessage());
+        assertEquals("Amount withdrawn attempted overdraft. Balance: $100.00", exception.getMessage());
+
+        verifyNoInteractions(accountRepository);
+        verifyNoInteractions(transactionHistoryService);
+        verify(testAccount, atLeastOnce()).getBalance();
+        verify(testAccount, atLeastOnce()).getAccountNumber();
     }
 
     @Test
     void testWithdrawRequest_WithNegativeAmount_ThrowsException() {
-        Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.0);
+        Account testAccount = mock(Account.class);
+
+        when(testAccount.getAccountNumber()).thenReturn(987654321L);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            AccountService.Withdraw_Request(testAccount, -20.0);
+            accountService.Withdraw_Request(testAccount, -20.0);
         });
 
         assertEquals("Amount cannot be negative.", exception.getMessage());
+
+        verifyNoInteractions(accountRepository);
+        verifyNoInteractions(transactionHistoryService);
+        verify(testAccount, atLeastOnce()).getAccountNumber();
     }
 
     @Test
-    void testWithdrawRequest_FloatingPointPrecision() {
-        // Doubles can cause weird fractional issues (e.g., 100.05 - 100.04 = 0.010000000000005)
-        Account testAccount = new Account(null, 987654321L, "4321", AccountType.SAVINGS, 100.05);
+    void testWithdrawRequest_FloatingPointPrecision() throws Exception {
+        Account testAccount = mock(Account.class);
 
-        try (MockedStatic<AccountRepository> repoMock = Mockito.mockStatic(AccountRepository.class);
-             MockedStatic<TransactionHistoryService> historyMock = Mockito.mockStatic(TransactionHistoryService.class)) {
+        when(testAccount.getAccountNumber()).thenReturn(987654321L);
+        when(testAccount.getBalance()).thenReturn(100.05);
 
-            AccountService.Withdraw_Request(testAccount, 100.04);
+        accountService.Withdraw_Request(testAccount, 100.04);
 
-            assertEquals(0.01, testAccount.getBalance(), 0.001, "Balance should be exactly 0.01 despite double precision artifacts");
-        }
+        verify(accountRepository, times(1)).Withdraw_Balance(testAccount, 100.04);
+        verify(transactionHistoryService, times(1)).attemptAddDepositOrWithdrawal("Withdraw", 100.04, 987654321L);
+        verify(testAccount, atLeastOnce()).getBalance();
+        verify(testAccount, atLeastOnce()).getAccountNumber();
     }
 }

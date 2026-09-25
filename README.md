@@ -34,11 +34,11 @@ Optionally, run `SampleData.sql` to populate the database with sample records fo
 
 #### Sample data
 
-| Username | Password | Account(s) | PIN |
-|---|---|---|---|
-| `billy` | `password` | CHECKING `5756` | `1234` |
-| `johndoe` | `password` | SAVINGS `8512` | `9876` |
-| `sally` | `password` | CHECKING `2739` | `4567` |
+| Username    | Password   | Account(s)                      | PIN    |
+|-------------|------------|---------------------------------|--------|
+| `billy`     | `password` | CHECKING `5756`                 | `1234` |
+| `johndoe`   | `password` | SAVINGS `8512`                  | `9876` |
+| `sally`     | `password` | CHECKING `2739`                 | `4567` |
 | `slagathor` | `password` | SAVINGS `5205`, CHECKING `0105` | `1111` |
 
 > These credentials are intended for testing and debugging purposes only.

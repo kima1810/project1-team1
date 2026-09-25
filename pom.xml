@@ -73,15 +73,26 @@
             <version>5.23.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.williamcallahan</groupId>
+            <artifactId>tui4j</artifactId>
+            <version>0.3.3</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-wrapper-plugin</artifactId>
-                <version>3.3.4</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>org.half.Main</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
+
+
 </project>
