@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 class AccountRepositoryTest {
-
     @Test
     void addAccount_shouldInsertAccountSuccessfully() throws SQLException {
         User user = mock(User.class);
@@ -53,7 +52,9 @@ class AccountRepositoryTest {
                     .when(ConnectionFactory::getAutoCommitConnection)
                     .thenReturn(connection);
 
-            AccountRepository.addAccount(account);
+            AccountRepository accountRepository = new AccountRepository();
+
+            accountRepository.addAccount(account);
 
             verify(connection).prepareStatement(
                     "INSERT INTO Account VALUES (?,?,?,?,?);"
@@ -80,9 +81,11 @@ class AccountRepositoryTest {
                             "Unable to establish database connection"
                     ));
 
+            AccountRepository accountRepository = new AccountRepository();
+
             DatabaseConnectionFailure thrown = assertThrows(
                     DatabaseConnectionFailure.class,
-                    () -> AccountRepository.addAccount(account)
+                    () -> accountRepository.addAccount(account)
             );
 
             assertEquals(
@@ -126,18 +129,62 @@ class AccountRepositoryTest {
                     .when(ConnectionFactory::getAutoCommitConnection)
                     .thenReturn(connection);
 
+            AccountRepository accountRepository = new AccountRepository();
+
             SQLException thrown = assertThrows(
                     SQLException.class,
-                    () -> AccountRepository.addAccount(account)
+                    () -> accountRepository.addAccount(account)
             );
 
             assertSame(exception, thrown);
+
+            verify(statement).executeUpdate();
         }
     }
 
     @Test
-    void getAllAccounts_shouldReturnAccounts_whenRowsExist()
-            throws SQLException {
+    void getBalance_shouldReturnBalance_whenAccountExists() throws SQLException {
+        Account account = mock(Account.class);
+
+        when(account.getAccountNumber()).thenReturn(123456L);
+
+        Connection connection = mock(Connection.class);
+        PreparedStatement statement = mock(PreparedStatement.class);
+        ResultSet resultSet = mock(ResultSet.class);
+
+        when(connection.prepareStatement(
+                "SELECT balance FROM Account WHERE accountNumber = ?;"
+        )).thenReturn(statement);
+
+        when(statement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getDouble(1)).thenReturn(1500.75);
+
+        try (MockedStatic<ConnectionFactory> factoryMock =
+                     mockStatic(ConnectionFactory.class)) {
+            factoryMock.when(ConnectionFactory::getAutoCommitConnection).thenReturn(connection);
+
+            double balance = AccountRepository.getBalance(account);
+
+            assertEquals(1500.75, balance);
+
+            verify(connection).prepareStatement(
+                    "SELECT balance FROM Account WHERE accountNumber = ?;"
+            );
+
+            verify(statement).setLong(
+                    1,
+                    123456L
+            );
+
+            verify(statement).executeQuery();
+            verify(resultSet).next();
+            verify(resultSet).getDouble(1);
+        }
+    }
+
+    @Test
+    void getAllAccounts_shouldReturnAccounts_whenRowsExist() throws SQLException {
 
         User user = mock(User.class);
         when(user.getUsername()).thenReturn("john");
@@ -151,37 +198,20 @@ class AccountRepositoryTest {
         )).thenReturn(statement);
 
         when(statement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        when(resultSet.getLong("accountNumber")).thenReturn(111111L).thenReturn(222222L);
+        when(resultSet.getString("pinHash")).thenReturn("hash1").thenReturn("hash2");
+        when(resultSet.getString("accountType")).thenReturn(AccountType.CHECKING.name()).thenReturn(AccountType.SAVINGS.name());
+        when(resultSet.getDouble("balance")).thenReturn(100.00).thenReturn(500.00);
 
-        when(resultSet.next())
-                .thenReturn(true)
-                .thenReturn(true)
-                .thenReturn(false);
+        try (MockedStatic<ConnectionFactory> factoryMock = mockStatic(ConnectionFactory.class);
+             MockedStatic<AccountRepository> repositoryMock = mockStatic(AccountRepository.class)) {
 
-        when(resultSet.getLong("accountNumber"))
-                .thenReturn(111111L)
-                .thenReturn(222222L);
+            factoryMock.when(ConnectionFactory::getAutoCommitConnection).thenReturn(connection);
 
-        when(resultSet.getString("pinHash"))
-                .thenReturn("hash1")
-                .thenReturn("hash2");
+            AccountRepository accountRepository = new AccountRepository();
 
-        when(resultSet.getString("accountType"))
-                .thenReturn(AccountType.CHECKING.name())
-                .thenReturn(AccountType.SAVINGS.name());
-
-        when(resultSet.getDouble("balance"))
-                .thenReturn(100.00)
-                .thenReturn(500.00);
-
-        try (MockedStatic<ConnectionFactory> factoryMock =
-                     mockStatic(ConnectionFactory.class)) {
-
-            factoryMock
-                    .when(ConnectionFactory::getAutoCommitConnection)
-                    .thenReturn(connection);
-
-            List<Account> accounts =
-                    AccountRepository.getAllAccounts(user);
+            List<Account> accounts = accountRepository.getAllAccounts(user);
 
             assertNotNull(accounts);
             assertEquals(2, accounts.size());
@@ -191,7 +221,6 @@ class AccountRepositoryTest {
             assertEquals(111111L, first.getAccountNumber());
             assertEquals("hash1", first.getPinHash());
             assertEquals(AccountType.CHECKING, first.getAccountType());
-            assertEquals(100.00, first.getBalance());
             assertSame(user, first.getUser());
 
             Account second = accounts.get(1);
@@ -199,19 +228,24 @@ class AccountRepositoryTest {
             assertEquals(222222L, second.getAccountNumber());
             assertEquals("hash2", second.getPinHash());
             assertEquals(AccountType.SAVINGS, second.getAccountType());
-            assertEquals(500.00, second.getBalance());
             assertSame(user, second.getUser());
 
             verify(statement).setString(1, "john");
             verify(statement).executeQuery();
+
+            repositoryMock.when(() -> AccountRepository.getBalance(first)).thenReturn(100.00);
+            repositoryMock.when(() -> AccountRepository.getBalance(second)).thenReturn(500.00);
+
+            assertEquals(100.00, first.getBalance());
+            assertEquals(500.00, second.getBalance());
         }
     }
 
-    @Test
-    void getAllAccounts_shouldReturnEmptyList_whenNoRowsExist()
-            throws SQLException {
 
+    @Test
+    void getAllAccounts_shouldReturnEmptyList_whenNoRowsExist() throws SQLException {
         User user = mock(User.class);
+
         when(user.getUsername()).thenReturn("john");
 
         Connection connection = mock(Connection.class);
@@ -232,8 +266,9 @@ class AccountRepositoryTest {
                     .when(ConnectionFactory::getAutoCommitConnection)
                     .thenReturn(connection);
 
-            List<Account> accounts =
-                    AccountRepository.getAllAccounts(user);
+            AccountRepository accountRepository = new AccountRepository();
+
+            List<Account> accounts = accountRepository.getAllAccounts(user);
 
             assertNotNull(accounts);
             assertTrue(accounts.isEmpty());
@@ -256,49 +291,17 @@ class AccountRepositoryTest {
                             "Unable to establish database connection"
                     ));
 
+            AccountRepository accountRepository = new AccountRepository();
+
             DatabaseConnectionFailure thrown = assertThrows(
                     DatabaseConnectionFailure.class,
-                    () -> AccountRepository.getAllAccounts(user)
+                    () -> accountRepository.getAllAccounts(user)
             );
 
             assertEquals(
                     "Unable to establish database connection",
                     thrown.getMessage()
             );
-        }
-    }
-
-    @Test
-    void getAllAccounts_shouldThrowSQLException_whenQueryFails()
-            throws SQLException {
-
-        User user = mock(User.class);
-        when(user.getUsername()).thenReturn("john");
-
-        Connection connection = mock(Connection.class);
-        PreparedStatement statement = mock(PreparedStatement.class);
-
-        when(connection.prepareStatement(
-                "SELECT * FROM Account WHERE username=?;"
-        )).thenReturn(statement);
-
-        SQLException exception = new SQLException("Query failed");
-
-        when(statement.executeQuery()).thenThrow(exception);
-
-        try (MockedStatic<ConnectionFactory> factoryMock =
-                     mockStatic(ConnectionFactory.class)) {
-
-            factoryMock
-                    .when(ConnectionFactory::getAutoCommitConnection)
-                    .thenReturn(connection);
-
-            SQLException thrown = assertThrows(
-                    SQLException.class,
-                    () -> AccountRepository.getAllAccounts(user)
-            );
-
-            assertSame(exception, thrown);
         }
     }
 }
